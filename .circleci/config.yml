@@ -1,0 +1,120 @@
+version: 2.1
+
+setup: &setup
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:lts
+
+# Define the jobs we want to run for this project
+jobs:
+  install:
+    <<: *setup
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "yarn.lock" }}
+      - run: yarn
+      - save_cache:
+          paths:
+            - ~/.cache/yarn
+            - node_modules
+          key: node-modules-{{ checksum "yarn.lock" }}
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - node_modules
+            - .
+  install_without_modules_cache:
+    <<: *setup
+    steps:
+      - checkout
+      - run: yarn
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - node_modules
+            - .
+  lint:
+    <<: *setup
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: yarn lint
+  tsc:
+    <<: *setup
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: yarn tsc
+  unit:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:lts
+      - image: circleci/postgres:12.1-alpine-ram
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD # context / project UI env-var reference
+        environment:
+          POSTGRES_PASSWORD: 'postgres'
+          POSTGRES_DB: prisma-mock
+          POSTGRES_USER: postgres
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: yarn test
+  release:
+    <<: *setup
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: npx semantic-release
+workflows:
+  master_deploy:
+    jobs:
+      - install:
+          filters:
+            branches:
+              only:
+                - master
+      - release:
+          requires:
+            - install
+  develop_test:
+    jobs:
+      - install:
+          filters:
+            branches:
+              ignore:
+                - develop
+                - release
+                - hotfix
+                - master
+                - /renovate.*/
+                - /custom-renovate.*/
+      - lint:
+          requires:
+            - install
+      - tsc:
+          requires:
+            - install
+      - unit:
+          requires:
+            - install
+  renovate_verify:
+    jobs:
+      - install_without_modules_cache:
+          filters:
+            branches:
+              only:
+                - /renovate.*/
+                - /custom-renovate.*/
+      - lint:
+          requires:
+            - install_without_modules_cache
+      - tsc:
+          requires:
+            - install_without_modules_cache
+      - unit:
+          requires:
+            - install_without_modules_cache
