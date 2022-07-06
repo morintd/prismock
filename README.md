@@ -1,5 +1,9 @@
 # prismock
 
+[![npm](https://img.shields.io/npm/v/prismock)](https://www.npmjs.com/package/prismock)
+[![Build](https://circleci.com/gh/morintd/prismock.svg?style=shield)](https://app.circleci.com/pipelines/github/morintd/prismock)
+[![npm](https://img.shields.io/npm/dm/prismock)](https://www.npmjs.com/package/prismock)
+
 This is a mock for PrismaClient.
 
 It perfectly simulates Prisma's API and store everything in-memory for fast, isolated, and retry-able unit tests.

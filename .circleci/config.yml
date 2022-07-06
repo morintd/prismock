@@ -59,9 +59,12 @@ jobs:
           POSTGRES_PASSWORD: 'postgres'
           POSTGRES_DB: prisma-mock
           POSTGRES_USER: postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@localhost/prisma-mock
     steps:
       - attach_workspace:
           at: ~/repo
+      - run: npx prisma migrate deploy
       - run: yarn test
   release:
     <<: *setup

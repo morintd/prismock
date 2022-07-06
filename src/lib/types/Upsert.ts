@@ -1,6 +1,6 @@
 import { Item } from '../delegate';
 
-import { FindWhereArgs, SelectArgs } from './find';
+import { FindWhereArgs, SelectArgs } from './Find';
 
 export type UpsertArgs = {
   select?: SelectArgs | null;
