@@ -1,8 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
 
-import { DelegateContext, DelegateProperties, Item } from '../delegate';
-import { Data } from '../prismock';
+import { Delegate, DelegateProperties, Item } from '../delegate';
 
 import { findNextIncrement } from './find';
 
@@ -56,9 +55,9 @@ export function createDefaultValues(fields: DMMF.Field[], properties: DelegatePr
   }, {});
 }
 
-export function create(data: Data, name: string, properties: DelegateProperties, item: Item, context: DelegateContext) {
-  const created = { ...createDefaultValues(context.model.fields, properties), ...item };
-  Object.assign(data, { [name]: [...data[name], created] });
+export function create(item: Item, delegate: Delegate, onChange: (items: Item[]) => void) {
+  const created = { ...createDefaultValues(delegate.model.fields, delegate.properties), ...item };
+  onChange([...delegate.getItems(), created]);
 
   return created as Item;
 }
