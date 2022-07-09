@@ -7,6 +7,8 @@ import { PrismockClient } from '../src/lib/client';
 
 dotenv.config();
 
+console.log(process.env);
+
 export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
 export const seededPosts = [buildPost(1, { authorId: 1 }), buildPost(2, { authorId: 2 })];
 
