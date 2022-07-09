@@ -51,10 +51,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: cimg/node:lts
-      - image: cimg/postgres:12.1-alpine-ram
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD # context / project UI env-var reference
+      - image: cimg/postgres:14.2
         environment:
           POSTGRES_PASSWORD: 'postgres'
           POSTGRES_DB: prisma-mock
@@ -71,9 +68,6 @@ jobs:
     docker:
       - image: cimg/node:lts
       - image: cimg/mysql:8.0
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD # context / project UI env-var reference
         environment:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: prisma-mock
@@ -84,6 +78,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
+      - run: sed -i 's/postgres/mysql/g' ~/repo/prisma/schema.prisma
       - run: npx prisma migrate deploy
       - run: yarn test
   release:
