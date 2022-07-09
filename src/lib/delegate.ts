@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper';
 
 import { FindArgs, UpsertArgs } from './types';
 import { DeleteArgs, create, findOne, findMany, deleteMany, UpdateArgs, updateMany } from './operations';
-import { Data, Delegates } from './prismock';
+import { Data, Delegates, Properties } from './prismock';
 
 export type Item = Record<string, unknown>;
 
@@ -33,7 +33,7 @@ export type Delegate = {
   findFirstOrThrow: (args: FindArgs) => Promise<Item>;
   count: (args: FindArgs) => Promise<number>;
   model: DMMF.Model;
-  properties: DelegateProperties;
+  getProperties: () => DelegateProperties;
   getItems: () => Item[];
 };
 
@@ -53,7 +53,7 @@ export function generateDelegate(
   model: DMMF.Model,
   data: Data,
   name: string,
-  properties: DelegateProperties,
+  properties: Properties,
   delegates: Delegates,
   onChange: (items: Item[]) => void,
 ): Delegate {
@@ -118,8 +118,8 @@ export function generateDelegate(
       return Promise.resolve(found.length);
     },
     model,
-    properties,
     getItems: () => data[name],
+    getProperties: () => properties[name],
   });
 
   return delegate;

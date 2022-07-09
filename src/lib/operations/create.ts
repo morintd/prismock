@@ -56,7 +56,7 @@ export function createDefaultValues(fields: DMMF.Field[], properties: DelegatePr
 }
 
 export function create(item: Item, delegate: Delegate, onChange: (items: Item[]) => void) {
-  const created = { ...createDefaultValues(delegate.model.fields, delegate.properties), ...item };
+  const created = { ...createDefaultValues(delegate.model.fields, delegate.getProperties()), ...item };
   onChange([...delegate.getItems(), created]);
 
   return created as Item;

@@ -61,7 +61,7 @@ export async function generatePrismock(options: Options = {}) {
     };
 
     Object.assign(delegates, {
-      [name]: generateDelegate(model, data, name, properties[name], delegates, (items) => {
+      [name]: generateDelegate(model, data, name, properties, delegates, (items) => {
         Object.assign(data, { [name]: items });
       }),
     });

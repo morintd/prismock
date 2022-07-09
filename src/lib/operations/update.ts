@@ -149,7 +149,7 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
 
     if ((isCreating || d[field.name] === null) && (d[field.name] === null || d[field.name] === undefined)) {
       if (field.hasDefaultValue) {
-        const defaultValue = calculateDefaultFieldValue(field, current.properties);
+        const defaultValue = calculateDefaultFieldValue(field, current.getProperties());
         if (defaultValue !== undefined && !d[field.name]) Object.assign(d, { [field.name]: defaultValue });
       } else if (field.kind !== 'object') Object.assign(d, Object.assign(Object.assign({}, d), { [field.name]: null }));
     }
