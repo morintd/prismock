@@ -14,6 +14,7 @@ export type PrismockClient = PrismaClient & {
 export function generateClient(delegates: Record<string, Delegate>, getData: GetData, setData: SetData) {
   return {
     $connect: () => Promise.resolve(),
+    $disconnect: () => Promise.resolve(),
     getData,
     setData,
     ...delegates,
