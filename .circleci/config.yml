@@ -71,6 +71,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
+      - run: yarn build
       - run: npx semantic-release
 workflows:
   master_deploy:
