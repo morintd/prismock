@@ -1,10 +1,11 @@
 import { exec } from 'child_process';
 
 import { Post, Prisma, Role, User } from '@prisma/client';
+import dotenv from 'dotenv';
 
 import { PrismockClient } from '../src/lib/client';
 
-process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/prisma-mock?schema=public';
+dotenv.config();
 
 export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
 export const seededPosts = [buildPost(1, { authorId: 1 }), buildPost(2, { authorId: 2 })];

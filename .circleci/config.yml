@@ -47,11 +47,11 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run: yarn tsc
-  unit:
+  test_postgres:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:lts
-      - image: circleci/postgres:12.1-alpine-ram
+      - image: cimg/node:lts
+      - image: cimg/postgres:12.1-alpine-ram
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD # context / project UI env-var reference
@@ -61,6 +61,26 @@ jobs:
           POSTGRES_USER: postgres
     environment:
       DATABASE_URL: postgresql://postgres:postgres@localhost/prisma-mock
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: npx prisma migrate deploy
+      - run: yarn test
+  test_mysql:
+    working_directory: ~/repo
+    docker:
+      - image: cimg/node:lts
+      - image: cimg/mysql:8.0
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD # context / project UI env-var reference
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: prisma-mock
+          MYSQL_USER: mysql
+          MYSQL_PASSWORD: mysql
+    environment:
+      DATABASE_URL: mysql://mysql:mysql@localhost:3306/prisma-mock
     steps:
       - attach_workspace:
           at: ~/repo
@@ -102,7 +122,10 @@ workflows:
       - tsc:
           requires:
             - install
-      - unit:
+      - test_mysql:
+          requires:
+            - install
+      - test_postgres:
           requires:
             - install
   renovate_verify:
@@ -119,6 +142,9 @@ workflows:
       - tsc:
           requires:
             - install_without_modules_cache
-      - unit:
+      - test_mysql:
+          requires:
+            - install_without_modules_cache
+      - test_postgres:
           requires:
             - install_without_modules_cache
