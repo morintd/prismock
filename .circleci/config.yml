@@ -78,7 +78,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
-      - run: sed -i 's/postgres/mysql/g' ~/repo/prisma/schema.prisma
+      - run: sed -i 's/postgresql/mysql/g' ~/repo/prisma/schema.prisma
       - run: npx prisma migrate deploy
       - run: yarn test
   release:
