@@ -74,7 +74,7 @@ jobs:
           MYSQL_USER: mysql
           MYSQL_PASSWORD: mysql
     environment:
-      DATABASE_URL: mysql://mysql:mysql@localhost:3306/prisma-mock
+      DATABASE_URL: mysql://root:root@localhost:3306/prisma-mock
     steps:
       - attach_workspace:
           at: ~/repo
