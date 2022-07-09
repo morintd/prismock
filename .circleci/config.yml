@@ -89,7 +89,8 @@ jobs:
               sleep 1
             done
             echo Failed waiting for MySQL && exit 1
-      - run: npx prisma migrate deploy
+      - run: rm -rf ~/repo/prisma/migrations
+      - run: npx prisma migrate dev --name init
       - run: yarn test
   release:
     <<: *setup
