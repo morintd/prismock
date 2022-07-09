@@ -2,14 +2,14 @@ import { DMMF } from '@prisma/generator-helper';
 
 import { FindArgs, UpsertArgs } from './types';
 import { DeleteArgs, create, findOne, findMany, deleteMany, UpdateArgs, updateMany } from './operations';
-import { Data } from './prismock';
+import { Data, Delegates, Properties } from './prismock';
 
 export type Item = Record<string, unknown>;
 
 export type CreateArgs = {
   data: Item;
   include?: Record<string, boolean>;
-  select: Item;
+  select?: Item;
 };
 
 export type CreateManyArgs = {
@@ -32,6 +32,9 @@ export type Delegate = {
   findUniqueOrThrow: (args: FindArgs) => Promise<Item>;
   findFirstOrThrow: (args: FindArgs) => Promise<Item>;
   count: (args: FindArgs) => Promise<number>;
+  model: DMMF.Model;
+  getProperties: () => DelegateProperties;
+  getItems: () => Item[];
 };
 
 export type DelegateProperties = {
@@ -47,71 +50,77 @@ export type DelegateContext = {
 };
 
 export function generateDelegate(
-  models: DMMF.Model[],
   model: DMMF.Model,
-  name: string,
   data: Data,
-  properties: Record<string, DelegateProperties>,
+  name: string,
+  properties: Properties,
+  delegates: Delegates,
+  onChange: (items: Item[]) => void,
 ): Delegate {
-  const context: DelegateContext = { models, model, name, data, properties };
+  const delegate = {} as Delegate;
 
-  return {
+  Object.assign(delegate, {
     delete: (args: DeleteArgs = {}) => {
-      const deleted = deleteMany(data, name, args, context);
+      const deleted = deleteMany(args, delegate, delegates, onChange);
 
       if (deleted.length === 0) return Promise.reject(new Error());
       return Promise.resolve(deleted[0]);
     },
     deleteMany: (args: DeleteArgs = {}) => {
-      const deleted = deleteMany(data, name, args, context);
+      const deleted = deleteMany(args, delegate, delegates, onChange);
       return Promise.resolve({ count: deleted.length });
     },
     update: (args: UpdateArgs) => {
-      const updated = updateMany(data, name, args, context);
+      const updated = updateMany(args, delegate, delegates, onChange);
       return Promise.resolve(updated[0] ?? null);
     },
     updateMany: (args: UpdateArgs) => {
-      const updated = updateMany(data, name, args, context);
+      const updated = updateMany(args, delegate, delegates, onChange);
       return Promise.resolve({ count: updated.length });
     },
     create: (args: CreateArgs) => {
-      return Promise.resolve(create(data, name, properties[name], args.data, context));
+      return Promise.resolve(create(args.data, delegate, onChange));
     },
     createMany: (args: CreateManyArgs) => {
-      args.data.forEach((d) => create(data, name, properties[name], d, context));
+      args.data.forEach((d) => create(d, delegate, onChange));
       return Promise.resolve({ count: args.data.length });
     },
     upsert: (args: UpsertArgs) => {
-      const res = findOne(data[name], args, context);
+      const res = findOne(args, delegate, delegates);
       if (res) {
-        const updated = updateMany(data, name, { ...args, data: args.update }, context);
+        const updated = updateMany({ ...args, data: args.update }, delegate, delegates, onChange);
         return Promise.resolve(updated[0] ?? null);
       } else {
-        return Promise.resolve(create(data, name, properties[name], args.create, context));
+        return Promise.resolve(create(args.create, delegate, onChange));
       }
     },
     findMany: (args: FindArgs = {}) => {
-      return Promise.resolve(findMany(data[name], args, context));
+      return Promise.resolve(findMany(args, delegate, delegates));
     },
     findUnique: (args: FindArgs = {}) => {
-      return Promise.resolve(findOne(data[name], args, context) as Item);
+      return Promise.resolve(findOne(args, delegate, delegates) as Item);
     },
     findFirst: (args: FindArgs = {}) => {
-      return Promise.resolve(findOne(data[name], args, context) as Item);
+      return Promise.resolve(findOne(args, delegate, delegates) as Item);
     },
     findUniqueOrThrow: (args: FindArgs = {}) => {
-      const found = findOne(data[name], args, context);
+      const found = findOne(args, delegate, delegates);
       if (!found) return Promise.reject(new Error());
       return Promise.resolve(found);
     },
     findFirstOrThrow: (args: FindArgs = {}) => {
-      const found = findOne(data[name], args, context);
+      const found = findOne(args, delegate, delegates);
       if (!found) return Promise.reject(new Error());
       return Promise.resolve(found);
     },
     count: (args: FindArgs = {}) => {
-      const found = findMany(data[name], args, context);
+      const found = findMany(args, delegate, delegates);
       return Promise.resolve(found.length);
     },
-  };
+    model,
+    getItems: () => data[name],
+    getProperties: () => properties[name],
+  });
+
+  return delegate;
 }

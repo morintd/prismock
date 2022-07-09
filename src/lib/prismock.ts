@@ -3,7 +3,7 @@ import path from 'path';
 import { DMMF } from '@prisma/generator-helper';
 import { getDMMF, getSchemaSync } from '@prisma/internals';
 
-import { camelize, isAutoIncrement } from './operations';
+import { camelize, isAutoIncrement, omit } from './operations';
 import { Delegate, DelegateProperties, generateDelegate, Item } from './delegate';
 import { generateClient } from './client';
 
@@ -12,6 +12,8 @@ type Options = {
 };
 
 export type Data = Record<string, Item[]>;
+export type Properties = Record<string, DelegateProperties>;
+export type Delegates = Record<string, Delegate>;
 
 async function generateDMMF(schemaPath?: string) {
   const pathToModule = schemaPath ?? require.resolve(path.resolve(process.cwd(), 'prisma/schema.prisma'));
@@ -23,7 +25,8 @@ export async function generatePrismock(options: Options = {}) {
   const { models } = schema.datamodel;
 
   const data: Data = {};
-  const properties: Record<string, DelegateProperties> = {};
+  const properties: Properties = {};
+  const delegates: Delegates = {};
 
   function getData() {
     return data;
@@ -50,16 +53,26 @@ export async function generatePrismock(options: Options = {}) {
     );
   }
 
-  const delegates = models.reduce((accumulator: Record<string, Delegate>, model) => {
+  models.forEach((model) => {
     const name = camelize(model.name);
     data[name] = [];
     properties[name] = {
       increment: {},
     };
 
-    accumulator[name] = generateDelegate(models, model, name, data, properties);
-    return accumulator;
+    Object.assign(delegates, {
+      [name]: generateDelegate(model, data, name, properties, delegates, (items) => {
+        Object.assign(data, { [name]: items });
+      }),
+    });
   }, {});
 
-  return generateClient(delegates, getData, setData);
+  const clientDelegates = Object.entries(delegates).reduce((accumulator, [delegateKey, delegateValue]) => {
+    return {
+      ...accumulator,
+      [delegateKey]: omit(delegateValue, ['model', 'properties', 'getItems']) as Delegate,
+    };
+  }, {} as Delegates);
+
+  return generateClient(clientDelegates, getData, setData);
 }

@@ -1,8 +1,9 @@
 import { DMMF } from '@prisma/generator-helper';
 
 import { FindArgs, FindWhereFieldArg } from '../../types';
-import { DelegateContext, DelegateProperties, Item } from '../../delegate';
+import { Delegate, DelegateProperties, Item } from '../../delegate';
 import { camelize } from '../../helpers';
+import { Delegates } from '../../prismock';
 
 import { matchMultiple } from './match';
 
@@ -15,18 +16,18 @@ export function findNextIncrement(properties: DelegateProperties, fieldName: str
   return increment;
 }
 
-export function findOne(dataTable: Item[], args: FindArgs, context: DelegateContext) {
-  const found = dataTable.find(where(args.where, context));
+export function findOne(args: FindArgs, current: Delegate, delegates: Delegates) {
+  const found = current.getItems().find(where(args.where, current, delegates));
   if (!found) return null;
 
-  const withIncludes = includes(args, context)(found);
+  const withIncludes = includes(args, current, delegates)(found);
   const withSelect = select(withIncludes, args.select);
 
   return withSelect;
 }
 
-export function where(whereArgs: FindArgs['where'] = {}, context: DelegateContext) {
-  return (item: Record<string, unknown>) => matchMultiple(item, whereArgs, context);
+export function where(whereArgs: FindArgs['where'] = {}, current: Delegate, delegates: Delegates) {
+  return (item: Record<string, unknown>) => matchMultiple(item, whereArgs, current, delegates);
 }
 
 export function paginate(items: Item[], skip?: number, take?: number) {
@@ -34,38 +35,31 @@ export function paginate(items: Item[], skip?: number, take?: number) {
   return items.slice(skip ?? 0, take);
 }
 
-export function includes(args: FindArgs, context: DelegateContext) {
+export function includes(args: FindArgs, current: Delegate, delegates: Delegates) {
   return (item: Item) => {
     if ((!args?.include && !args?.select) || !item) return item;
     let newItem = item;
     const obj = args?.select ?? args.include!;
 
     Object.keys(obj).forEach((key) => {
-      const schema = context.model.fields.find((field) => field.name === key);
+      const schema = current.model.fields.find((field) => field.name === key);
       if (!schema?.relationName) return;
 
       const delegateName = camelize(schema.type);
-      const contextInvolved: DelegateContext = {
-        ...context,
-        model: context.models.find((model) => {
-          return model.name === delegateName;
-        })!,
-        name: delegateName,
-      };
-      const dataTable = contextInvolved.data[contextInvolved.name];
+      const delegate = delegates[delegateName];
 
       let subArgs = obj[key] === true ? {} : obj[key];
 
       subArgs = Object.assign(Object.assign({}, subArgs), {
-        where: Object.assign(Object.assign({}, (subArgs as any).where), getFieldRelationshipWhere(item, schema, context)),
+        where: Object.assign(Object.assign({}, (subArgs as any).where), getFieldRelationshipWhere(item, schema, delegates)),
       });
 
       if (schema.isList) {
         newItem = Object.assign(Object.assign({}, newItem), {
-          [key]: findMany(dataTable, subArgs as Record<string, boolean>, contextInvolved),
+          [key]: findMany(subArgs as Record<string, boolean>, delegate, delegates),
         });
       } else {
-        newItem = Object.assign(Object.assign({}, newItem), { [key]: findOne(dataTable, subArgs as any, contextInvolved) });
+        newItem = Object.assign(Object.assign({}, newItem), { [key]: findOne(subArgs as any, delegate, delegates) });
       }
     });
 
@@ -83,11 +77,12 @@ export function select(item: Item, selectArgs: FindArgs['select']) {
   }, {} as Item);
 }
 
-export const getJoinField = (field: DMMF.Field, context: DelegateContext) => {
-  const joinmodel = context.models.find((model) => {
-    return model.name === field.type;
+export const getJoinField = (field: DMMF.Field, delegates: Delegates) => {
+  const joinDelegate = Object.values(delegates).find((delegate) => {
+    return delegate.model.name === field.type;
   });
-  const joinfield = joinmodel?.fields.find((f) => {
+
+  const joinfield = joinDelegate?.model.fields.find((f) => {
     return f.relationName === field.relationName;
   });
 
@@ -97,10 +92,10 @@ export const getJoinField = (field: DMMF.Field, context: DelegateContext) => {
 export const getFieldRelationshipWhere = (
   item: Item,
   field: DMMF.Field,
-  context: DelegateContext,
+  delegates: Delegates,
 ): Record<string, FindWhereFieldArg> => {
   if (field.relationToFields?.length === 0) {
-    field = getJoinField(field, context)!;
+    field = getJoinField(field, delegates)!;
     return {
       [field.relationFromFields![0]]: item[field.relationToFields![0]] as FindWhereFieldArg,
     };
@@ -110,12 +105,12 @@ export const getFieldRelationshipWhere = (
   };
 };
 
-export function findMany(dataTable: Item[], args: FindArgs, context: DelegateContext) {
+export function findMany(args: FindArgs, current: Delegate, delegates: Delegates) {
   const found = paginate(
-    dataTable.reduce((accumulator: Item[], currentValue) => {
-      const satisfyWhere = where(args.where, context)(currentValue);
+    current.getItems().reduce((accumulator: Item[], currentValue) => {
+      const satisfyWhere = where(args.where, current, delegates)(currentValue);
       if (satisfyWhere) {
-        const withIncludes = includes(args, context)(currentValue);
+        const withIncludes = includes(args, current, delegates)(currentValue);
         const withSelect = select(withIncludes, args.select);
         accumulator.push(withSelect);
       }

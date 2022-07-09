@@ -1,10 +1,9 @@
-import { Data } from '../prismock';
-import { Item, DelegateContext } from '../delegate';
+import { Delegates } from '../prismock';
+import { Item, Delegate } from '../delegate';
 import { FindWhereArgs, SelectArgs } from '../types';
 import { camelize } from '../helpers';
 
 import { getJoinField, where } from './find';
-import { updateMany } from './update';
 
 export type DeleteArgs = {
   select?: SelectArgs | null;
@@ -17,10 +16,10 @@ export type DeletionMap = {
   withoutDeleted: Item[];
 };
 
-export function deleteMany(data: Data, name: string, args: DeleteArgs, context: DelegateContext) {
-  const { toDelete, withoutDeleted } = data[name].reduce(
+export function deleteMany(args: DeleteArgs, current: Delegate, delegates: Delegates, onChange: (items: Item[]) => void) {
+  const { toDelete, withoutDeleted } = current.getItems().reduce(
     (accumulator: DeletionMap, currentValue: Item) => {
-      const shouldDelete = where(args.where, context)(currentValue);
+      const shouldDelete = where(args.where, current, delegates)(currentValue);
 
       if (shouldDelete) {
         return {
@@ -37,49 +36,31 @@ export function deleteMany(data: Data, name: string, args: DeleteArgs, context: 
     { toDelete: [], withoutDeleted: [] },
   );
 
-  Object.assign(data, {
-    [name]: withoutDeleted,
-  });
+  onChange(withoutDeleted);
 
   toDelete.forEach((item: Item) => {
-    context.model.fields.forEach((field) => {
-      const joinfield = getJoinField(field, context);
+    current.model.fields.forEach((field) => {
+      const joinfield = getJoinField(field, delegates);
       if (!joinfield) return;
 
       const delegateName = camelize(field.type);
-      const contextInvolved: DelegateContext = {
-        ...context,
-        model: context.models.find((model) => {
-          return model.name === delegateName;
-        })!,
-        name: delegateName,
-      };
+      const delegate = delegates[delegateName];
 
       if (joinfield.relationOnDelete === 'SetNull') {
-        updateMany(
-          data,
-          delegateName,
-          {
-            where: {
-              [joinfield.relationFromFields![0]]: item[joinfield.relationToFields![0]],
-            } as any,
-            data: {
-              [joinfield.relationFromFields![0]]: null,
-            },
+        delegate.updateMany({
+          where: {
+            [joinfield.relationFromFields![0]]: item[joinfield.relationToFields![0]],
+          } as any,
+          data: {
+            [joinfield.relationFromFields![0]]: null,
           },
-          contextInvolved,
-        );
+        });
       } else if (joinfield.relationOnDelete === 'Cascade') {
-        deleteMany(
-          data,
-          delegateName,
-          {
-            where: {
-              [joinfield.relationFromFields![0]]: item[joinfield.relationToFields![0]],
-            } as any,
-          },
-          contextInvolved,
-        );
+        delegate.deleteMany({
+          where: {
+            [joinfield.relationFromFields![0]]: item[joinfield.relationToFields![0]],
+          } as any,
+        });
       }
     });
   });

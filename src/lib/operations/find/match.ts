@@ -1,23 +1,24 @@
 import { Prisma } from '@prisma/client';
 
-import { DelegateContext, Item } from '../../delegate';
+import { Delegate, Item } from '../../delegate';
 import { camelize, shallowCompare } from '../../helpers';
+import { Delegates } from '../../prismock';
 import { FindWhereArgs } from '../../types';
 
 import { getFieldRelationshipWhere } from './find';
 
-export const matchMultiple = (item: Item, where: FindWhereArgs, context: DelegateContext) => {
+export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegate, delegates: Delegates) => {
   const matchAnd = (item: Record<string, unknown>, where: FindWhereArgs[]) => {
-    return where.filter((child) => matchMultiple(item, child, context)).length === where.length;
+    return where.filter((child) => matchMultiple(item, child, current, delegates)).length === where.length;
   };
 
   const matchOr = (item: Item, where: FindWhereArgs[]) => {
-    return where.some((child) => matchMultiple(item, child, context));
+    return where.some((child) => matchMultiple(item, child, current, delegates));
   };
 
   const matchFnc = (where: FindWhereArgs) => (item: Record<string, unknown>) => {
     if (where) {
-      return matchMultiple(item, where, context);
+      return matchMultiple(item, where, current, delegates);
     }
     return true;
   };
@@ -44,7 +45,7 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, context: Delegat
       }
     } else {
       if (typeof filter === 'object') {
-        const info = context.model.fields.find((field) => field.name === child);
+        const info = current.model.fields.find((field) => field.name === child);
         if (info?.relationName) {
           const childName = camelize(info.type);
           let childWhere: any = {};
@@ -57,12 +58,13 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, context: Delegat
           } else {
             childWhere = filter;
           }
-          const res = context.data[childName]!.filter(
-            matchFnc(Object.assign(Object.assign({}, childWhere), getFieldRelationshipWhere(item, info, context))),
+          // const res = delegates[childName].findMany({ ...childWhere, ...getFieldRelationshipWhere(item, info) });
+          const res = delegates[childName]!.getItems().filter(
+            matchFnc(Object.assign(Object.assign({}, childWhere), getFieldRelationshipWhere(item, info, delegates))),
           );
           if (filter.every) {
             if (res.length === 0) return false;
-            const all = context.data[childName].filter(matchFnc(getFieldRelationshipWhere(item, info, context)));
+            const all = delegates[childName]!.getItems().filter(matchFnc(getFieldRelationshipWhere(item, info, delegates)));
             return res.length === all.length;
           } else if (filter.some) {
             return res.length > 0;
@@ -72,7 +74,7 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, context: Delegat
           return res.length > 0;
         }
 
-        const idFields = context.model.fields.map((field) => field.isId);
+        const idFields = current.model.fields.map((field) => field.isId);
 
         if (idFields?.length > 1) {
           if (child === idFields.join('_')) {
@@ -80,8 +82,8 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, context: Delegat
           }
         }
 
-        if (context.model.uniqueFields.length > 0) {
-          for (const uniqueField of context.model.uniqueFields) {
+        if (current.model.uniqueFields.length > 0) {
+          for (const uniqueField of current.model.uniqueFields) {
             if (child === uniqueField.join('_')) {
               return shallowCompare(item, filter as FindWhereArgs);
             }

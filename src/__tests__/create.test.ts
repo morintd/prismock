@@ -4,8 +4,6 @@ import { buildUser, resetDb, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/prisma-mock?schema=public';
-
 jest.setTimeout(20000);
 
 describe('create', () => {

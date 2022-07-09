@@ -47,14 +47,11 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run: yarn tsc
-  unit:
+  test_postgres:
     working_directory: ~/repo
     docker:
-      - image: circleci/node:lts
-      - image: circleci/postgres:12.1-alpine-ram
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD # context / project UI env-var reference
+      - image: cimg/node:lts
+      - image: cimg/postgres:14.2
         environment:
           POSTGRES_PASSWORD: 'postgres'
           POSTGRES_DB: prisma-mock
@@ -65,6 +62,35 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run: npx prisma migrate deploy
+      - run: yarn test
+  test_mysql:
+    working_directory: ~/repo
+    docker:
+      - image: cimg/node:lts
+      - image: cimg/mysql:8.0
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: prisma-mock
+          MYSQL_USER: mysql
+          MYSQL_PASSWORD: mysql
+    environment:
+      DATABASE_URL: mysql://root:root@localhost:3306/prisma-mock
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: sed -i 's/postgresql/mysql/g' ~/repo/prisma/schema.prisma
+      - run:
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+      - run: rm -rf ~/repo/prisma/migrations
+      - run: npx prisma migrate dev --name init
       - run: yarn test
   release:
     <<: *setup
@@ -102,7 +128,10 @@ workflows:
       - tsc:
           requires:
             - install
-      - unit:
+      - test_mysql:
+          requires:
+            - install
+      - test_postgres:
           requires:
             - install
   renovate_verify:
@@ -119,6 +148,9 @@ workflows:
       - tsc:
           requires:
             - install_without_modules_cache
-      - unit:
+      - test_mysql:
+          requires:
+            - install_without_modules_cache
+      - test_postgres:
           requires:
             - install_without_modules_cache
