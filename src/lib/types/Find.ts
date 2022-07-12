@@ -10,17 +10,6 @@ export type FindWhereFieldRelationArg = {
 };
 
 export type FindWhereFieldArg =
-  | Prisma.BoolFilter
-  | Prisma.IntFilter
-  | Prisma.StringFilter
-  | Prisma.BigIntFilter
-  | Prisma.FloatFilter
-  | Prisma.DecimalFilter
-  | Prisma.Decimal
-  | Prisma.DecimalJsLike
-  | Prisma.DateTimeFilter
-  | Prisma.BytesNullableFilter
-  | Prisma.JsonFilter
   | Buffer
   | null
   | Date
