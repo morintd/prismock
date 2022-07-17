@@ -48,6 +48,12 @@ export function buildPost(id: number, post: Partial<Post> & { authorId: number }
     id,
     title: `title${id}`,
     createdAt: new Date(),
+    imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
     ...post,
   };
+}
+
+export function isUUID(maybeUUID: string) {
+  const regexUUID = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+  return regexUUID.test(maybeUUID);
 }

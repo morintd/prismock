@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient, Role, User } from '@prisma/client';
 
-import { buildUser, resetDb, simulateSeed } from '../../testing';
+import { buildUser, isUUID, resetDb, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -65,14 +65,16 @@ describe('create', () => {
       const realPost = await prisma.post.create({ data: { title: 'title3', authorId: 1 } });
       const mockPost = await prismock.post.create({ data: { title: 'title3', authorId: 1 } });
 
-      const { createdAt: realPostCreatedAt, ...expectedRealPost } = realPost;
-      const { createdAt: mockPostCreatedAt, ...expectedMockPost } = mockPost;
+      const { createdAt: realPostCreatedAt, imprint: realImprint, ...expectedRealPost } = realPost;
+      const { createdAt: mockPostCreatedAt, imprint: mockImprint, ...expectedMockPost } = mockPost;
 
       expect(expectedRealPost).toEqual(expected);
       expect(realPostCreatedAt).toBeInstanceOf(Date);
+      expect(isUUID(realImprint)).toBe(true);
 
       expect(expectedMockPost).toEqual(expected);
       expect(mockPostCreatedAt).toBeInstanceOf(Date);
+      expect(isUUID(mockImprint)).toBe(true);
     });
 
     it('Should create with increment', () => {

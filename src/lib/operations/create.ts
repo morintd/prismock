@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
 
 import { Delegate, DelegateProperties, Item } from '../delegate';
+import { uuid } from '../helpers';
 
 import { findNextIncrement } from './find';
 
@@ -23,6 +24,12 @@ const defaultFieldhandlers: [
     (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name === 'now',
     () => {
       return new Date();
+    },
+  ],
+  [
+    (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name === 'uuid',
+    () => {
+      return uuid();
     },
   ],
 ];

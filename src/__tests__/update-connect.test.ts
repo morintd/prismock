@@ -38,11 +38,11 @@ describe('update (connect)', () => {
   });
 
   it('Should store connected', async () => {
-    const expected = seededPosts.map(({ createdAt, ...post }) => ({ ...post, authorId: 1 }));
+    const expected = seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: 1 }));
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 
-    expect(stored.map(({ createdAt, ...post }) => post)).toEqual(expected);
-    expect(mockStored.map(({ createdAt, ...post }) => post)).toEqual(expected);
+    expect(stored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
+    expect(mockStored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
   });
 });

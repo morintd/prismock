@@ -57,8 +57,8 @@ describe('updateMany (nested/multiple)', () => {
   it('Should store updated', async () => {
     const expected = [buildPost(1, { createdAt: date, authorId: 1 }), buildPost(2, { createdAt: date, authorId: 1 })];
 
-    const stored = (await prisma.post.findMany()).sort((a, b) => a.id - b.id);
-    const mockStored = prismock.getData().post;
+    const stored = (await prisma.post.findMany()).sort((a, b) => a.id - b.id).map(({ imprint, ...post }) => post);
+    const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
 
     expect(stored).toEqual(expected);
     expect(mockStored).toEqual(expected);
