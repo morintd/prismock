@@ -24,6 +24,7 @@ CREATE TABLE "Post" (
     "title" VARCHAR(255) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "authorId" INTEGER NOT NULL,
+    "imprint" TEXT NOT NULL,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );

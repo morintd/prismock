@@ -58,12 +58,12 @@ describe('update (create)', () => {
       buildPost(1, { authorId: 1 }),
       buildPost(2, { authorId: 2 }),
       buildPost(3, { authorId: 1, title: 'nested' }),
-    ].map(({ createdAt, ...post }) => post);
+    ].map(({ createdAt, imprint, ...post }) => post);
 
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 
-    expect(stored.map(({ createdAt, ...post }) => post)).toEqual(expected);
-    expect(mockStored.map(({ createdAt, ...post }) => post)).toEqual(expected);
+    expect(stored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
+    expect(mockStored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
   });
 });

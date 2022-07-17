@@ -1,6 +1,6 @@
 import { Post, Prisma, PrismaClient, User } from '@prisma/client';
 
-import { buildPost, resetDb, seededUsers, simulateSeed } from '../../testing';
+import { buildPost, isUUID, resetDb, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -63,7 +63,7 @@ describe('find', () => {
     });
 
     it('Should return item with includes', async () => {
-      const { createdAt: expectedPostCreatedAt, ...expectedPost } = buildPost(1, { authorId: 1 });
+      const { createdAt: expectedPostCreatedAt, imprint: expectedImprint, ...expectedPost } = buildPost(1, { authorId: 1 });
       const { Post: realUserPost, ...realUser } = (await prisma.user.findFirst({
         where: { email: 'user1@company.com' },
         include: { Post: true },
@@ -77,16 +77,26 @@ describe('find', () => {
       expect(realUserPost.length).toBe(1);
       expect(mockUserPost.length).toBe(1);
 
-      const { createdAt: realUserPostCreatedAt, ...expectedRealUserPost } = realUserPost[0];
-      const { createdAt: mockUserPostCreatedAt, ...expectedMockUserPost } = mockUserPost[0];
+      const {
+        createdAt: realUserPostCreatedAt,
+        imprint: expectedRealUserPostImprint,
+        ...expectedRealUserPost
+      } = realUserPost[0];
+      const {
+        createdAt: mockUserPostCreatedAt,
+        imprint: expectedMockUserImprint,
+        ...expectedMockUserPost
+      } = mockUserPost[0];
 
       expect(realUser).toEqual(seededUsers[0]);
       expect(expectedRealUserPost).toEqual(expectedPost);
       expect(realUserPostCreatedAt).toBeInstanceOf(Date);
+      expect(isUUID(expectedRealUserPostImprint)).toBe(true);
 
       expect(mockUser).toEqual(seededUsers[0]);
       expect(expectedMockUserPost).toEqual(expectedPost);
       expect(mockUserPostCreatedAt).toBeInstanceOf(Date);
+      expect(isUUID(expectedMockUserImprint)).toBe(true);
     });
 
     describe('match', () => {

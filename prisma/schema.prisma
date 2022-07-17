@@ -36,4 +36,5 @@ model Post {
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   authorId  Int
+  imprint   String   @default(uuid())
 }
