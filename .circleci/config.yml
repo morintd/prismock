@@ -61,8 +61,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
-      - run: rm -rf ~/repo/prisma/migrations
-      - run: npx prisma migrate dev --name init
+      - run: npx prisma migrate deploy
+      - run: npx prisma generate
       - run: yarn test
   test_mysql:
     working_directory: ~/repo
