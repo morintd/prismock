@@ -235,9 +235,9 @@ prismock.getData(); // { user: [] }
 | --------------- | ----- |
 | autoincrement() | ✔     |
 | now()           | ✔     |
+| uuid()          | ✔     |
 | auto()          | ⛔    |
 | cuid()          | ⛔    |
-| uuid()          | ⛔    |
 | dbgenerated     | ⛔    |
 
 ## Referential actions
