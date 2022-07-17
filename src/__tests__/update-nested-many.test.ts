@@ -69,7 +69,9 @@ describe('updateMany (nested)', () => {
   });
 
   it('Should store updated', async () => {
-    const expected = [buildPost(1, { createdAt: date, authorId: 1 }), buildPost(2, { authorId: 1 })];
+    const expected = [buildPost(1, { createdAt: date, authorId: 1 }), buildPost(2, { authorId: 1 })].map(
+      ({ imprint, ...post }) => post,
+    );
 
     const stored = (await prisma.post.findMany()).sort((a, b) => a.id - b.id).map(({ imprint, ...post }) => post);
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
@@ -77,7 +79,7 @@ describe('updateMany (nested)', () => {
     expect(stored[0]).toEqual(expected[0]);
     expect(mockStored[0]).toEqual(expected[0]);
 
-    const { createdAt, imprint, ...post } = expected[1];
+    const { createdAt, ...post } = expected[1];
     const { createdAt: realCreatedAt, ...realPost } = stored[1];
     const { createdAt: mockCreatedAt, ...mockPost } = mockStored[1];
 
