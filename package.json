@@ -38,7 +38,7 @@
     "@types/node": "16.11.59",
     "@typescript-eslint/eslint-plugin": "5.38.0",
     "@typescript-eslint/parser": "5.38.0",
-    "cspell": "6.10.0",
+    "cspell": "6.10.1",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.0.2",
     "eslint": "8.23.1",
