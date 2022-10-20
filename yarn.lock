@@ -3798,10 +3798,10 @@ eslint-plugin-react@7.31.10:
     semver "^6.3.0"
     string.prototype.matchall "^4.0.7"
 
-eslint-plugin-testing-library@5.8.0:
-  version "5.8.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-testing-library/-/eslint-plugin-testing-library-5.8.0.tgz#0faed7695ba76c0021fde3aeda9b90748995d2f2"
-  integrity sha512-QzOKgu4x8WmNq4LdbHb8lz5nBR+KX5kSg5VvIdr/5f1BvHx2IoO1B/tgDa5pD/ng2LsiQ0/HIH6gsUuxpbcrkQ==
+eslint-plugin-testing-library@5.9.0:
+  version "5.9.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-testing-library/-/eslint-plugin-testing-library-5.9.0.tgz#772243d6848c9ac1a22ca4f742a1fe5fd378a052"
+  integrity sha512-iwPz6KNf/qc4rHMGaxn2vmS5snzuOqtia00D0FC2Wcp1xWM3J9w0/YzzrPv/UFHhLG0CwfQodyKmqL5+c6hGgg==
   dependencies:
     "@typescript-eslint/utils" "^5.13.0"
 
