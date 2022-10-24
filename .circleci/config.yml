@@ -69,8 +69,8 @@ jobs:
       - image: cimg/node:lts
       - image: circleci/mongo:4.4
         environment:
-          MONGO_USERNAME: mongouser
-          MONGO_PASSWORD: mongopass
+          MONGO_USERNAME: admin
+          MONGO_PASSWORD: admin
     environment:
       DATABASE_URL: mongodb://admin:admin@localhost:27017/prismock
     steps:
