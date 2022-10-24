@@ -170,6 +170,9 @@ workflows:
       - test_postgres:
           requires:
             - install
+      - test_mongodb:
+          requires:
+            - install
   renovate_verify:
     jobs:
       - install_without_modules_cache:
@@ -188,5 +191,8 @@ workflows:
           requires:
             - install_without_modules_cache
       - test_postgres:
+          requires:
+            - install_without_modules_cache
+      - test_mongodb:
           requires:
             - install_without_modules_cache
