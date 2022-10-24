@@ -98,6 +98,9 @@ jobs:
             npm -v
             mongo --version
             mongo localhost --eval "db.version()"
+      - run:
+          name: Connect to DB
+          command: mongo --username admin --password admin --eval "printjson(db.apikeys.count());" prismock
       # - run: mongo mongodb://localhost:27017 -u admin -p admin --eval "use prismock"
       - run: rm ~/repo/prisma/schema.prisma && cp ~/repo/testing/mongodb/schema.prisma ~/repo/prisma/
       - run: rm ~/repo/testing/index.ts && cp ~/repo/testing/index.mongodb.ts ~/repo/testing/index.ts
