@@ -20,7 +20,7 @@ export function simulateSeed(prismock: PrismockClient) {
 
 export async function resetDb() {
   return new Promise<void>((resolve, reject) => {
-    exec('mongosh mongodb://admin:admin@localhost:27017 prismock --eval "db.dropDatabase()"', (error) => {
+    exec('mongosh mongodb://admin:admin@localhost:27017/prismock --eval "db.dropDatabase()"', (error) => {
       if (error) reject(error);
       resolve();
     });
