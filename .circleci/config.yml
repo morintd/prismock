@@ -75,7 +75,7 @@ jobs:
           MONGODB_ROOT_PASSWORD: admin
           MONGODB_REPLICA_SET_KEY: replicasetkey123
     environment:
-      DATABASE_URL: mongodb://admin:admin@localhost:27017/prismock
+      DATABASE_URL: mongodb://admin:admin@localhost:27017/prismock?authSource=admin
     steps:
       - attach_workspace:
           at: ~/repo
