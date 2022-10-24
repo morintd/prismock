@@ -76,6 +76,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
+      - run: echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
       - run:
           name: MongoDB Install
           command: |
@@ -164,12 +165,12 @@ workflows:
       - tsc:
           requires:
             - install
-      - test_mysql:
-          requires:
-            - install
-      - test_postgres:
-          requires:
-            - install
+      # - test_mysql:
+      #     requires:
+      #       - install
+      # - test_postgres:
+      #     requires:
+      #       - install
       - test_mongodb:
           requires:
             - install
