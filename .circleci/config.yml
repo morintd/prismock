@@ -165,18 +165,18 @@ workflows:
                 - master
                 - /renovate.*/
                 - /custom-renovate.*/
-      # - lint:
-      #     requires:
-      #       - install
-      # - tsc:
-      #     requires:
-      #       - install
-      # - test_mysql:
-      #     requires:
-      #       - install
-      # - test_postgres:
-      #     requires:
-      #       - install
+      - lint:
+          requires:
+            - install
+      - tsc:
+          requires:
+            - install
+      - test_mysql:
+          requires:
+            - install
+      - test_postgres:
+          requires:
+            - install
       - test_mongodb:
           filters:
             branches:
