@@ -97,8 +97,8 @@ jobs:
           command: |
             node -v
             npm -v
-            mongo --version
-            mongo localhost --eval "db.version()"
+            mongosh --version
+            mongosh localhost --eval "db.version()"
       - run:
           name: Connect to DB
           command: mongosh mongodb://admin:admin@localhost:27017 --eval "use prismock"
