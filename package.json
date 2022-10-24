@@ -20,7 +20,8 @@
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
     "lint": "eslint src --ext .ts",
-    "test": "jest --maxWorkers=1",
+    "test:mongodb": "jest testing/mongodb/ --maxWorkers=1",
+    "test": "jest src/ --maxWorkers=1",
     "db:reset": "prisma migrate reset -f",
     "test:coverage": "jest --coverage",
     "prepare": "husky install"
