@@ -61,9 +61,52 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
-      - run: npx prisma migrate deploy
-      - run: npx prisma generate
+      - run: npx prisma migrate dev --name init
       - run: yarn test
+  test_mongodb:
+    working_directory: ~/repo
+    docker:
+      - image: cimg/node:lts
+      - image: bitnami/mongodb:6.0.2
+        environment:
+          MONGODB_ADVERTISED_HOSTNAME: 127.0.0.1
+          MONGODB_REPLICA_SET_MODE: primary
+          MONGODB_ROOT_USER: admin
+          MONGODB_ROOT_PASSWORD: admin
+          MONGODB_REPLICA_SET_KEY: replicasetkey123
+    environment:
+      DATABASE_URL: mongodb://admin:admin@localhost:27017/prismock?authSource=admin
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run: echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+      - run:
+          name: MongoDB Install
+          command: |
+            wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+            sudo apt-get update
+            sudo apt-get install -y mongodb-mongosh
+      - setup_remote_docker
+      - run:
+          name: Waiting for Mongo
+          command: dockerize -wait tcp://localhost:27017 -timeout 1m
+      - checkout
+      - run:
+          name: Get versions
+          command: |
+            node -v
+            npm -v
+            mongosh --version
+            mongosh localhost --eval "db.version()"
+      - run:
+          name: Connect to DB
+          command: mongosh mongodb://admin:admin@localhost:27017 --eval "use prismock"
+      - run: rm ~/repo/prisma/schema.prisma && cp ~/repo/testing/mongodb/schema.prisma ~/repo/prisma/
+      - run: rm ~/repo/testing/index.ts && cp ~/repo/testing/index.mongodb.ts ~/repo/testing/index.ts
+      - run: npx prisma db push
+      - run: npx prisma db seed
+      - run: yarn test:mongodb
   test_mysql:
     working_directory: ~/repo
     docker:
@@ -90,7 +133,6 @@ jobs:
               sleep 1
             done
             echo Failed waiting for MySQL && exit 1
-      - run: rm -rf ~/repo/prisma/migrations
       - run: npx prisma migrate dev --name init
       - run: yarn test
   release:
@@ -135,6 +177,18 @@ workflows:
       - test_postgres:
           requires:
             - install
+      - test_mongodb:
+          filters:
+            branches:
+              ignore:
+                - develop
+                - release
+                - hotfix
+                - master
+                - /renovate.*/
+                - /custom-renovate.*/
+          requires:
+            - install
   renovate_verify:
     jobs:
       - install_without_modules_cache:
@@ -153,5 +207,8 @@ workflows:
           requires:
             - install_without_modules_cache
       - test_postgres:
+          requires:
+            - install_without_modules_cache
+      - test_mongodb:
           requires:
             - install_without_modules_cache

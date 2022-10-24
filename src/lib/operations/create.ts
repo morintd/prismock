@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
+import { ObjectId } from 'bson';
 
 import { Delegate, DelegateProperties, Item } from '../delegate';
 import { uuid } from '../helpers';
@@ -30,6 +31,12 @@ const defaultFieldhandlers: [
     (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name === 'uuid',
     () => {
       return uuid();
+    },
+  ],
+  [
+    (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name === 'auto',
+    () => {
+      return new ObjectId().toString();
     },
   ],
 ];
