@@ -71,6 +71,8 @@ jobs:
         environment:
           MONGO_USERNAME: admin
           MONGO_PASSWORD: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin
+          MONGO_INITDB_ROOT_USERNAME: admin
     environment:
       DATABASE_URL: mongodb://admin:admin@localhost:27017/prismock
     steps:
@@ -150,7 +152,29 @@ workflows:
             - install
   develop_test:
     jobs:
-      - install:
+      # - install:
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - develop
+      #           - release
+      #           - hotfix
+      #           - master
+      #           - /renovate.*/
+      #           - /custom-renovate.*/
+      # - lint:
+      #     requires:
+      #       - install
+      # - tsc:
+      #     requires:
+      #       - install
+      # - test_mysql:
+      #     requires:
+      #       - install
+      # - test_postgres:
+      #     requires:
+      #       - install
+      - test_mongodb:
           filters:
             branches:
               ignore:
@@ -160,21 +184,8 @@ workflows:
                 - master
                 - /renovate.*/
                 - /custom-renovate.*/
-      - lint:
-          requires:
-            - install
-      - tsc:
-          requires:
-            - install
-      # - test_mysql:
-      #     requires:
-      #       - install
-      # - test_postgres:
-      #     requires:
-      #       - install
-      - test_mongodb:
-          requires:
-            - install
+          # requires:
+          #   - install
   renovate_verify:
     jobs:
       - install_without_modules_cache:
