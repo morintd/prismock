@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, Role, User } from '@prisma/client';
+import { PrismaClient, Role, User } from '@prisma/client';
 
 import { formatEntries, formatEntry, resetDb, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';

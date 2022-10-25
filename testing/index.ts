@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 
-import { Post, Prisma, Role, User } from '@prisma/client';
+import { Post, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 
 import { PrismockClient } from '../src/lib/client';
