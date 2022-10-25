@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { buildUser, resetDb, seededUsers, simulateSeed } from '../../testing';
+import { buildUser, formatEntries, formatEntry, resetDb, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -41,8 +41,8 @@ describe('upsert', () => {
       const realUser = realUserResponse;
       const mockUser = mockUserResponse;
 
-      expect(realUser).toEqual(expected);
-      expect(mockUser).toEqual(expected);
+      expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
     });
 
     it('Should store updated', async () => {
@@ -50,8 +50,8 @@ describe('upsert', () => {
       const stored = (await prisma.user.findMany()).sort((a, b) => a.id - b.id);
       const mockStored = prismock.getData().user;
 
-      expect(stored).toEqual(expectedStored);
-      expect(mockStored).toEqual(expectedStored);
+      expect(formatEntries(stored)).toEqual(formatEntries(expectedStored));
+      expect(formatEntries(mockStored)).toEqual(formatEntries(expectedStored));
     });
   });
 
@@ -76,8 +76,8 @@ describe('upsert', () => {
     it('Should update existing', () => {
       const expected = buildUser(4);
 
-      expect(realUser).toEqual(expected);
-      expect(mockUser).toEqual(expected);
+      expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
     });
 
     it('Should store updated', async () => {
@@ -85,8 +85,8 @@ describe('upsert', () => {
       const stored = (await prisma.user.findMany()).sort((a, b) => a.id - b.id);
       const mockStored = prismock.getData().user;
 
-      expect(stored).toEqual(expectedStored);
-      expect(mockStored).toEqual(expectedStored);
+      expect(formatEntries(stored)).toEqual(formatEntries(expectedStored));
+      expect(formatEntries(mockStored)).toEqual(formatEntries(expectedStored));
     });
   });
 });

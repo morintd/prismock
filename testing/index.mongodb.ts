@@ -58,6 +58,22 @@ export function isUUID(maybeUUID: string) {
   return regexUUID.test(maybeUUID);
 }
 
-export function hasObjectIdStructure(maybeObjectId: string) {
+export function hasObjectIdStructure(maybeObjectId: any) {
   return typeof maybeObjectId === 'string' && maybeObjectId.length === 24;
+}
+
+export function formatEntry(entry: Record<string, unknown>) {
+  if (entry.id) {
+    const { id, ...formated } = entry;
+
+    expect(hasObjectIdStructure(id)).toBe(true);
+
+    return formated;
+  }
+
+  return entry;
+}
+
+export function formatEntries(entries: Array<Record<string, unknown>>) {
+  return entries.map((entry) => formatEntry(entry));
 }

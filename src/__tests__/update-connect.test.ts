@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, seededPosts, seededUsers } from '../../testing';
+import { resetDb, simulateSeed, seededPosts, seededUsers, formatEntries, formatEntry } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -33,8 +33,8 @@ describe('update (connect)', () => {
 
   it('Should return connected', () => {
     const expected = seededUsers[0];
-    expect(realUser).toEqual(expected);
-    expect(mockUser).toEqual(expected);
+    expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+    expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
   });
 
   it('Should store connected', async () => {
@@ -42,7 +42,7 @@ describe('update (connect)', () => {
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 
-    expect(stored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
-    expect(mockStored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
+    expect(formatEntries(stored.map(({ createdAt, imprint, ...post }) => post))).toEqual(formatEntries(expected));
+    expect(formatEntries(mockStored.map(({ createdAt, imprint, ...post }) => post))).toEqual(formatEntries(expected));
   });
 });

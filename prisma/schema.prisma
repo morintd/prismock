@@ -24,7 +24,6 @@ model User {
   banned     Boolean @default(false)
   money      BigInt  @default(0)
   friends    Float   @default(0)
-  grade      Decimal @default(0)
   signal     Bytes?
   parameters Json    @default("{}")
   Post       Post[]

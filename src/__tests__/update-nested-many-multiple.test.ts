@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, buildPost } from '../../testing';
+import { resetDb, simulateSeed, buildUser, buildPost, formatEntries, formatEntry } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -50,8 +50,8 @@ describe('updateMany (nested/multiple)', () => {
 
   it('Should return updated', () => {
     const expected = buildUser(1, { friends: 1 });
-    expect(realUser).toEqual(expected);
-    expect(mockUser).toEqual(expected);
+    expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+    expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
   });
 
   it('Should store updated', async () => {
@@ -62,7 +62,7 @@ describe('updateMany (nested/multiple)', () => {
     const stored = (await prisma.post.findMany()).sort((a, b) => a.id - b.id).map(({ imprint, ...post }) => post);
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
 
-    expect(stored).toEqual(expected);
-    expect(mockStored).toEqual(expected);
+    expect(formatEntries(stored)).toEqual(formatEntries(expected));
+    expect(formatEntries(mockStored)).toEqual(formatEntries(expected));
   });
 });

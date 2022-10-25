@@ -1,6 +1,6 @@
 import { Post, Prisma, PrismaClient, User } from '@prisma/client';
 
-import { buildPost, isUUID, resetDb, seededUsers, simulateSeed } from '../../testing';
+import { buildPost, formatEntries, formatEntry, isUUID, resetDb, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -28,8 +28,8 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       })) as User;
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should return null if doesn't exist", async () => {
@@ -58,8 +58,8 @@ describe('find', () => {
         select: { id: true, email: true },
       })) as User;
 
-      expect(realUser).toEqual(expected);
-      expect(mockUser).toEqual(expected);
+      expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
     });
 
     it('Should return item with includes', async () => {
@@ -88,12 +88,12 @@ describe('find', () => {
         ...expectedMockUserPost
       } = mockUserPost[0];
 
-      expect(realUser).toEqual(seededUsers[0]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[0]));
       expect(expectedRealUserPost).toEqual(expectedPost);
       expect(realUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedRealUserPostImprint)).toBe(true);
 
-      expect(mockUser).toEqual(seededUsers[0]);
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[0]));
       expect(expectedMockUserPost).toEqual(expectedPost);
       expect(mockUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedMockUserImprint)).toBe(true);
@@ -126,8 +126,8 @@ describe('find', () => {
 
           const mockUser = (await prismock.user.findFirst(find)) as User;
 
-          expect(realUser).toEqual(expected);
-          expect(mockUser).toEqual(expected);
+          expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+          expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
         });
       });
     });
@@ -144,8 +144,8 @@ describe('find', () => {
         where: { warnings: { gt: 0 } },
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it('Should return corresponding items with skip', async () => {
@@ -160,8 +160,8 @@ describe('find', () => {
         skip: 1,
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it('Should return corresponding items with take', async () => {
@@ -176,8 +176,8 @@ describe('find', () => {
         take: 2,
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it("Should return empty list if doesn't exist", async () => {
@@ -206,8 +206,8 @@ describe('find', () => {
         select: { id: true, email: true },
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it('Should return disctinct', async () => {
@@ -227,8 +227,8 @@ describe('find', () => {
         },
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
   });
 
@@ -242,8 +242,8 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       })) as User;
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should return null if doesn't exist", async () => {
@@ -270,8 +270,8 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       });
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should throw if doesn't exist", async () => {
@@ -290,8 +290,8 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       });
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should throw if doesn't exist", async () => {

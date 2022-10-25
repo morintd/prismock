@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser } from '../../testing';
+import { resetDb, simulateSeed, buildUser, formatEntries } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -39,7 +39,7 @@ describe('updateMany', () => {
     const mockStored = prismock.getData().user;
     const stored = await prisma.user.findMany();
 
-    expect(stored).toEqual(expectedStore);
-    expect(mockStored).toEqual(expectedStore);
+    expect(formatEntries(stored)).toEqual(formatEntries(expectedStore));
+    expect(formatEntries(mockStored)).toEqual(formatEntries(expectedStore));
   });
 });

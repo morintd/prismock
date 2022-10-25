@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient, Role, User } from '@prisma/client';
 
-import { resetDb, simulateSeed } from '../../testing';
+import { formatEntries, formatEntry, resetDb, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -21,7 +21,6 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-1@company.com',
       friends: 0,
-      grade: new Prisma.Decimal(0),
       id: 4,
       money: BigInt(0),
       parameters: {},
@@ -34,7 +33,6 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-2@company.com',
       friends: 0,
-      grade: new Prisma.Decimal(0),
       id: 5,
       money: BigInt(0),
       parameters: {},
@@ -47,7 +45,6 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-3@company.com',
       friends: 0,
-      grade: new Prisma.Decimal(0),
       id: 6,
       money: BigInt(0),
       parameters: {},
@@ -70,7 +67,7 @@ describe('delete', () => {
     const user3 = await prisma.user.create({ data: data.user3 });
 
     prismock.setData({ user: [...prismock.getData().user, user1, user2, user3] });
-    expect(prismock.getData().user.slice(-3)).toEqual(expected);
+    expect(formatEntries(prismock.getData().user.slice(-3))).toEqual(formatEntries(expected));
   });
 
   describe('delete', () => {
@@ -83,8 +80,8 @@ describe('delete', () => {
     });
 
     it('Should delete a single element', () => {
-      expect(realDelete).toEqual(expected[0]);
-      expect(mockDelete).toEqual(expected[0]);
+      expect(formatEntry(realDelete)).toEqual(formatEntry(expected[0]));
+      expect(formatEntry(mockDelete)).toEqual(formatEntry(expected[0]));
     });
 
     it('Should delete user from stored data', async () => {

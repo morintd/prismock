@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, buildPost } from '../../testing';
+import { resetDb, simulateSeed, buildUser, buildPost, formatEntry } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -68,8 +68,8 @@ describe('update (nested)', () => {
 
   it('Should return updated', () => {
     const expected = buildUser(1, { friends: 1 });
-    expect(realUser).toEqual(expected);
-    expect(mockUser).toEqual(expected);
+    expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+    expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
   });
 
   it('Should store updated', async () => {
@@ -87,8 +87,8 @@ describe('update (nested)', () => {
     const { createdAt: realCreatedAt, ...realPost } = stored[1];
     const { createdAt: mockCreatedAt, ...mockPost } = mockStored[1];
 
-    expect(realPost).toEqual(post);
-    expect(mockPost).toEqual(post);
+    expect(formatEntry(realPost)).toEqual(formatEntry(post));
+    expect(formatEntry(mockPost)).toEqual(formatEntry(post));
     expect(realCreatedAt).not.toEqual(createdAt);
     expect(mockCreatedAt).not.toEqual(createdAt);
   });

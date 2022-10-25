@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, buildPost } from '../../testing';
+import { resetDb, simulateSeed, buildUser, buildPost, formatEntry } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -64,8 +64,8 @@ describe('updateMany (nested)', () => {
 
   it('Should return updated', () => {
     const expected = buildUser(1, { friends: 1 });
-    expect(realUser).toEqual(expected);
-    expect(mockUser).toEqual(expected);
+    expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+    expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
   });
 
   it('Should store updated', async () => {
@@ -76,15 +76,15 @@ describe('updateMany (nested)', () => {
     const stored = (await prisma.post.findMany()).sort((a, b) => a.id - b.id).map(({ imprint, ...post }) => post);
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
 
-    expect(stored[0]).toEqual(expected[0]);
-    expect(mockStored[0]).toEqual(expected[0]);
+    expect(formatEntry(stored[0])).toEqual(formatEntry(expected[0]));
+    expect(formatEntry(mockStored[0])).toEqual(formatEntry(expected[0]));
 
     const { createdAt, ...post } = expected[1];
     const { createdAt: realCreatedAt, ...realPost } = stored[1];
     const { createdAt: mockCreatedAt, ...mockPost } = mockStored[1];
 
-    expect(realPost).toEqual(post);
-    expect(mockPost).toEqual(post);
+    expect(formatEntry(realPost)).toEqual(formatEntry(post));
+    expect(formatEntry(mockPost)).toEqual(formatEntry(post));
     expect(realCreatedAt).not.toEqual(createdAt);
     expect(mockCreatedAt).not.toEqual(createdAt);
   });

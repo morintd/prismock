@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { buildUser, resetDb, seededUsers, simulateSeed } from '../../testing';
+import { buildUser, formatEntries, formatEntry, resetDb, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { Item } from '../lib/delegate';
 import { generatePrismock } from '../lib/prismock';
@@ -34,8 +34,8 @@ describe('update', () => {
   it('Should return updated item', () => {
     const expected = buildUser(1, { warnings: 99 });
 
-    expect(realUpdate).toEqual(expected);
-    expect(mockUpdate).toEqual(expected);
+    expect(formatEntry(realUpdate)).toEqual(formatEntry(expected));
+    expect(formatEntry(mockUpdate)).toEqual(formatEntry(expected));
   });
 
   it('Should update stored data', async () => {
@@ -43,7 +43,7 @@ describe('update', () => {
     const mockStored = prismock.getData().user;
     const stored = (await prisma.user.findMany()).sort((a, b) => a.id - b.id);
 
-    expect(stored).toEqual(expectedStore);
-    expect(mockStored).toEqual(expectedStore);
+    expect(formatEntries(stored)).toEqual(formatEntries(expectedStore));
+    expect(formatEntries(mockStored)).toEqual(formatEntries(expectedStore));
   });
 });
