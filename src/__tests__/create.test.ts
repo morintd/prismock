@@ -1,6 +1,6 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 
-import { buildUser, formatEntry, isUUID, resetDb, simulateSeed } from '../../testing';
+import { buildUser, formatEntry, isUUID, resetDb, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -56,9 +56,9 @@ describe('create', () => {
     });
 
     it('Should create (with default date value)', async () => {
-      const expected = { id: 3, title: 'title3', authorId: 1 };
-      const realPost = await prisma.post.create({ data: { title: 'title3', authorId: 1 } });
-      const mockPost = await prismock.post.create({ data: { title: 'title3', authorId: 1 } });
+      const expected = { id: 3, title: 'title3', authorId: seededUsers[0].id };
+      const realPost = await prisma.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
+      const mockPost = await prismock.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
 
       const { createdAt: realPostCreatedAt, imprint: realImprint, ...expectedRealPost } = realPost;
       const { createdAt: mockPostCreatedAt, imprint: mockImprint, ...expectedMockPost } = mockPost;

@@ -64,3 +64,7 @@ export function formatEntry(entry: Record<string, unknown>) {
 export function formatEntries(entries: Array<Record<string, unknown>>) {
   return entries.map((entry) => formatEntry(entry));
 }
+
+export function generateId(baseId: number) {
+  return baseId;
+}

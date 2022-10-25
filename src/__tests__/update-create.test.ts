@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, buildPost, formatEntry, formatEntries } from '../../testing';
+import { resetDb, simulateSeed, buildUser, buildPost, formatEntry, formatEntries, seededUsers } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -23,7 +23,7 @@ describe('update (create)', () => {
 
   beforeAll(async () => {
     realUser = await prisma.user.update({
-      where: { id: 1 },
+      where: { id: seededUsers[0].id },
       data: {
         friends: 1,
         Post: {
@@ -35,7 +35,7 @@ describe('update (create)', () => {
     });
 
     mockUser = await prismock.user.update({
-      where: { id: 1 },
+      where: { id: seededUsers[0].id },
       data: {
         friends: 1,
         Post: {
@@ -55,9 +55,9 @@ describe('update (create)', () => {
 
   it('Should store created', async () => {
     const expected = [
-      buildPost(1, { authorId: 1 }),
-      buildPost(2, { authorId: 2 }),
-      buildPost(3, { authorId: 1, title: 'nested' }),
+      buildPost(1, { authorId: seededUsers[0].id }),
+      buildPost(2, { authorId: seededUsers[1].id }),
+      buildPost(3, { authorId: seededUsers[0].id, title: 'nested' }),
     ].map(({ createdAt, imprint, ...post }) => post);
 
     const stored = await prisma.post.findMany();

@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { buildUser, formatEntries, formatEntry, resetDb, seededUsers, simulateSeed } from '../../testing';
+import { buildUser, formatEntries, formatEntry, generateId, resetDb, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -24,13 +24,13 @@ describe('upsert', () => {
 
     beforeAll(async () => {
       realUserResponse = await prisma.user.upsert({
-        where: { id: 1 },
+        where: { id: seededUsers[0].id },
         update: { warnings: 99 },
         create: { email: 'user4@company.com', password: 'password' },
       });
 
       mockUserResponse = await prismock.user.upsert({
-        where: { id: 1 },
+        where: { id: seededUsers[0].id },
         update: { warnings: 99 },
         create: { email: 'user4@company.com', password: 'password' },
       });
@@ -61,13 +61,13 @@ describe('upsert', () => {
 
     beforeAll(async () => {
       realUser = await prisma.user.upsert({
-        where: { id: 4 },
+        where: { id: generateId(4) },
         update: { warnings: 99 },
         create: { email: 'user4@company.com', password: 'password' },
       });
 
       mockUser = await prismock.user.upsert({
-        where: { id: 4 },
+        where: { id: generateId(4) },
         update: { warnings: 99 },
         create: { email: 'user4@company.com', password: 'password' },
       });
@@ -82,7 +82,7 @@ describe('upsert', () => {
 
     it('Should store updated', async () => {
       const expectedStored = [buildUser(1, { warnings: 99 }), seededUsers[1], seededUsers[2], buildUser(4)];
-      const stored = (await prisma.user.findMany()).sort((a, b) => a.id - b.id);
+      const stored = (await prisma.user.findMany()).sort((a, b) => a.id.toString().localeCompare(b.id.toString()));
       const mockStored = prismock.getData().user;
 
       expect(formatEntries(stored)).toEqual(formatEntries(expectedStored));

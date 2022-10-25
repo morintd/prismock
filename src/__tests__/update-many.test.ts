@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, formatEntries } from '../../testing';
+import { resetDb, simulateSeed, buildUser, formatEntries, generateId } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -20,8 +20,14 @@ describe('updateMany', () => {
     prismock = await generatePrismock();
     simulateSeed(prismock);
 
-    realUpdateMany = await prisma.user.updateMany({ where: { id: { in: [2, 3] } }, data: { warnings: 99 } });
-    mockUpdateMany = await prismock.user.updateMany({ where: { id: { in: [2, 3] } }, data: { warnings: 99 } });
+    realUpdateMany = await prisma.user.updateMany({
+      where: { id: { in: [generateId(2), generateId(3)] } },
+      data: { warnings: 99 },
+    });
+    mockUpdateMany = await prismock.user.updateMany({
+      where: { id: { in: [generateId(2), generateId(3)] } },
+      data: { warnings: 99 },
+    });
   });
 
   it('Should return count', () => {
@@ -30,8 +36,8 @@ describe('updateMany', () => {
   });
 
   it('Should return count 0 if not match', async () => {
-    expect(await prisma.user.updateMany({ where: { id: 0 }, data: { warnings: 50 } })).toEqual({ count: 0 });
-    expect(await prismock.user.updateMany({ where: { id: 0 }, data: { warnings: 50 } })).toEqual({ count: 0 });
+    expect(await prisma.user.updateMany({ where: { id: generateId(0) }, data: { warnings: 50 } })).toEqual({ count: 0 });
+    expect(await prismock.user.updateMany({ where: { id: generateId(0) }, data: { warnings: 50 } })).toEqual({ count: 0 });
   });
 
   it('Should update stored data', async () => {

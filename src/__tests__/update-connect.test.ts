@@ -21,13 +21,13 @@ describe('update (connect)', () => {
     simulateSeed(prismock);
 
     realUser = await prisma.user.update({
-      where: { id: 1 },
-      data: { Post: { connect: { id: 2 } } },
+      where: { id: seededUsers[0].id },
+      data: { Post: { connect: { id: seededPosts[1].id } } },
     });
 
     mockUser = await prismock.user.update({
-      where: { id: 1 },
-      data: { Post: { connect: { id: 2 } } },
+      where: { id: seededUsers[0].id },
+      data: { Post: { connect: { id: seededPosts[1].id } } },
     });
   });
 
@@ -38,7 +38,7 @@ describe('update (connect)', () => {
   });
 
   it('Should store connected', async () => {
-    const expected = seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: 1 }));
+    const expected = seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: seededUsers[0].id }));
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 

@@ -63,7 +63,12 @@ describe('find', () => {
     });
 
     it('Should return item with includes', async () => {
-      const { createdAt: expectedPostCreatedAt, imprint: expectedImprint, ...expectedPost } = buildPost(1, { authorId: 1 });
+      const {
+        createdAt: expectedPostCreatedAt,
+        imprint: expectedImprint,
+        ...expectedPost
+      } = buildPost(1, { authorId: seededUsers[0].id });
+
       const { Post: realUserPost, ...realUser } = (await prisma.user.findFirst({
         where: { email: 'user1@company.com' },
         include: { Post: true },
@@ -275,8 +280,8 @@ describe('find', () => {
     });
 
     it("Should throw if doesn't exist", async () => {
-      await expect(() => prisma.user.findFirstOrThrow({ where: { id: -1 } })).rejects.toThrow();
-      await expect(() => prismock.user.findFirstOrThrow({ where: { id: -1 } })).rejects.toThrow();
+      await expect(() => prisma.user.findFirstOrThrow({ where: { warnings: -1 } })).rejects.toThrow();
+      await expect(() => prismock.user.findFirstOrThrow({ where: { warnings: -1 } })).rejects.toThrow();
     });
   });
 
@@ -295,8 +300,8 @@ describe('find', () => {
     });
 
     it("Should throw if doesn't exist", async () => {
-      await expect(() => prisma.user.findUniqueOrThrow({ where: { id: -1 } })).rejects.toThrow();
-      await expect(() => prismock.user.findUniqueOrThrow({ where: { id: -1 } })).rejects.toThrow();
+      await expect(() => prisma.user.findUniqueOrThrow({ where: { email: 'does-not-exist' } })).rejects.toThrow();
+      await expect(() => prismock.user.findUniqueOrThrow({ where: { email: 'does-not-exist' } })).rejects.toThrow();
     });
   });
 });

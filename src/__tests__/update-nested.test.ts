@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, buildPost, formatEntry } from '../../testing';
+import { resetDb, simulateSeed, buildUser, buildPost, formatEntry, seededUsers, seededPosts } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -24,11 +24,11 @@ describe('update (nested)', () => {
   });
 
   beforeAll(async () => {
-    await prisma.post.update({ where: { id: 2 }, data: { authorId: 1 } });
-    await prismock.post.update({ where: { id: 2 }, data: { authorId: 1 } });
+    await prisma.post.update({ where: { id: seededPosts[1].id }, data: { authorId: seededUsers[0].id } });
+    await prismock.post.update({ where: { id: seededPosts[1].id }, data: { authorId: seededUsers[0].id } });
 
     realUser = await prisma.user.update({
-      where: { id: 1 },
+      where: { id: seededUsers[0].id },
       data: {
         friends: 1,
         Post: {
@@ -45,7 +45,7 @@ describe('update (nested)', () => {
     });
 
     mockUser = await prismock.user.update({
-      where: { id: 1 },
+      where: { id: seededUsers[0].id },
       data: {
         friends: 1,
         Post: {
@@ -69,9 +69,10 @@ describe('update (nested)', () => {
   });
 
   it('Should store updated', async () => {
-    const expected = [buildPost(1, { createdAt: date, authorId: 1 }), buildPost(2, { authorId: 1 })].map(
-      ({ imprint, ...post }) => post,
-    );
+    const expected = [
+      buildPost(1, { createdAt: date, authorId: seededUsers[0].id }),
+      buildPost(2, { authorId: seededUsers[0].id }),
+    ].map(({ imprint, ...post }) => post);
 
     const stored = (await prisma.post.findMany()).sort((a, b) => a.id - b.id).map(({ imprint, ...post }) => post);
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);

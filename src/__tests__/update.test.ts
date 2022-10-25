@@ -22,11 +22,11 @@ describe('update', () => {
     simulateSeed(prismock);
 
     realUpdate = await prisma.user.update({
-      where: { id: 1 },
+      where: { id: seededUsers[0].id },
       data: { warnings: 99 },
     });
     mockUpdate = await prismock.user.update({
-      where: { id: 1 },
+      where: { id: seededUsers[0].id },
       data: { warnings: 99 },
     });
   });
