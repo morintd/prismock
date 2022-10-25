@@ -8,6 +8,8 @@ This is a mock for `PrismaClient`. It actually reads your `schema.prisma` and ge
 
 It perfectly simulates Prisma's API and store everything in-memory for fast, isolated, and retry-able unit tests.
 
+It's heavily tested, using `MySQL`, `PostgreSQL` and `MongoDB`.
+
 # Installation
 
 After setting up [Prisma](https://www.prisma.io/docs/getting-started/setup-prisma/add-to-existing-project):
@@ -257,4 +259,4 @@ prismock.getData(); // { user: [] }
 
 # Credit
 
-Based on [prisma-mock](https://www.npmjs.com/package/prisma-mock).
+Inspired by [prisma-mock](https://github.com/demonsters/prisma-mock).
