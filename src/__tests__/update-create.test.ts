@@ -23,7 +23,7 @@ describe('update (create)', () => {
 
   beforeAll(async () => {
     realUser = await prisma.user.update({
-      where: { id: seededUsers[0].id },
+      where: { email: seededUsers[0].email },
       data: {
         friends: 1,
         Post: {
@@ -35,7 +35,7 @@ describe('update (create)', () => {
     });
 
     mockUser = await prismock.user.update({
-      where: { id: seededUsers[0].id },
+      where: { email: seededUsers[0].email },
       data: {
         friends: 1,
         Post: {

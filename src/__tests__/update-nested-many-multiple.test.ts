@@ -22,6 +22,9 @@ describe('updateMany (nested/multiple)', () => {
   let realUser: User;
   let mockUser: User;
 
+  let realUsers: User[];
+  let mockUsers: User[];
+
   const date = new Date();
 
   beforeAll(async () => {
@@ -33,11 +36,14 @@ describe('updateMany (nested/multiple)', () => {
   });
 
   beforeAll(async () => {
-    await prisma.post.update({ where: { id: seededPosts[1].id }, data: { authorId: seededUsers[0].id } });
-    await prismock.post.update({ where: { id: seededPosts[1].id }, data: { authorId: seededUsers[0].id } });
+    realUsers = await prisma.user.findMany({});
+    mockUsers = await prismock.user.findMany({});
+
+    await prisma.post.update({ where: { title: seededPosts[1].title }, data: { authorId: realUsers[0].id } });
+    await prismock.post.update({ where: { title: seededPosts[1].title }, data: { authorId: mockUsers[0].id } });
 
     realUser = await prisma.user.update({
-      where: { id: seededUsers[0].id },
+      where: { email: seededUsers[0].email },
       data: {
         friends: 1,
         Post: {
@@ -47,7 +53,7 @@ describe('updateMany (nested/multiple)', () => {
     });
 
     mockUser = await prismock.user.update({
-      where: { id: seededUsers[0].id },
+      where: { email: seededUsers[0].email },
       data: {
         friends: 1,
         Post: {

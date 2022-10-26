@@ -21,13 +21,13 @@ describe('update (connect)', () => {
     simulateSeed(prismock);
 
     realUser = await prisma.user.update({
-      where: { id: seededUsers[0].id },
-      data: { Post: { connect: { id: seededPosts[1].id } } },
+      where: { email: seededUsers[0].email },
+      data: { Post: { connect: { title: seededPosts[1].title } } },
     });
 
     mockUser = await prismock.user.update({
-      where: { id: seededUsers[0].id },
-      data: { Post: { connect: { id: seededPosts[1].id } } },
+      where: { email: seededUsers[0].email },
+      data: { Post: { connect: { title: seededPosts[1].title } } },
     });
   });
 

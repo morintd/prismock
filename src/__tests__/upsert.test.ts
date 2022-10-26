@@ -24,13 +24,13 @@ describe('upsert', () => {
 
     beforeAll(async () => {
       realUserResponse = await prisma.user.upsert({
-        where: { id: seededUsers[0].id },
+        where: { email: seededUsers[0].email },
         update: { warnings: 99 },
         create: { email: 'user4@company.com', password: 'password' },
       });
 
       mockUserResponse = await prismock.user.upsert({
-        where: { id: seededUsers[0].id },
+        where: { email: seededUsers[0].email },
         update: { warnings: 99 },
         create: { email: 'user4@company.com', password: 'password' },
       });

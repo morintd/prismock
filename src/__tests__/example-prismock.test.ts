@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 import { generatePrismock } from '../lib/prismock';
-import { buildUser } from '../../testing';
+import { buildUser, formatEntries, formatEntry } from '../../testing';
 
 jest.mock('@prisma/client', () => {
   return {
@@ -23,8 +23,8 @@ describe('Example', () => {
       const user = await prisma.user.create({ data: { email: 'user1@company.com', password: 'password' } });
       const found = await prisma.user.findMany();
 
-      expect(user).toEqual(buildUser(1));
-      expect(found).toEqual([user]);
+      expect(formatEntry(user)).toEqual(formatEntry(buildUser(1)));
+      expect(formatEntries(found)).toEqual(formatEntries([user]));
     });
   });
 });

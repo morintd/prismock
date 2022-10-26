@@ -79,5 +79,5 @@ export function formatEntries(entries: Array<Record<string, unknown>>) {
 }
 
 export function generateId(baseId: number) {
-  return new ObjectId(baseId);
+  return new ObjectId(baseId).toString();
 }
