@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 
-import { Post, Prisma, Role, User } from '@prisma/client';
+import { Post, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 
 import { PrismockClient } from '../src/lib/client';
@@ -36,7 +36,6 @@ export function buildUser(id: number, user: Partial<User> = {}) {
     banned: false,
     money: BigInt(0),
     friends: 0,
-    grade: new Prisma.Decimal(0),
     signal: null,
     parameters: {},
     ...user,
@@ -56,4 +55,16 @@ export function buildPost(id: number, post: Partial<Post> & { authorId: number }
 export function isUUID(maybeUUID: string) {
   const regexUUID = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
   return regexUUID.test(maybeUUID);
+}
+
+export function formatEntry(entry: Record<string, unknown>) {
+  return entry;
+}
+
+export function formatEntries(entries: Array<Record<string, unknown>>) {
+  return entries.map((entry) => formatEntry(entry));
+}
+
+export function generateId(baseId: number) {
+  return baseId;
 }

@@ -1,10 +1,19 @@
-import { Prisma, PrismaClient, Role, User } from '@prisma/client';
+import { PrismaClient, Role, User } from '@prisma/client';
 
-import { buildUser, isUUID, resetDb, simulateSeed } from '../../testing';
+import {
+  buildUser,
+  formatEntries,
+  formatEntry,
+  generateId,
+  isUUID,
+  resetDb,
+  seededUsers,
+  simulateSeed,
+} from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('create', () => {
   let prismock: PrismockClient;
@@ -22,7 +31,6 @@ describe('create', () => {
       role: Role.ADMIN,
       banned: true,
       friends: 1,
-      grade: new Prisma.Decimal(24.454545),
       money: BigInt('534543543534'),
       parameters: { content: true },
       signal: Buffer.from([1, 2, 3, 4]),
@@ -48,31 +56,27 @@ describe('create', () => {
     realUsers.push(await prisma.user.create({ data: data.user3 }));
   });
 
-  afterAll(async () => {
-    await prisma.user.deleteMany({ where: { email: { in: Object.values(data).map(({ email }) => email) } } });
-  });
-
   describe('create', () => {
     it('Should create (with default value)', () => {
       const expected = buildUser(4, {});
 
-      expect(realUsers[0]).toEqual(expected);
-      expect(mockUsers[0]).toEqual(expected);
+      expect(formatEntry(realUsers[0])).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUsers[0])).toEqual(formatEntry(expected));
     });
 
     it('Should create (with default date value)', async () => {
-      const expected = { id: 3, title: 'title3', authorId: 1 };
-      const realPost = await prisma.post.create({ data: { title: 'title3', authorId: 1 } });
-      const mockPost = await prismock.post.create({ data: { title: 'title3', authorId: 1 } });
+      const expected = { id: generateId(3), title: 'title3', authorId: seededUsers[0].id };
+      const realPost = await prisma.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
+      const mockPost = await prismock.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
 
       const { createdAt: realPostCreatedAt, imprint: realImprint, ...expectedRealPost } = realPost;
       const { createdAt: mockPostCreatedAt, imprint: mockImprint, ...expectedMockPost } = mockPost;
 
-      expect(expectedRealPost).toEqual(expected);
+      expect(formatEntry(expectedRealPost)).toEqual(formatEntry(expected));
       expect(realPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(realImprint)).toBe(true);
 
-      expect(expectedMockPost).toEqual(expected);
+      expect(formatEntry(expectedMockPost)).toEqual(formatEntry(expected));
       expect(mockPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(mockImprint)).toBe(true);
     });
@@ -80,8 +84,8 @@ describe('create', () => {
     it('Should create with increment', () => {
       const expected = buildUser(5, {});
 
-      expect(realUsers[1]).toEqual(expected);
-      expect(mockUsers[1]).toEqual(expected);
+      expect(formatEntry(realUsers[1])).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUsers[1])).toEqual(formatEntry(expected));
     });
 
     it('Should create without default value if already set', () => {
@@ -89,15 +93,14 @@ describe('create', () => {
         role: Role.ADMIN,
         banned: true,
         friends: 1,
-        grade: new Prisma.Decimal(24.454545),
         money: BigInt('534543543534'),
         parameters: { content: true },
         signal: Buffer.from([1, 2, 3, 4]),
         warnings: 1,
       });
 
-      expect(realUsers[2]).toEqual(expected);
-      expect(mockUsers[2]).toEqual(expected);
+      expect(formatEntry(realUsers[2])).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUsers[2])).toEqual(formatEntry(expected));
     });
   });
 
@@ -115,8 +118,7 @@ describe('create', () => {
           banned: false,
           email: 'user-many-1@company.com',
           friends: 0,
-          grade: new Prisma.Decimal(0),
-          id: 7,
+          id: generateId(7),
           money: BigInt(0),
           parameters: {},
           password: 'password',
@@ -128,8 +130,7 @@ describe('create', () => {
           banned: false,
           email: 'user-many-2@company.com',
           friends: 0,
-          grade: new Prisma.Decimal(0),
-          id: 8,
+          id: generateId(8),
           money: BigInt(0),
           parameters: {},
           password: 'password',
@@ -144,8 +145,8 @@ describe('create', () => {
         where: { email: { in: ['user-many-1@company.com', 'user-many-2@company.com'] } },
       });
 
-      expect(mockUsers).toEqual(expectedUsers);
-      expect(realUsers).toEqual(expectedUsers);
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expectedUsers));
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expectedUsers));
     });
 
     it('Should return count', () => {

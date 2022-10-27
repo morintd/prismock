@@ -35,9 +35,12 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
           const joinfield = getJoinField(field, delegates)!;
           const joinValue = connect.connect[joinfield.relationToFields![0]];
 
+          // @TODO: what's happening if we try to udate on an Item that doesn't exist?
+          const joined = findOne({ where: args.where }, delegates[camelize(joinfield.type)], delegates) as Item;
+
           delegate.updateMany({
             where: { [joinfield.relationToFields![0]]: joinValue },
-            data: { [joinfield.relationFromFields![0]]: args.where[joinfield.relationToFields![0]] },
+            data: { [joinfield.relationFromFields![0]]: joined[joinfield.relationToFields![0]] },
           });
         }
         if (c.create || c.createMany) {
@@ -48,41 +51,40 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
           const delegateName = camelize(field.type);
           const delegate = delegates[delegateName];
 
-          const joinfield = getJoinField(field, delegates);
+          const joinfield = getJoinField(field, delegates)!;
+
           if (field.relationFromFields?.[0]) {
             delegate.create(d[field.name].create);
             d = Object.assign(d, {
               [field.relationFromFields[0]]: item[field.relationToFields![0]],
             });
           } else {
-            const map = (val: Item) =>
-              Object.assign(Object.assign({}, val), {
-                [joinfield!.name]: {
-                  connect: joinfield!.relationToFields!.reduce((prev, cur) => {
+            const map = (val: Item) => {
+              return {
+                ...val,
+                [joinfield.name]: {
+                  connect: joinfield.relationToFields!.reduce((prev, cur) => {
                     let val = d[cur];
                     if (!isCreating && !val) {
-                      val = findOne(args, delegate, delegates)?.[cur];
+                      val = findOne(args, delegates[camelize(joinfield.type)], delegates)?.[cur];
                     }
-                    return Object.assign(Object.assign({}, prev), { [cur]: val });
+                    return { ...prev, [cur]: val };
                   }, {}),
                 },
-              });
+              } as Record<string, Item>;
+            };
             if (c.createMany) {
-              Object.assign(Object.assign({}, c.createMany), { data: c.createMany })
-                .data.map(map)
-                .forEach((createSingle: Item) => delegate.create({ data: createSingle }));
+              c.createMany.map(map).forEach((createSingle: Item) => delegate.create({ data: createSingle }));
             } else {
               if (Array.isArray(c.create)) {
-                Object.assign(Object.assign({}, c.create), { data: c.createMany })
-                  .data.map(map)
-                  .forEach((createSingle: Item) => delegate.create({ data: createSingle }));
+                c.createMany.map(map).forEach((createSingle: Item) => delegate.create({ data: createSingle }));
               } else {
-                const createData = Object.assign({}, toCreate.create);
+                const createData = { ...toCreate.create };
+                const mapped = map(toCreate.create)[joinfield.name].connect as Item;
+
                 if (joinfield) {
                   Object.assign(createData, {
-                    [joinfield.relationFromFields![0]]: map(toCreate.create)[joinfield.name].connect[
-                      joinfield.relationToFields![0]
-                    ],
+                    [joinfield.relationFromFields![0]]: mapped[joinfield.relationToFields![0]],
                   });
                 }
 
@@ -92,12 +94,12 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
           }
         }
         if (c.update || c.updateMany) {
-          const connectedField = getJoinField(field, delegates);
+          const joinfield = getJoinField(field, delegates);
           const where = {};
 
-          if (connectedField) {
+          if (joinfield) {
             Object.assign(where, {
-              [connectedField.relationFromFields![0]]: args.where[connectedField.relationToFields![0]],
+              [joinfield.relationFromFields![0]]: args.where[joinfield.relationToFields![0]],
             });
           }
 
@@ -116,6 +118,7 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
               delegate.updateMany({ where, data: c.updateMany.data });
             }
           } else {
+            const joinfield = getJoinField(field, delegates)!;
             Object.assign(where, c.update.where);
 
             if (Array.isArray(c.update)) {
@@ -123,7 +126,7 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
                 delegate.updateMany({ where, data });
               });
             } else {
-              const item = findOne(args, delegate, delegates)!;
+              const item = findOne(args, delegates[camelize(joinfield.type)], delegates)!;
 
               delegate.updateMany({ where: getFieldRelationshipWhere(item, field, delegates), data: c.update.data });
             }
@@ -131,19 +134,19 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
         }
       }
       if (c.increment) {
-        d = Object.assign(Object.assign({}, d), { [field.name]: (item[field.name] as number) + (c.increment as number) });
+        d = Object.assign(d, { [field.name]: (item[field.name] as number) + (c.increment as number) });
       }
       if (c.decrement) {
-        d = Object.assign(Object.assign({}, d), { [field.name]: (item[field.name] as number) - c.decrement });
+        d = Object.assign(d, { [field.name]: (item[field.name] as number) - c.decrement });
       }
       if (c.multiply) {
-        d = Object.assign(Object.assign({}, d), { [field.name]: (item[field.name] as number) * c.multiply });
+        d = Object.assign(d, { [field.name]: (item[field.name] as number) * c.multiply });
       }
       if (c.divide) {
-        d = Object.assign(Object.assign({}, d), { [field.name]: (item[field.name] as number) / c.divide });
+        d = Object.assign(d, { [field.name]: (item[field.name] as number) / c.divide });
       }
       if (c.set) {
-        d = Object.assign(Object.assign({}, d), { [field.name]: c.set });
+        d = Object.assign(d, { [field.name]: c.set });
       }
     }
 
@@ -151,7 +154,7 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
       if (field.hasDefaultValue) {
         const defaultValue = calculateDefaultFieldValue(field, current.getProperties());
         if (defaultValue !== undefined && !d[field.name]) Object.assign(d, { [field.name]: defaultValue });
-      } else if (field.kind !== 'object') Object.assign(d, Object.assign(Object.assign({}, d), { [field.name]: null }));
+      } else if (field.kind !== 'object') Object.assign(d, Object.assign(d, { [field.name]: null }));
     }
   });
 

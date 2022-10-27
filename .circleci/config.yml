@@ -106,7 +106,7 @@ jobs:
       - run: rm ~/repo/testing/index.ts && cp ~/repo/testing/index.mongodb.ts ~/repo/testing/index.ts
       - run: npx prisma db push
       - run: npx prisma db seed
-      - run: yarn test:mongodb
+      - run: yarn test
   test_mysql:
     working_directory: ~/repo
     docker:

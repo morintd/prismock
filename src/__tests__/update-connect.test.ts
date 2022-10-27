@@ -1,10 +1,10 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, seededPosts, seededUsers } from '../../testing';
+import { resetDb, simulateSeed, seededPosts, seededUsers, formatEntries, formatEntry } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('update (connect)', () => {
   let prismock: PrismockClient;
@@ -13,6 +13,9 @@ describe('update (connect)', () => {
   let realUser: User;
   let mockUser: User;
 
+  let realAuthor: User;
+  let mockAuthor: User;
+
   beforeAll(async () => {
     await resetDb();
 
@@ -20,29 +23,35 @@ describe('update (connect)', () => {
     prismock = await generatePrismock();
     simulateSeed(prismock);
 
+    realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+    mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+
     realUser = await prisma.user.update({
-      where: { id: 1 },
-      data: { Post: { connect: { id: 2 } } },
+      where: { email: seededUsers[0].email },
+      data: { Post: { connect: { title: seededPosts[1].title } } },
     });
 
     mockUser = await prismock.user.update({
-      where: { id: 1 },
-      data: { Post: { connect: { id: 2 } } },
+      where: { email: seededUsers[0].email },
+      data: { Post: { connect: { title: seededPosts[1].title } } },
     });
   });
 
   it('Should return connected', () => {
     const expected = seededUsers[0];
-    expect(realUser).toEqual(expected);
-    expect(mockUser).toEqual(expected);
+    expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+    expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
   });
 
   it('Should store connected', async () => {
-    const expected = seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: 1 }));
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 
-    expect(stored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
-    expect(mockStored.map(({ createdAt, imprint, ...post }) => post)).toEqual(expected);
+    expect(formatEntries(stored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
+      formatEntries(seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: realAuthor.id }))),
+    );
+    expect(formatEntries(mockStored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
+      formatEntries(seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: mockAuthor.id }))),
+    );
   });
 });

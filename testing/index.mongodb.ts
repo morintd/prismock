@@ -9,7 +9,7 @@ import { PrismockClient } from '../src/lib/client';
 dotenv.config();
 
 export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
-export const seededPosts = [buildPost(1, { authorId: new ObjectId() }), buildPost(2, { authorId: new ObjectId() })];
+export const seededPosts = [buildPost(1, { authorId: seededUsers[0].id }), buildPost(2, { authorId: seededUsers[1].id })];
 
 export function simulateSeed(prismock: PrismockClient) {
   prismock.setData({
@@ -20,10 +20,13 @@ export function simulateSeed(prismock: PrismockClient) {
 
 export async function resetDb() {
   return new Promise<void>((resolve, reject) => {
-    exec('mongosh mongodb://admin:admin@localhost:27017 --eval "use prismock" --eval "db.dropDatabase()"', (error) => {
-      if (error) reject(error);
-      resolve();
-    });
+    exec(
+      'mongosh mongodb://admin:admin@localhost:27017 --eval "use prismock" --eval "db.dropDatabase()" && yarn prisma db push && yarn prisma db seed',
+      (error) => {
+        if (error) reject(error);
+        resolve();
+      },
+    );
   });
 }
 
@@ -43,7 +46,7 @@ export function buildUser(id: number, user: Partial<User> = {}) {
   };
 }
 
-export function buildPost(id: number, post: Partial<Omit<Post, 'authorId'>> & { authorId: ObjectId }) {
+export function buildPost(id: number, post: Partial<Omit<Post, 'authorId'>> & { authorId: string }) {
   return {
     id: new ObjectId(id).toString(),
     title: `title${id}`,
@@ -58,6 +61,26 @@ export function isUUID(maybeUUID: string) {
   return regexUUID.test(maybeUUID);
 }
 
-export function hasObjectIdStructure(maybeObjectId: string) {
+export function hasObjectIdStructure(maybeObjectId: any) {
   return typeof maybeObjectId === 'string' && maybeObjectId.length === 24;
+}
+
+export function formatEntry(entry: Record<string, unknown>) {
+  if (entry.id) {
+    const { id, ...formated } = entry;
+
+    expect(hasObjectIdStructure(id)).toBe(true);
+
+    return formated;
+  }
+
+  return entry;
+}
+
+export function formatEntries(entries: Array<Record<string, unknown>>) {
+  return entries.map((entry) => formatEntry(entry));
+}
+
+export function generateId(baseId: number) {
+  return new ObjectId(baseId).toString();
 }

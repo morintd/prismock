@@ -1,14 +1,26 @@
 import { Post, Prisma, PrismaClient, User } from '@prisma/client';
 
-import { buildPost, isUUID, resetDb, seededUsers, simulateSeed } from '../../testing';
+import {
+  buildPost,
+  formatEntries,
+  formatEntry,
+  generateId,
+  isUUID,
+  resetDb,
+  seededUsers,
+  simulateSeed,
+} from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('find', () => {
   let prismock: PrismockClient;
   let prisma: PrismaClient;
+
+  let realAuthor: User;
+  let mockAuthor: User;
 
   beforeAll(async () => {
     await resetDb();
@@ -16,6 +28,9 @@ describe('find', () => {
     prisma = new PrismaClient();
     prismock = await generatePrismock();
     simulateSeed(prismock);
+
+    realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+    mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
   });
 
   describe('findFirst', () => {
@@ -28,8 +43,8 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       })) as User;
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should return null if doesn't exist", async () => {
@@ -46,7 +61,7 @@ describe('find', () => {
     });
 
     it('Should return item with selected', async () => {
-      const expected = { id: 2, email: 'user2@company.com' };
+      const expected = { id: generateId(2), email: 'user2@company.com' };
 
       const realUser = (await prisma.user.findFirst({
         where: { email: 'user2@company.com' },
@@ -58,12 +73,17 @@ describe('find', () => {
         select: { id: true, email: true },
       })) as User;
 
-      expect(realUser).toEqual(expected);
-      expect(mockUser).toEqual(expected);
+      expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
     });
 
     it('Should return item with includes', async () => {
-      const { createdAt: expectedPostCreatedAt, imprint: expectedImprint, ...expectedPost } = buildPost(1, { authorId: 1 });
+      const {
+        createdAt: expectedPostCreatedAt,
+        imprint: expectedImprint,
+        ...expectedPost
+      } = buildPost(1, { authorId: seededUsers[0].id });
+
       const { Post: realUserPost, ...realUser } = (await prisma.user.findFirst({
         where: { email: 'user1@company.com' },
         include: { Post: true },
@@ -88,13 +108,13 @@ describe('find', () => {
         ...expectedMockUserPost
       } = mockUserPost[0];
 
-      expect(realUser).toEqual(seededUsers[0]);
-      expect(expectedRealUserPost).toEqual(expectedPost);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[0]));
+      expect(formatEntry(expectedRealUserPost)).toEqual(formatEntry({ ...expectedPost, authorId: realAuthor.id }));
       expect(realUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedRealUserPostImprint)).toBe(true);
 
-      expect(mockUser).toEqual(seededUsers[0]);
-      expect(expectedMockUserPost).toEqual(expectedPost);
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[0]));
+      expect(formatEntry(expectedMockUserPost)).toEqual(formatEntry({ ...expectedPost, authorId: mockAuthor.id }));
       expect(mockUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedMockUserImprint)).toBe(true);
     });
@@ -126,8 +146,8 @@ describe('find', () => {
 
           const mockUser = (await prismock.user.findFirst(find)) as User;
 
-          expect(realUser).toEqual(expected);
-          expect(mockUser).toEqual(expected);
+          expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+          expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
         });
       });
     });
@@ -144,8 +164,8 @@ describe('find', () => {
         where: { warnings: { gt: 0 } },
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it('Should return corresponding items with skip', async () => {
@@ -160,8 +180,8 @@ describe('find', () => {
         skip: 1,
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it('Should return corresponding items with take', async () => {
@@ -176,8 +196,8 @@ describe('find', () => {
         take: 2,
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it("Should return empty list if doesn't exist", async () => {
@@ -206,8 +226,8 @@ describe('find', () => {
         select: { id: true, email: true },
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
     it('Should return disctinct', async () => {
@@ -227,8 +247,8 @@ describe('find', () => {
         },
       });
 
-      expect(realUsers).toEqual(expected);
-      expect(mockUsers).toEqual(expected);
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
   });
 
@@ -242,8 +262,8 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       })) as User;
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should return null if doesn't exist", async () => {
@@ -270,13 +290,13 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       });
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should throw if doesn't exist", async () => {
-      await expect(() => prisma.user.findFirstOrThrow({ where: { id: -1 } })).rejects.toThrow();
-      await expect(() => prismock.user.findFirstOrThrow({ where: { id: -1 } })).rejects.toThrow();
+      await expect(() => prisma.user.findFirstOrThrow({ where: { warnings: -1 } })).rejects.toThrow();
+      await expect(() => prismock.user.findFirstOrThrow({ where: { warnings: -1 } })).rejects.toThrow();
     });
   });
 
@@ -290,13 +310,13 @@ describe('find', () => {
         where: { email: 'user2@company.com' },
       });
 
-      expect(realUser).toEqual(seededUsers[1]);
-      expect(mockUser).toEqual(seededUsers[1]);
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
     it("Should throw if doesn't exist", async () => {
-      await expect(() => prisma.user.findUniqueOrThrow({ where: { id: -1 } })).rejects.toThrow();
-      await expect(() => prismock.user.findUniqueOrThrow({ where: { id: -1 } })).rejects.toThrow();
+      await expect(() => prisma.user.findUniqueOrThrow({ where: { email: 'does-not-exist' } })).rejects.toThrow();
+      await expect(() => prismock.user.findUniqueOrThrow({ where: { email: 'does-not-exist' } })).rejects.toThrow();
     });
   });
 });

@@ -4,7 +4,7 @@ import { resetDb, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('count', () => {
   let prismock: PrismockClient;

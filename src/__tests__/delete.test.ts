@@ -1,10 +1,10 @@
-import { Prisma, PrismaClient, Role, User } from '@prisma/client';
+import { PrismaClient, Role, User } from '@prisma/client';
 
-import { resetDb, simulateSeed } from '../../testing';
+import { formatEntries, formatEntry, generateId, resetDb, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('delete', () => {
   let prismock: PrismockClient;
@@ -21,8 +21,7 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-1@company.com',
       friends: 0,
-      grade: new Prisma.Decimal(0),
-      id: 4,
+      id: generateId(4),
       money: BigInt(0),
       parameters: {},
       password: 'password',
@@ -34,8 +33,7 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-2@company.com',
       friends: 0,
-      grade: new Prisma.Decimal(0),
-      id: 5,
+      id: generateId(5),
       money: BigInt(0),
       parameters: {},
       password: 'password',
@@ -47,8 +45,7 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-3@company.com',
       friends: 0,
-      grade: new Prisma.Decimal(0),
-      id: 6,
+      id: generateId(6),
       money: BigInt(0),
       parameters: {},
       password: 'password',
@@ -70,7 +67,7 @@ describe('delete', () => {
     const user3 = await prisma.user.create({ data: data.user3 });
 
     prismock.setData({ user: [...prismock.getData().user, user1, user2, user3] });
-    expect(prismock.getData().user.slice(-3)).toEqual(expected);
+    expect(formatEntries(prismock.getData().user.slice(-3))).toEqual(formatEntries(expected));
   });
 
   describe('delete', () => {
@@ -83,8 +80,8 @@ describe('delete', () => {
     });
 
     it('Should delete a single element', () => {
-      expect(realDelete).toEqual(expected[0]);
-      expect(mockDelete).toEqual(expected[0]);
+      expect(formatEntry(realDelete)).toEqual(formatEntry(expected[0]));
+      expect(formatEntry(mockDelete)).toEqual(formatEntry(expected[0]));
     });
 
     it('Should delete user from stored data', async () => {
@@ -96,8 +93,8 @@ describe('delete', () => {
     });
 
     it('Should throw if no element is found', async () => {
-      await expect(() => prisma.user.delete({ where: { id: -1 } })).rejects.toThrow();
-      await expect(() => prismock.user.delete({ where: { id: -1 } })).rejects.toThrow();
+      await expect(() => prisma.user.delete({ where: { email: 'does-not-exist' } })).rejects.toThrow();
+      await expect(() => prismock.user.delete({ where: { email: 'does-not-exist' } })).rejects.toThrow();
     });
   });
 
@@ -108,8 +105,8 @@ describe('delete', () => {
     });
 
     it('Should return count 0 for no match', async () => {
-      expect(await prisma.user.deleteMany({ where: { id: 99 } })).toEqual({ count: 0 });
-      expect(await prismock.user.deleteMany({ where: { id: 99 } })).toEqual({ count: 0 });
+      expect(await prisma.user.deleteMany({ where: { email: 'does-not-exist' } })).toEqual({ count: 0 });
+      expect(await prismock.user.deleteMany({ where: { email: 'does-not-exist' } })).toEqual({ count: 0 });
     });
   });
 });
