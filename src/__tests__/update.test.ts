@@ -5,7 +5,7 @@ import { PrismockClient } from '../lib/client';
 import { Item } from '../lib/delegate';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('update', () => {
   let prismock: PrismockClient;
@@ -41,7 +41,7 @@ describe('update', () => {
   it('Should update stored data', async () => {
     const expectedStore = [buildUser(1, { warnings: 99 }), seededUsers[1], seededUsers[2]];
     const mockStored = prismock.getData().user;
-    const stored = (await prisma.user.findMany()).sort((a, b) => a.id - b.id);
+    const stored = (await prisma.user.findMany()).sort((a, b) => a.id.toString().localeCompare(b.id.toString()));
 
     expect(formatEntries(stored)).toEqual(formatEntries(expectedStore));
     expect(formatEntries(mockStored)).toEqual(formatEntries(expectedStore));

@@ -1,10 +1,10 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 
-import { formatEntries, formatEntry, resetDb, simulateSeed } from '../../testing';
+import { formatEntries, formatEntry, generateId, resetDb, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('delete', () => {
   let prismock: PrismockClient;
@@ -21,7 +21,7 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-1@company.com',
       friends: 0,
-      id: 4,
+      id: generateId(4),
       money: BigInt(0),
       parameters: {},
       password: 'password',
@@ -33,7 +33,7 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-2@company.com',
       friends: 0,
-      id: 5,
+      id: generateId(5),
       money: BigInt(0),
       parameters: {},
       password: 'password',
@@ -45,7 +45,7 @@ describe('delete', () => {
       banned: false,
       email: 'user-delete-3@company.com',
       friends: 0,
-      id: 6,
+      id: generateId(6),
       money: BigInt(0),
       parameters: {},
       password: 'password',

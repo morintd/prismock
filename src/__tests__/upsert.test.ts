@@ -4,7 +4,7 @@ import { buildUser, formatEntries, formatEntry, generateId, resetDb, seededUsers
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('upsert', () => {
   let prismock: PrismockClient;
@@ -47,7 +47,7 @@ describe('upsert', () => {
 
     it('Should store updated', async () => {
       const expectedStored = [buildUser(1, { warnings: 99 }), seededUsers[1], seededUsers[2]];
-      const stored = (await prisma.user.findMany()).sort((a, b) => a.id - b.id);
+      const stored = (await prisma.user.findMany()).sort((a, b) => a.id.toString().localeCompare(b.id.toString()));
       const mockStored = prismock.getData().user;
 
       expect(formatEntries(stored)).toEqual(formatEntries(expectedStored));
@@ -82,7 +82,7 @@ describe('upsert', () => {
 
     it('Should store updated', async () => {
       const expectedStored = [buildUser(1, { warnings: 99 }), seededUsers[1], seededUsers[2], buildUser(4)];
-      const stored = (await prisma.user.findMany()).sort((a, b) => a.id.toString().localeCompare(b.id.toString()));
+      const stored = (await prisma.user.findMany()).sort((a, b) => a.email.localeCompare(b.email));
       const mockStored = prismock.getData().user;
 
       expect(formatEntries(stored)).toEqual(formatEntries(expectedStored));

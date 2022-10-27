@@ -1,10 +1,19 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 
-import { buildUser, formatEntry, isUUID, resetDb, seededUsers, simulateSeed } from '../../testing';
+import {
+  buildUser,
+  formatEntries,
+  formatEntry,
+  generateId,
+  isUUID,
+  resetDb,
+  seededUsers,
+  simulateSeed,
+} from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('create', () => {
   let prismock: PrismockClient;
@@ -56,7 +65,7 @@ describe('create', () => {
     });
 
     it('Should create (with default date value)', async () => {
-      const expected = { id: 3, title: 'title3', authorId: seededUsers[0].id };
+      const expected = { id: generateId(3), title: 'title3', authorId: seededUsers[0].id };
       const realPost = await prisma.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
       const mockPost = await prismock.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
 
@@ -109,7 +118,7 @@ describe('create', () => {
           banned: false,
           email: 'user-many-1@company.com',
           friends: 0,
-          id: 7,
+          id: generateId(7),
           money: BigInt(0),
           parameters: {},
           password: 'password',
@@ -121,7 +130,7 @@ describe('create', () => {
           banned: false,
           email: 'user-many-2@company.com',
           friends: 0,
-          id: 8,
+          id: generateId(8),
           money: BigInt(0),
           parameters: {},
           password: 'password',
@@ -136,8 +145,8 @@ describe('create', () => {
         where: { email: { in: ['user-many-1@company.com', 'user-many-2@company.com'] } },
       });
 
-      expect(mockUsers.map((user) => formatEntry(user))).toEqual(expectedUsers.map((user) => formatEntry(user)));
-      expect(realUsers.map((user) => formatEntry(user))).toEqual(expectedUsers.map((user) => formatEntry(user)));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expectedUsers));
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expectedUsers));
     });
 
     it('Should return count', () => {

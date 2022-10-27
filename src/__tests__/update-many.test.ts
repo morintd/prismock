@@ -21,11 +21,11 @@ describe('updateMany', () => {
     simulateSeed(prismock);
 
     realUpdateMany = await prisma.user.updateMany({
-      where: { id: { in: [generateId(2), generateId(3)] } },
+      where: { email: { in: ['user2@company.com', 'user3@company.com'] } },
       data: { warnings: 99 },
     });
     mockUpdateMany = await prismock.user.updateMany({
-      where: { id: { in: [generateId(2), generateId(3)] } },
+      where: { email: { in: ['user2@company.com', 'user3@company.com'] } },
       data: { warnings: 99 },
     });
   });

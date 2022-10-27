@@ -4,7 +4,7 @@ import { resetDb, simulateSeed, buildUser, buildPost, formatEntry, seededUsers, 
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('update (nested)', () => {
   let prismock: PrismockClient;
@@ -12,6 +12,9 @@ describe('update (nested)', () => {
 
   let realUser: User;
   let mockUser: User;
+
+  let realAuthor: User;
+  let mockAuthor: User;
 
   const date = new Date();
 
@@ -24,6 +27,9 @@ describe('update (nested)', () => {
   });
 
   beforeAll(async () => {
+    realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+    mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+
     await prisma.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
     await prismock.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
 
@@ -74,11 +80,13 @@ describe('update (nested)', () => {
       buildPost(2, { authorId: seededUsers[0].id }),
     ].map(({ imprint, ...post }) => post);
 
-    const stored = (await prisma.post.findMany()).sort((a, b) => a.id - b.id).map(({ imprint, ...post }) => post);
+    const stored = (await prisma.post.findMany())
+      .sort((a, b) => a.id.toString().localeCompare(b.id.toString()))
+      .map(({ imprint, ...post }) => post);
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
 
-    expect(formatEntry(stored[0])).toEqual(formatEntry(expected[0]));
-    expect(formatEntry(mockStored[0])).toEqual(formatEntry(expected[0]));
+    expect(formatEntry(stored[0])).toEqual(formatEntry({ ...expected[0], authorId: realAuthor.id }));
+    expect(formatEntry(mockStored[0])).toEqual(formatEntry({ ...expected[0], authorId: mockAuthor.id }));
 
     const { createdAt, ...post } = expected[1];
     const { createdAt: realCreatedAt, ...realPost } = stored[1];

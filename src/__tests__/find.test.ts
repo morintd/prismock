@@ -1,14 +1,26 @@
 import { Post, Prisma, PrismaClient, User } from '@prisma/client';
 
-import { buildPost, formatEntries, formatEntry, isUUID, resetDb, seededUsers, simulateSeed } from '../../testing';
+import {
+  buildPost,
+  formatEntries,
+  formatEntry,
+  generateId,
+  isUUID,
+  resetDb,
+  seededUsers,
+  simulateSeed,
+} from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('find', () => {
   let prismock: PrismockClient;
   let prisma: PrismaClient;
+
+  let realAuthor: User;
+  let mockAuthor: User;
 
   beforeAll(async () => {
     await resetDb();
@@ -16,6 +28,9 @@ describe('find', () => {
     prisma = new PrismaClient();
     prismock = await generatePrismock();
     simulateSeed(prismock);
+
+    realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+    mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
   });
 
   describe('findFirst', () => {
@@ -46,7 +61,7 @@ describe('find', () => {
     });
 
     it('Should return item with selected', async () => {
-      const expected = { id: 2, email: 'user2@company.com' };
+      const expected = { id: generateId(2), email: 'user2@company.com' };
 
       const realUser = (await prisma.user.findFirst({
         where: { email: 'user2@company.com' },
@@ -94,12 +109,12 @@ describe('find', () => {
       } = mockUserPost[0];
 
       expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[0]));
-      expect(expectedRealUserPost).toEqual(expectedPost);
+      expect(formatEntry(expectedRealUserPost)).toEqual(formatEntry({ ...expectedPost, authorId: realAuthor.id }));
       expect(realUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedRealUserPostImprint)).toBe(true);
 
       expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[0]));
-      expect(expectedMockUserPost).toEqual(expectedPost);
+      expect(formatEntry(expectedMockUserPost)).toEqual(formatEntry({ ...expectedPost, authorId: mockAuthor.id }));
       expect(mockUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedMockUserImprint)).toBe(true);
     });

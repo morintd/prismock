@@ -4,7 +4,7 @@ import { resetDb, simulateSeed, seededPosts, seededUsers, formatEntries, formatE
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('update (connect)', () => {
   let prismock: PrismockClient;
@@ -13,12 +13,18 @@ describe('update (connect)', () => {
   let realUser: User;
   let mockUser: User;
 
+  let realAuthor: User;
+  let mockAuthor: User;
+
   beforeAll(async () => {
     await resetDb();
 
     prisma = new PrismaClient();
     prismock = await generatePrismock();
     simulateSeed(prismock);
+
+    realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+    mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
 
     realUser = await prisma.user.update({
       where: { email: seededUsers[0].email },
@@ -38,11 +44,14 @@ describe('update (connect)', () => {
   });
 
   it('Should store connected', async () => {
-    const expected = seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: seededUsers[0].id }));
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 
-    expect(formatEntries(stored.map(({ createdAt, imprint, ...post }) => post))).toEqual(formatEntries(expected));
-    expect(formatEntries(mockStored.map(({ createdAt, imprint, ...post }) => post))).toEqual(formatEntries(expected));
+    expect(formatEntries(stored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
+      formatEntries(seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: realAuthor.id }))),
+    );
+    expect(formatEntries(mockStored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
+      formatEntries(seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: mockAuthor.id }))),
+    );
   });
 });

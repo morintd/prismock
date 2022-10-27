@@ -4,7 +4,7 @@ import { resetDb, simulateSeed, buildUser, buildPost, formatEntry, seededPosts, 
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 describe('update (nested)', () => {
   let prismock: PrismockClient;
@@ -12,6 +12,9 @@ describe('update (nested)', () => {
 
   let realUser: User;
   let mockUser: User;
+
+  let realAuthor: User;
+  let mockAuthor: User;
 
   const date = new Date();
 
@@ -24,8 +27,11 @@ describe('update (nested)', () => {
   });
 
   beforeAll(async () => {
-    await prisma.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
-    await prismock.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
+    realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+    mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+
+    await prisma.post.update({ where: { title: seededPosts[1].title }, data: { authorId: realAuthor.id } });
+    await prismock.post.update({ where: { title: seededPosts[1].title }, data: { authorId: mockAuthor.id } });
 
     realUser = await prisma.user.update({
       where: { email: seededUsers[0].email },
@@ -84,15 +90,15 @@ describe('update (nested)', () => {
 
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
 
-    expect(stored[0]).toEqual(expected[0]);
-    expect(mockStored[0]).toEqual(expected[0]);
+    expect(formatEntry(stored[0])).toEqual(formatEntry({ ...expected[0], authorId: realAuthor.id }));
+    expect(formatEntry(mockStored[0])).toEqual(formatEntry({ ...expected[0], authorId: mockAuthor.id }));
 
     const { createdAt, ...post } = expected[1];
     const { createdAt: realCreatedAt, ...realPost } = stored[1];
     const { createdAt: mockCreatedAt, ...mockPost } = mockStored[1];
 
-    expect(formatEntry(realPost)).toEqual(formatEntry(post));
-    expect(formatEntry(mockPost)).toEqual(formatEntry(post));
+    expect(formatEntry(realPost)).toEqual(formatEntry({ ...post, authorId: realAuthor.id }));
+    expect(formatEntry(mockPost)).toEqual(formatEntry({ ...post, authorId: mockAuthor.id }));
     expect(realCreatedAt).not.toEqual(createdAt);
     expect(mockCreatedAt).not.toEqual(createdAt);
   });
