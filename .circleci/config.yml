@@ -67,7 +67,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: cimg/node:lts
-      - image: bitnami/mongodb:6.0.2
+      - image: bitnami/mongodb:6.0.3
         environment:
           MONGODB_ADVERTISED_HOSTNAME: 127.0.0.1
           MONGODB_REPLICA_SET_MODE: primary
