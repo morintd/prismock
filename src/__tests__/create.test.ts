@@ -104,8 +104,13 @@ describe('create', () => {
     });
 
     it('Should create and return item with nested select', async () => {
+      const expected = {
+        title: 'article-with-select',
+        author: {
+          email: data.user1.email,
+        },
+      };
       const select = {
-        id: true,
         title: true,
         author: {
           select: {
@@ -124,7 +129,8 @@ describe('create', () => {
         select,
       });
 
-      expect(realPost).toEqual(mockPost);
+      expect(realPost).toEqual(expected);
+      expect(mockPost).toEqual(expected);
     });
   });
 
