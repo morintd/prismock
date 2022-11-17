@@ -102,6 +102,30 @@ describe('create', () => {
       expect(formatEntry(realUsers[2])).toEqual(formatEntry(expected));
       expect(formatEntry(mockUsers[2])).toEqual(formatEntry(expected));
     });
+
+    it('Should create and return item with nested select', async () => {
+      const select = {
+        id: true,
+        title: true,
+        author: {
+          select: {
+            email: true,
+          },
+        },
+      };
+
+      const realPost = await prisma.post.create({
+        data: { title: 'article-with-select', authorId: realUsers[0].id },
+        select,
+      });
+
+      const mockPost = await prismock.post.create({
+        data: { title: 'article-with-select', authorId: mockUsers[0].id },
+        select,
+      });
+
+      expect(realPost).toEqual(mockPost);
+    });
   });
 
   describe('createMany', () => {

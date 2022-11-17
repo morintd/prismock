@@ -2,10 +2,11 @@ import { Prisma } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
 import { ObjectId } from 'bson';
 
-import { Delegate, DelegateProperties, Item } from '../delegate';
+import { CreateArgs, Delegate, DelegateProperties, Item } from '../delegate';
 import { uuid } from '../helpers';
+import { Delegates } from '../prismock';
 
-import { findNextIncrement } from './find';
+import { findNextIncrement, includes, select } from './find';
 
 export const isAutoIncrement = (field: DMMF.Field) => {
   return (field.default as DMMF.FieldDefault)?.name === 'autoincrement';
@@ -69,9 +70,18 @@ export function createDefaultValues(fields: DMMF.Field[], properties: DelegatePr
   }, {});
 }
 
-export function create(item: Item, delegate: Delegate, onChange: (items: Item[]) => void) {
+export function create(
+  item: Item,
+  options: Omit<CreateArgs, 'data'>,
+  delegate: Delegate,
+  delegates: Delegates,
+  onChange: (items: Item[]) => void,
+) {
   const created = { ...createDefaultValues(delegate.model.fields, delegate.getProperties()), ...item };
   onChange([...delegate.getItems(), created]);
 
-  return created as Item;
+  const withIncludes = includes(options, delegate, delegates)(created);
+  const withSelect = select(withIncludes, options.select);
+
+  return withSelect;
 }
