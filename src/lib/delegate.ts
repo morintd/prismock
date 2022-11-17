@@ -1,6 +1,6 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { FindArgs, UpsertArgs } from './types';
+import { FindArgs, SelectArgs, UpsertArgs } from './types';
 import { DeleteArgs, create, findOne, findMany, deleteMany, UpdateArgs, updateMany } from './operations';
 import { Data, Delegates, Properties } from './prismock';
 
@@ -8,14 +8,14 @@ export type Item = Record<string, unknown>;
 
 export type CreateArgs = {
   data: Item;
-  include?: Record<string, boolean>;
-  select?: Item;
+  include?: Record<string, boolean> | null;
+  select?: SelectArgs | null;
 };
 
 export type CreateManyArgs = {
   data: Item[];
-  include?: Record<string, boolean>;
-  select: Item;
+  include?: Record<string, boolean> | null;
+  select?: SelectArgs | null;
 };
 
 export type Delegate = {
@@ -79,10 +79,14 @@ export function generateDelegate(
       return Promise.resolve({ count: updated.length });
     },
     create: (args: CreateArgs) => {
-      return Promise.resolve(create(args.data, delegate, onChange));
+      const { data, ...options } = args;
+      return Promise.resolve(create(data, options, delegate, delegates, onChange));
     },
     createMany: (args: CreateManyArgs) => {
-      args.data.forEach((d) => create(d, delegate, onChange));
+      const { data, ...options } = args;
+      data.forEach((d) => {
+        create(d, options, delegate, delegates, onChange);
+      });
       return Promise.resolve({ count: args.data.length });
     },
     upsert: (args: UpsertArgs) => {
@@ -91,7 +95,8 @@ export function generateDelegate(
         const updated = updateMany({ ...args, data: args.update }, delegate, delegates, onChange);
         return Promise.resolve(updated[0] ?? null);
       } else {
-        return Promise.resolve(create(args.create, delegate, onChange));
+        const { create: data, ...options } = args;
+        return Promise.resolve(create(data, options, delegate, delegates, onChange));
       }
     },
     findMany: (args: FindArgs = {}) => {
