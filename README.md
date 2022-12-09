@@ -8,7 +8,7 @@ This is a mock for `PrismaClient`. It actually reads your `schema.prisma` and ge
 
 It perfectly simulates Prisma's API and store everything in-memory for fast, isolated, and retry-able unit tests.
 
-It's heavily tested, using `MySQL`, `PostgreSQL` and `MongoDB`.
+It's heavily tested, by comparing the mocked query results with real results from prisma. Tested environments include `MySQL`, `PostgreSQL` and `MongoDB`.
 
 # Installation
 
@@ -32,7 +32,7 @@ There is two options here, depending on your application architecture.
 
 ## PrismaClient
 
-You can mock the PrismaClient directly:
+You can mock the PrismaClient directly ([Example](https://github.com/morintd/prismock/blob/master/src/__tests__/example-prismock.test.ts)):
 
 ```ts
 import { PrismaClient } from '@prisma/client';
@@ -253,9 +253,14 @@ prismock.getData(); // { user: [] }
 # Roadmap
 
 - Complete supported features.
-- Configure stricter TypesScript/ESLint rules.
-- Refactor delegates with a better, object oriented, approach.
-- Add more tests for edge-cases.
+
+# Motivation
+
+While _Prisma_ is amazing, its `unit testing` section is treated as optional. On the other hand, it should be a priority for developers to write tests.
+
+As I love _Prisma_, I decided to create this package, in order to keep using it on real-world projects.
+
+I'm also a teacher and believe it's mandatory for students to learn about testing. I needed a similar solution for my [backend course](https://www.scalablebackend.com/), so I created my own.
 
 # Credit
 
