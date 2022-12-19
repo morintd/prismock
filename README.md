@@ -254,6 +254,7 @@ prismock.getData(); // { user: [] }
 
 - Complete supported features.
 - Refactoring of update operation.
+- Restore test on `_count` for mongodb
 
 # Motivation
 

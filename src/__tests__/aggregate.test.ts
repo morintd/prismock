@@ -31,10 +31,10 @@ describe('aggregate', () => {
         friends: 0,
         warnings: 5,
       },
-      _count: {
-        friends: 4,
-        warnings: 3,
-      },
+      // _count: {
+      //   friends: 4,
+      //   warnings: 3,
+      // },
       _min: {
         friends: 0,
         warnings: 0,
@@ -54,10 +54,10 @@ describe('aggregate', () => {
         warnings: true,
         friends: true,
       },
-      _count: {
-        warnings: true,
-        friends: true,
-      },
+      // _count: {
+      //   warnings: true,
+      //   friends: true,
+      // },
       _min: {
         warnings: true,
         friends: true,
@@ -77,10 +77,10 @@ describe('aggregate', () => {
         warnings: true,
         friends: true,
       },
-      _count: {
-        warnings: true,
-        friends: true,
-      },
+      // _count: {
+      //   warnings: true,
+      //   friends: true,
+      // },
       _min: {
         warnings: true,
         friends: true,
