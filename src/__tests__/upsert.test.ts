@@ -26,13 +26,13 @@ describe('upsert', () => {
       realUserResponse = await prisma.user.upsert({
         where: { email: seededUsers[0].email },
         update: { warnings: 99 },
-        create: { email: 'user4@company.com', password: 'password' },
+        create: { email: 'user4@company.com', password: 'password', warnings: 0 },
       });
 
       mockUserResponse = await prismock.user.upsert({
         where: { email: seededUsers[0].email },
         update: { warnings: 99 },
-        create: { email: 'user4@company.com', password: 'password' },
+        create: { email: 'user4@company.com', password: 'password', warnings: 0 },
       });
     });
 
@@ -63,13 +63,13 @@ describe('upsert', () => {
       realUser = await prisma.user.upsert({
         where: { id: generateId(4) },
         update: { warnings: 99 },
-        create: { email: 'user4@company.com', password: 'password' },
+        create: { email: 'user4@company.com', password: 'password', warnings: 0 },
       });
 
       mockUser = await prismock.user.upsert({
         where: { id: generateId(4) },
         update: { warnings: 99 },
-        create: { email: 'user4@company.com', password: 'password' },
+        create: { email: 'user4@company.com', password: 'password', warnings: 0 },
       });
     });
 
