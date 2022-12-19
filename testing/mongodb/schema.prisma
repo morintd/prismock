@@ -20,7 +20,7 @@ model User {
   email      String  @unique
   password   String
   role       Role    @default(USER)
-  warnings   Int     @default(0)
+  warnings   Int?
   banned     Boolean @default(false)
   money      BigInt  @default(0)
   friends    Float   @default(0)
