@@ -169,8 +169,14 @@ export function updateMany(args: UpdateArgs, current: Delegate, delegates: Deleg
       if (shouldUpdate) {
         const v = currentValue;
         const n = nestedUpdate(args, false, currentValue, current, delegates);
+        const sanitizedOverrides = Object.keys(n).reduce((acc, key) => {
+          if (typeof n[key] !== 'undefined') {
+            acc[key] = n[key];
+          }
+          return acc;
+        }, {} as Record<string, unknown>);
 
-        const updatedValue = { ...v, ...n };
+        const updatedValue = { ...v, ...sanitizedOverrides };
 
         return {
           toUpdate: [...accumulator.toUpdate, updatedValue],

@@ -23,11 +23,11 @@ describe('update', () => {
 
     realUpdate = await prisma.user.update({
       where: { email: seededUsers[0].email },
-      data: { warnings: 99 },
+      data: { warnings: 99, email: undefined },
     });
     mockUpdate = await prismock.user.update({
       where: { email: seededUsers[0].email },
-      data: { warnings: 99 },
+      data: { warnings: 99, email: undefined },
     });
   });
 
@@ -45,5 +45,12 @@ describe('update', () => {
 
     expect(formatEntries(stored)).toEqual(formatEntries(expectedStore));
     expect(formatEntries(mockStored)).toEqual(formatEntries(expectedStore));
+  });
+
+  it('Should not update keys with `undefined` as value', () => {
+    const expected = buildUser(1, { warnings: 99, email: seededUsers[0].email });
+
+    expect(formatEntry(realUpdate)).toEqual(formatEntry(expected));
+    expect(formatEntry(mockUpdate)).toEqual(formatEntry(expected));
   });
 });
