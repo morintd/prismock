@@ -33,3 +33,15 @@ export function uuid() {
   });
   return uuid;
 }
+
+export function removeUndefined(o: Record<string, unknown>) {
+  return Object.keys(o).reduce((accumulator, currentValue) => {
+    if (typeof o[currentValue] !== 'undefined') {
+      return {
+        ...accumulator,
+        [currentValue]: o[currentValue],
+      };
+    }
+    return accumulator;
+  }, {} as Item);
+}

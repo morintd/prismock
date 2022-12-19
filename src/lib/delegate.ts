@@ -1,7 +1,7 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { FindArgs, SelectArgs, UpsertArgs } from './types';
-import { DeleteArgs, create, findOne, findMany, deleteMany, UpdateArgs, updateMany } from './operations';
+import { AggregateArgs, FindArgs, SelectArgs, UpsertArgs } from './types';
+import { DeleteArgs, create, findOne, findMany, deleteMany, UpdateArgs, updateMany, aggregate } from './operations';
 import { Data, Delegates, Properties } from './prismock';
 
 export type Item = Record<string, unknown>;
@@ -121,6 +121,12 @@ export function generateDelegate(
     count: (args: FindArgs = {}) => {
       const found = findMany(args, delegate, delegates);
       return Promise.resolve(found.length);
+    },
+    aggregate: (args: AggregateArgs = {}) => {
+      const found = findMany(args, delegate, delegates);
+      const aggregated = aggregate(args, found);
+
+      return Promise.resolve(aggregated);
     },
     model,
     getItems: () => data[name],

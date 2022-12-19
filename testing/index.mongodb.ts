@@ -8,7 +8,7 @@ import { PrismockClient } from '../src/lib/client';
 
 dotenv.config();
 
-export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
+export const seededUsers = [buildUser(1, { warnings: 0 }), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
 export const seededPosts = [buildPost(1, { authorId: seededUsers[0].id }), buildPost(2, { authorId: seededUsers[1].id })];
 
 export function simulateSeed(prismock: PrismockClient) {

@@ -3,9 +3,10 @@ import path from 'path';
 import { DMMF } from '@prisma/generator-helper';
 import { getDMMF, getSchemaSync } from '@prisma/internals';
 
-import { camelize, isAutoIncrement, omit } from './operations';
+import { isAutoIncrement } from './operations';
 import { Delegate, DelegateProperties, generateDelegate, Item } from './delegate';
 import { generateClient } from './client';
+import { camelize, omit } from './helpers';
 
 type Options = {
   schemaPath?: string;

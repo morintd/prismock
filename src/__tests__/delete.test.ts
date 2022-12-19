@@ -11,7 +11,7 @@ describe('delete', () => {
   let prisma: PrismaClient;
 
   const data = {
-    user1: { email: 'user-delete-1@company.com', password: 'password' },
+    user1: { email: 'user-delete-1@company.com', password: 'password', warnings: 0 },
     user2: { email: 'user-delete-2@company.com', password: 'password', warnings: 99 },
     user3: { email: 'user-delete-3@company.com', password: 'password', warnings: 99 },
   };
