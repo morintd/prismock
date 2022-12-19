@@ -23,8 +23,8 @@ describe('create', () => {
   const realUsers: User[] = [];
 
   const data = {
-    user1: { email: 'user4@company.com', password: 'password' },
-    user2: { email: 'user5@company.com', password: 'password' },
+    user1: { email: 'user4@company.com', password: 'password', warnings: 0 },
+    user2: { email: 'user5@company.com', password: 'password', warnings: 0 },
     user3: {
       email: 'user6@company.com',
       password: 'password',
@@ -36,8 +36,8 @@ describe('create', () => {
       signal: Buffer.from([1, 2, 3, 4]),
       warnings: 1,
     },
-    user4: { email: 'user-many-1@company.com', password: 'password' },
-    user5: { email: 'user-many-2@company.com', password: 'password' },
+    user4: { email: 'user-many-1@company.com', password: 'password', warnings: 0 },
+    user5: { email: 'user-many-2@company.com', password: 'password', warnings: 0 },
   };
 
   beforeAll(async () => {
