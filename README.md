@@ -122,7 +122,7 @@ prismock.getData(); // { user: [] }
 | updateMany | ✔     |
 | upsert     | ✔     |
 | count      | ✔     |
-| aggregate  | ⛔    |
+| aggregate  | ✔     |
 | groupBy    | ⛔    |
 
 ## Model query options
@@ -253,6 +253,7 @@ prismock.getData(); // { user: [] }
 # Roadmap
 
 - Complete supported features.
+- Refactoring of update operation.
 
 # Motivation
 
@@ -261,6 +262,12 @@ While _Prisma_ is amazing, its `unit testing` section is treated as optional. On
 As I love _Prisma_, I decided to create this package, in order to keep using it on real-world projects.
 
 I'm also a teacher and believe it's mandatory for students to learn about testing. I needed a similar solution for my [backend course](https://www.scalablebackend.com/), so I created my own.
+
+# Feature request
+
+I'm personally using this library in my day-to-day activities, and add features or fix bugs depending on my needs.
+
+If you need unsupported features or discover unwanted behaviors, feel free to open an issue, I'll take care of it.
 
 # Credit
 
