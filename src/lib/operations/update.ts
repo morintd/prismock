@@ -1,5 +1,5 @@
 import { Delegate, Item } from '../delegate';
-import { camelize, omit } from '../helpers';
+import { camelize, omit, removeUndefined } from '../helpers';
 import { Delegates } from '../prismock';
 import { FindWhereArgs, SelectArgs } from '../types';
 
@@ -168,7 +168,7 @@ export function updateMany(args: UpdateArgs, current: Delegate, delegates: Deleg
 
       if (shouldUpdate) {
         const v = currentValue;
-        const n = nestedUpdate(args, false, currentValue, current, delegates);
+        const n = removeUndefined(nestedUpdate(args, false, currentValue, current, delegates));
 
         const updatedValue = { ...v, ...n };
 

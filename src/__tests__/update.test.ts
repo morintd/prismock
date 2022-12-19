@@ -23,11 +23,11 @@ describe('update', () => {
 
     realUpdate = await prisma.user.update({
       where: { email: seededUsers[0].email },
-      data: { warnings: 99 },
+      data: { warnings: 99, email: undefined },
     });
     mockUpdate = await prismock.user.update({
       where: { email: seededUsers[0].email },
-      data: { warnings: 99 },
+      data: { warnings: 99, email: undefined },
     });
   });
 
