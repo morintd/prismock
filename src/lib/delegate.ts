@@ -1,22 +1,10 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { AggregateArgs, FindArgs, SelectArgs, UpsertArgs } from './types';
+import { AggregateArgs, CreateArgs, CreateManyArgs, FindArgs, UpsertArgs } from './types';
 import { DeleteArgs, create, findOne, findMany, deleteMany, UpdateArgs, updateMany, aggregate } from './operations';
 import { Data, Delegates, Properties } from './prismock';
 
 export type Item = Record<string, unknown>;
-
-export type CreateArgs = {
-  data: Item;
-  include?: Record<string, boolean> | null;
-  select?: SelectArgs | null;
-};
-
-export type CreateManyArgs = {
-  data: Item[];
-  include?: Record<string, boolean> | null;
-  select?: SelectArgs | null;
-};
 
 export type Delegate = {
   create: (args: CreateArgs) => Promise<Item>;
@@ -35,6 +23,7 @@ export type Delegate = {
   model: DMMF.Model;
   getProperties: () => DelegateProperties;
   getItems: () => Item[];
+  onChange: (items: Item[]) => void;
 };
 
 export type DelegateProperties = {
@@ -131,6 +120,7 @@ export function generateDelegate(
     model,
     getItems: () => data[name],
     getProperties: () => properties[name],
+    onChange,
   });
 
   return delegate;

@@ -145,9 +145,9 @@ prismock.getData(); // { user: [] }
 | update          | ✔     |
 | updateMany      | ✔     |
 | connect         | ✔     |
+| connectOrCreate | ✔     |
 | set             | ⛔    |
 | disconnect      | ⛔    |
-| connectOrCreate | ⛔    |
 | upsert          | ⛔    |
 | delete          | ⛔    |
 
