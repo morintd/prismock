@@ -2,11 +2,12 @@ import { Prisma } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
 import { ObjectId } from 'bson';
 
-import { CreateArgs, Delegate, DelegateProperties, Item } from '../delegate';
-import { uuid } from '../helpers';
+import { Delegate, DelegateProperties, Item } from '../delegate';
+import { camelize, uuid } from '../helpers';
 import { Delegates } from '../prismock';
+import { ConnectOrCreate, CreateArgs } from '../types';
 
-import { findNextIncrement, includes, select } from './find';
+import { findNextIncrement, findOne, includes, select } from './find';
 
 export const isAutoIncrement = (field: DMMF.Field) => {
   return (field.default as DMMF.FieldDefault)?.name === 'autoincrement';
@@ -70,6 +71,32 @@ export function createDefaultValues(fields: DMMF.Field[], properties: DelegatePr
   }, {});
 }
 
+export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
+  return (item: Item) => {
+    return Object.entries(item).reduce((accumulator, [key, value]) => {
+      if (typeof value === 'object' && (value as Record<string, unknown>)?.connectOrCreate) {
+        const connectOrCreate = (value as Record<string, unknown>).connectOrCreate as ConnectOrCreate;
+
+        const field = delegate.model.fields.find((field) => field.name === key);
+        const subDelegate = delegates[camelize(field!.type)];
+
+        let connected = findOne({ where: connectOrCreate.where }, subDelegate, delegates);
+        if (!connected) connected = create(connectOrCreate.create, {}, subDelegate, delegates, subDelegate.onChange);
+
+        return {
+          ...accumulator,
+          [field!.relationFromFields![0]]: connected[field!.relationToFields![0]],
+        };
+      }
+
+      return {
+        ...accumulator,
+        [key]: value,
+      };
+    }, {} as Item);
+  };
+}
+
 export function create(
   item: Item,
   options: Omit<CreateArgs, 'data'>,
@@ -78,10 +105,12 @@ export function create(
   onChange: (items: Item[]) => void,
 ) {
   const created = { ...createDefaultValues(delegate.model.fields, delegate.getProperties()), ...item };
-  onChange([...delegate.getItems(), created]);
 
-  const withIncludes = includes(options, delegate, delegates)(created);
+  const withConnectOrCreate = connectOrCreate(delegate, delegates)(created);
+  const withIncludes = includes(options, delegate, delegates)(withConnectOrCreate);
   const withSelect = select(withIncludes, options.select);
+
+  onChange([...delegate.getItems(), created]);
 
   return withSelect;
 }
