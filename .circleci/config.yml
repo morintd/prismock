@@ -3,7 +3,7 @@ version: 2.1
 setup: &setup
   working_directory: ~/repo
   docker:
-    - image: circleci/node:lts
+    - image: circleci/node:18.13.0
 
 # Define the jobs we want to run for this project
 jobs:
@@ -141,7 +141,7 @@ jobs:
       - attach_workspace:
           at: ~/repo
       - run: yarn build
-      - run: npx semantic-release
+      - run: yarn semantic-release
 workflows:
   master_deploy:
     jobs:
