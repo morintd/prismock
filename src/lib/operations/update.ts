@@ -3,8 +3,8 @@ import { camelize, omit, removeUndefined } from '../helpers';
 import { Delegates } from '../prismock';
 import { FindWhereArgs, SelectArgs } from '../types';
 
-import { calculateDefaultFieldValue } from './create';
-import { findOne, getFieldRelationshipWhere, getJoinField, where } from './find';
+import { calculateDefaultFieldValue, connectOrCreate } from './create';
+import { findOne, getFieldRelationshipWhere, getJoinField, includes, select, where } from './find';
 
 export type UpdateArgs = {
   select?: SelectArgs | null;
@@ -36,11 +36,29 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
           const joinValue = connect.connect[joinfield.relationToFields![0]];
 
           // @TODO: what's happening if we try to udate on an Item that doesn't exist?
-          const joined = findOne({ where: args.where }, delegates[camelize(joinfield.type)], delegates) as Item;
+          if (!joinfield.isList) {
+            const joined = findOne({ where: args.where }, delegates[camelize(joinfield.type)], delegates) as Item;
 
-          delegate.updateMany({
-            where: { [joinfield.relationToFields![0]]: joinValue },
-            data: { [joinfield.relationFromFields![0]]: joined[joinfield.relationToFields![0]] },
+            delegate.updateMany({
+              where: { [joinfield.relationToFields![0]]: joinValue },
+              data: { [joinfield.relationFromFields![0]]: joined[joinfield.relationToFields![0]] },
+            });
+          } else {
+            const joined = findOne({ where: connect.connect }, delegates[camelize(field.type)], delegates) as Item;
+            Object.assign(d, {
+              [field.relationFromFields![0]]: joined[field.relationToFields![0]],
+            });
+          }
+        }
+        if (c.connectOrCreate) {
+          d = omit(d, [field.name]);
+
+          const delegate = delegates[camelize(field.type)];
+          connectOrCreate(current, delegates)({ [camelize(field.name)]: c });
+          const joined = findOne({ where: c.connectOrCreate.where }, delegate, delegates) as Item;
+
+          Object.assign(d, {
+            [field.relationFromFields![0]]: joined[field.relationToFields![0]],
           });
         }
         if (c.create || c.createMany) {
@@ -171,10 +189,12 @@ export function updateMany(args: UpdateArgs, current: Delegate, delegates: Deleg
         const n = removeUndefined(nestedUpdate(args, false, currentValue, current, delegates));
 
         const updatedValue = { ...v, ...n };
+        const updatedValueWithIncludes = includes(args, current, delegates)(updatedValue);
+        const updatedValueWithSelect = select(updatedValueWithIncludes, args.select);
 
         return {
-          toUpdate: [...accumulator.toUpdate, updatedValue],
-          updated: [...accumulator.updated, updatedValue],
+          toUpdate: [...accumulator.toUpdate, updatedValueWithSelect],
+          updated: [...accumulator.updated, updatedValueWithSelect],
         };
       }
       return {
