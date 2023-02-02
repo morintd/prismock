@@ -7,6 +7,7 @@ import {
   generateId,
   isUUID,
   resetDb,
+  seededBlogs,
   seededUsers,
   simulateSeed,
 } from '../../testing';
@@ -82,17 +83,17 @@ describe('find', () => {
         createdAt: expectedPostCreatedAt,
         imprint: expectedImprint,
         ...expectedPost
-      } = buildPost(1, { authorId: seededUsers[0].id });
+      } = buildPost(1, { authorId: seededUsers[0].id, blogId: seededBlogs[0].id });
 
-      const { Post: realUserPost, ...realUser } = (await prisma.user.findFirst({
+      const { posts: realUserPost, ...realUser } = (await prisma.user.findFirst({
         where: { email: 'user1@company.com' },
-        include: { Post: true },
-      })) as User & { Post: Post[] };
+        include: { posts: true },
+      })) as User & { posts: Post[] };
 
-      const { Post: mockUserPost, ...mockUser } = (await prismock.user.findFirst({
+      const { posts: mockUserPost, ...mockUser } = (await prismock.user.findFirst({
         where: { email: 'user1@company.com' },
-        include: { Post: true },
-      })) as User & { Post: Post[] };
+        include: { posts: true },
+      })) as User & { posts: Post[] };
 
       expect(realUserPost.length).toBe(1);
       expect(mockUserPost.length).toBe(1);

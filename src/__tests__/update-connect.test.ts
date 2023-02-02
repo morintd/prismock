@@ -28,12 +28,12 @@ describe('update (connect)', () => {
 
     realUser = await prisma.user.update({
       where: { email: seededUsers[0].email },
-      data: { Post: { connect: { title: seededPosts[1].title } } },
+      data: { posts: { connect: { title: seededPosts[1].title } } },
     });
 
     mockUser = await prismock.user.update({
       where: { email: seededUsers[0].email },
-      data: { Post: { connect: { title: seededPosts[1].title } } },
+      data: { posts: { connect: { title: seededPosts[1].title } } },
     });
   });
 

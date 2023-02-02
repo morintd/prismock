@@ -7,6 +7,7 @@ import {
   generateId,
   isUUID,
   resetDb,
+  seededBlogs,
   seededUsers,
   simulateSeed,
 } from '../../testing';
@@ -65,9 +66,13 @@ describe('create', () => {
     });
 
     it('Should create (with default date value)', async () => {
-      const expected = { id: generateId(3), title: 'title3', authorId: seededUsers[0].id };
-      const realPost = await prisma.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
-      const mockPost = await prismock.post.create({ data: { title: 'title3', authorId: seededUsers[0].id } });
+      const expected = { id: generateId(3), title: 'title3', authorId: seededUsers[0].id, blogId: seededBlogs[0].id };
+      const realPost = await prisma.post.create({
+        data: { title: 'title3', authorId: seededUsers[0].id, blogId: seededBlogs[0].id },
+      });
+      const mockPost = await prismock.post.create({
+        data: { title: 'title3', authorId: seededUsers[0].id, blogId: seededBlogs[0].id },
+      });
 
       const { createdAt: realPostCreatedAt, imprint: realImprint, ...expectedRealPost } = realPost;
       const { createdAt: mockPostCreatedAt, imprint: mockImprint, ...expectedMockPost } = mockPost;
@@ -120,12 +125,12 @@ describe('create', () => {
       };
 
       const realPost = await prisma.post.create({
-        data: { title: 'article-with-select', authorId: realUsers[0].id },
+        data: { title: 'article-with-select', authorId: realUsers[0].id, blogId: seededBlogs[0].id },
         select,
       });
 
       const mockPost = await prismock.post.create({
-        data: { title: 'article-with-select', authorId: mockUsers[0].id },
+        data: { title: 'article-with-select', authorId: mockUsers[0].id, blogId: seededBlogs[0].id },
         select,
       });
 

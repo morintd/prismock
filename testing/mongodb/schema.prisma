@@ -32,8 +32,16 @@ model User {
 model Post {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String   @unique
-  author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
-  authorId  String
   imprint   String   @default(uuid())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String   @db.ObjectId
+  blog      Blog     @relation(fields: [blogId], references: [id])
+  blogId    String   @db.ObjectId
+}
+
+model Blog {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  title String @unique
+  posts Post[]
 }

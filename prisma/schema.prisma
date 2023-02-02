@@ -26,14 +26,22 @@ model User {
   friends    Float   @default(0)
   signal     Bytes?
   parameters Json    @default("{}")
-  Post       Post[]
+  posts      Post[]
 }
 
 model Post {
   id        Int      @id @default(autoincrement())
   title     String   @unique @db.VarChar(255)
-  author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
-  authorId  Int
   imprint   String   @default(uuid())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  blog      Blog     @relation(fields: [blogId], references: [id])
+  blogId    Int
+}
+
+model Blog {
+  id    Int    @id @default(autoincrement())
+  title String @unique @db.VarChar(255)
+  posts Post[]
 }

@@ -1,6 +1,15 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, buildPost, formatEntry, formatEntries, seededUsers } from '../../testing';
+import {
+  resetDb,
+  simulateSeed,
+  buildUser,
+  buildPost,
+  formatEntry,
+  formatEntries,
+  seededUsers,
+  seededBlogs,
+} from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -38,9 +47,14 @@ describe('update (create)', () => {
       where: { email: seededUsers[0].email },
       data: {
         friends: 1,
-        Post: {
+        posts: {
           create: {
             title: 'nested',
+            blog: {
+              connect: {
+                title: seededBlogs[0].title,
+              },
+            },
           },
         },
       },
@@ -50,9 +64,14 @@ describe('update (create)', () => {
       where: { email: seededUsers[0].email },
       data: {
         friends: 1,
-        Post: {
+        posts: {
           create: {
             title: 'nested',
+            blog: {
+              connect: {
+                title: seededBlogs[0].title,
+              },
+            },
           },
         },
       },
@@ -67,9 +86,9 @@ describe('update (create)', () => {
 
   it('Should store created', async () => {
     const expected = [
-      buildPost(1, { authorId: seededUsers[0].id }),
-      buildPost(2, { authorId: seededUsers[1].id }),
-      buildPost(3, { authorId: seededUsers[0].id, title: 'nested' }),
+      buildPost(1, { authorId: seededUsers[0].id, blogId: seededBlogs[0].id }),
+      buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
+      buildPost(3, { authorId: seededUsers[0].id, title: 'nested', blogId: seededBlogs[0].id }),
     ].map(({ createdAt, imprint, ...post }) => post);
 
     const stored = await prisma.post.findMany();

@@ -8,12 +8,14 @@ import { PrismockClient } from '../src/lib/client';
 dotenv.config();
 
 export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
-export const seededPosts = [buildPost(1, { authorId: 1 }), buildPost(2, { authorId: 2 })];
+export const seededBlogs = [buildBlog(1, 'blog-1'), buildBlog(2, 'blog-2')];
+export const seededPosts = [buildPost(1, { authorId: 1, blogId: 1 }), buildPost(2, { authorId: 2, blogId: 2 })];
 
 export function simulateSeed(prismock: PrismockClient) {
   prismock.setData({
     user: seededUsers,
     post: seededPosts,
+    blog: seededBlogs,
   });
 }
 
@@ -42,13 +44,20 @@ export function buildUser(id: number, user: Partial<User> = {}) {
   };
 }
 
-export function buildPost(id: number, post: Partial<Post> & { authorId: number }) {
+export function buildPost(id: number, post: Partial<Post> & { authorId: number; blogId: number }) {
   return {
     id,
     title: `title${id}`,
     createdAt: new Date(),
     imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
     ...post,
+  };
+}
+
+export function buildBlog(id: number, title: string) {
+  return {
+    id,
+    title,
   };
 }
 

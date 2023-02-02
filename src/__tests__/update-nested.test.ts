@@ -1,6 +1,15 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed, buildUser, buildPost, formatEntry, seededUsers, seededPosts } from '../../testing';
+import {
+  resetDb,
+  simulateSeed,
+  buildUser,
+  buildPost,
+  formatEntry,
+  seededUsers,
+  seededPosts,
+  seededBlogs,
+} from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -37,7 +46,7 @@ describe('update (nested)', () => {
       where: { email: seededUsers[0].email },
       data: {
         friends: 1,
-        Post: {
+        posts: {
           update: {
             where: {
               title: 'title1',
@@ -54,7 +63,7 @@ describe('update (nested)', () => {
       where: { email: seededUsers[0].email },
       data: {
         friends: 1,
-        Post: {
+        posts: {
           update: {
             where: {
               title: 'title1',
@@ -76,8 +85,8 @@ describe('update (nested)', () => {
 
   it('Should store updated', async () => {
     const expected = [
-      buildPost(1, { createdAt: date, authorId: seededUsers[0].id }),
-      buildPost(2, { authorId: seededUsers[0].id }),
+      buildPost(1, { createdAt: date, authorId: seededUsers[0].id, blogId: seededBlogs[0].id }),
+      buildPost(2, { authorId: seededUsers[0].id, blogId: seededBlogs[1].id }),
     ].map(({ imprint, ...post }) => post);
 
     const stored = (await prisma.post.findMany())
