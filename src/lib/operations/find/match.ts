@@ -16,12 +16,14 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
     return where.some((child) => matchMultiple(item, child, current, delegates));
   };
 
-  const matchFnc = (where: FindWhereArgs) => (item: Record<string, unknown>) => {
-    if (where) {
-      return matchMultiple(item, where, current, delegates);
-    }
-    return true;
-  };
+  const matchFnc =
+    (where: FindWhereArgs, delegate = current) =>
+    (item: Record<string, unknown>) => {
+      if (where) {
+        return matchMultiple(item, where, delegate, delegates);
+      }
+      return true;
+    };
 
   function match(child: string, item: Item, where: FindWhereArgs) {
     const val: any = item[child];
@@ -58,10 +60,13 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
           } else {
             childWhere = filter;
           }
-          // const res = delegates[childName].findMany({ ...childWhere, ...getFieldRelationshipWhere(item, info) });
           const res = delegates[childName]!.getItems().filter(
-            matchFnc(Object.assign(Object.assign({}, childWhere), getFieldRelationshipWhere(item, info, delegates))),
+            matchFnc(
+              Object.assign(Object.assign({}, childWhere), getFieldRelationshipWhere(item, info, delegates)),
+              delegates[childName],
+            ),
           );
+
           if (filter.every) {
             if (res.length === 0) return false;
             const all = delegates[childName]!.getItems().filter(matchFnc(getFieldRelationshipWhere(item, info, delegates)));

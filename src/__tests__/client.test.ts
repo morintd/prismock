@@ -1,4 +1,4 @@
-import { seededPosts, seededUsers } from '../../testing';
+import { seededBlogs, seededPosts, seededUsers } from '../../testing';
 import { generatePrismock } from '../lib/prismock';
 
 describe('client', () => {
@@ -9,7 +9,7 @@ describe('client', () => {
 
   it('Should set/get data', async () => {
     const prismock = await generatePrismock();
-    prismock.setData({ user: seededUsers, post: seededPosts });
-    expect(prismock.getData()).toEqual({ user: seededUsers, post: seededPosts });
+    prismock.setData({ user: seededUsers, post: seededPosts, blog: seededBlogs });
+    expect(prismock.getData()).toEqual({ user: seededUsers, post: seededPosts, blog: seededBlogs });
   });
 });

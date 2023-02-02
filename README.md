@@ -10,6 +10,8 @@ It perfectly simulates Prisma's API and store everything in-memory for fast, iso
 
 It's heavily tested, by comparing the mocked query results with real results from prisma. Tested environments include `MySQL`, `PostgreSQL` and `MongoDB`.
 
+> This library can also be used as an in-memory implementation of Prisma, for reasons such as prototyping, but that's not its primary goal.
+
 # Installation
 
 After setting up [Prisma](https://www.prisma.io/docs/getting-started/setup-prisma/add-to-existing-project):

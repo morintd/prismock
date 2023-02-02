@@ -28,12 +28,12 @@ describe('update (connect)', () => {
 
     realUser = await prisma.user.update({
       where: { email: seededUsers[0].email },
-      data: { Post: { connect: { title: seededPosts[1].title } } },
+      data: { posts: { connect: { title: seededPosts[1].title } } },
     });
 
     mockUser = await prismock.user.update({
       where: { email: seededUsers[0].email },
-      data: { Post: { connect: { title: seededPosts[1].title } } },
+      data: { posts: { connect: { title: seededPosts[1].title } } },
     });
   });
 
@@ -47,11 +47,11 @@ describe('update (connect)', () => {
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 
-    expect(formatEntries(stored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
-      formatEntries(seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: realAuthor.id }))),
+    expect(formatEntries(stored.map(({ createdAt, imprint, blogId, ...post }) => post))).toEqual(
+      formatEntries(seededPosts.map(({ createdAt, imprint, blogId, ...post }) => ({ ...post, authorId: realAuthor.id }))),
     );
-    expect(formatEntries(mockStored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
-      formatEntries(seededPosts.map(({ createdAt, imprint, ...post }) => ({ ...post, authorId: mockAuthor.id }))),
+    expect(formatEntries(mockStored.map(({ createdAt, imprint, blogId, ...post }) => post))).toEqual(
+      formatEntries(seededPosts.map(({ createdAt, imprint, blogId, ...post }) => ({ ...post, authorId: mockAuthor.id }))),
     );
   });
 });

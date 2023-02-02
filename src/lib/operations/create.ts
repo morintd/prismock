@@ -5,7 +5,7 @@ import { ObjectId } from 'bson';
 import { Delegate, DelegateProperties, Item } from '../delegate';
 import { camelize, uuid } from '../helpers';
 import { Delegates } from '../prismock';
-import { ConnectOrCreate, CreateArgs } from '../types';
+import { ConnectOrCreate, CreateArgs, FindWhereArgs } from '../types';
 
 import { findNextIncrement, findOne, includes, select } from './find';
 
@@ -89,6 +89,23 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
         };
       }
 
+      if (typeof value === 'object' && (value as Record<string, unknown>)?.connect) {
+        const connect = (value as Record<string, unknown>).connect as FindWhereArgs;
+
+        const field = delegate.model.fields.find((field) => field.name === key);
+        const subDelegate = delegates[camelize(field!.type)];
+
+        const connected = findOne({ where: connect }, subDelegate, delegates);
+        // if (!connected) connected = create(connectOrCreate.create, {}, subDelegate, delegates, subDelegate.onChange);
+
+        if (connected) {
+          return {
+            ...accumulator,
+            [field!.relationFromFields![0]]: connected[field!.relationToFields![0]],
+          };
+        }
+      }
+
       return {
         ...accumulator,
         [key]: value,
@@ -107,10 +124,11 @@ export function create(
   const created = { ...createDefaultValues(delegate.model.fields, delegate.getProperties()), ...item };
 
   const withConnectOrCreate = connectOrCreate(delegate, delegates)(created);
+
   const withIncludes = includes(options, delegate, delegates)(withConnectOrCreate);
   const withSelect = select(withIncludes, options.select);
 
-  onChange([...delegate.getItems(), created]);
+  onChange([...delegate.getItems(), withConnectOrCreate]);
 
   return withSelect;
 }

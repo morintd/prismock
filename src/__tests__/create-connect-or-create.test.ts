@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { resetDb, seededUsers, simulateSeed } from '../../testing';
+import { resetDb, seededBlogs, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
@@ -31,6 +31,11 @@ describe('create (connectOrCreate)', () => {
     const mockPost = await prismock.post.create({
       data: {
         title: 'title-connect',
+        blog: {
+          connect: {
+            title: seededBlogs[0].title,
+          },
+        },
         author: {
           connectOrCreate: {
             create: {
@@ -49,6 +54,11 @@ describe('create (connectOrCreate)', () => {
     const realPost = await prisma.post.create({
       data: {
         title: 'title-connect',
+        blog: {
+          connect: {
+            title: seededBlogs[0].title,
+          },
+        },
         author: {
           connectOrCreate: {
             create: {
@@ -82,6 +92,11 @@ describe('create (connectOrCreate)', () => {
     const mockPost = await prismock.post.create({
       data: {
         title: 'title-connect-create',
+        blog: {
+          connect: {
+            title: seededBlogs[0].title,
+          },
+        },
         author: {
           connectOrCreate: {
             create: {
@@ -101,6 +116,11 @@ describe('create (connectOrCreate)', () => {
     const realPost = await prisma.post.create({
       data: {
         title: 'title-connect-create',
+        blog: {
+          connect: {
+            title: seededBlogs[0].title,
+          },
+        },
         author: {
           connectOrCreate: {
             create: {
