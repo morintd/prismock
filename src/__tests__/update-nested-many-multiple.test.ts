@@ -29,8 +29,11 @@ describe('updateMany (nested/multiple)', () => {
   let realAuthor: User;
   let mockAuthor: User;
 
-  let realBlog: Blog;
-  let mockBlog: Blog;
+  let realBlog1: Blog;
+  let realBlog2: Blog;
+
+  let mockBlog1: Blog;
+  let mockBlog2: Blog;
 
   const date = new Date();
 
@@ -46,8 +49,11 @@ describe('updateMany (nested/multiple)', () => {
     realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
     mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
 
-    realBlog = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
-    mockBlog = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+    realBlog1 = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+    realBlog2 = (await prisma.blog.findUnique({ where: { title: seededBlogs[1].title } }))!;
+
+    mockBlog1 = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+    mockBlog2 = (await prismock.blog.findUnique({ where: { title: seededBlogs[1].title } }))!;
 
     realUsers = await prisma.user.findMany({});
     mockUsers = await prismock.user.findMany({});
@@ -94,10 +100,16 @@ describe('updateMany (nested/multiple)', () => {
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
 
     expect(formatEntries(stored)).toEqual(
-      formatEntries(expected.map((e) => ({ ...e, authorId: realAuthor.id, blogId: realBlog.id }))),
+      formatEntries([
+        { ...expected[0], authorId: realAuthor.id, blogId: realBlog1.id },
+        { ...expected[1], authorId: realAuthor.id, blogId: realBlog2.id },
+      ]),
     );
     expect(formatEntries(mockStored)).toEqual(
-      formatEntries(expected.map((e) => ({ ...e, authorId: mockAuthor.id, blogId: mockBlog.id }))),
+      formatEntries([
+        { ...expected[0], authorId: mockAuthor.id, blogId: mockBlog1.id },
+        { ...expected[1], authorId: mockAuthor.id, blogId: mockBlog2.id },
+      ]),
     );
   });
 });

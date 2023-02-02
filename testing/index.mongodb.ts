@@ -19,6 +19,7 @@ export function simulateSeed(prismock: PrismockClient) {
   prismock.setData({
     user: seededUsers,
     post: seededPosts,
+    blog: seededBlogs,
   });
 }
 
