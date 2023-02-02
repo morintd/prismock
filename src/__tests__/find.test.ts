@@ -1,4 +1,4 @@
-import { Post, Prisma, PrismaClient, User } from '@prisma/client';
+import { Blog, Post, Prisma, PrismaClient, User } from '@prisma/client';
 
 import {
   buildPost,
@@ -23,6 +23,9 @@ describe('find', () => {
   let realAuthor: User;
   let mockAuthor: User;
 
+  let realBlog: Blog;
+  let mockBlog: Blog;
+
   beforeAll(async () => {
     await resetDb();
 
@@ -32,6 +35,9 @@ describe('find', () => {
 
     realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
     mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+
+    realBlog = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+    mockBlog = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
   });
 
   describe('findFirst', () => {
@@ -110,12 +116,16 @@ describe('find', () => {
       } = mockUserPost[0];
 
       expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[0]));
-      expect(formatEntry(expectedRealUserPost)).toEqual(formatEntry({ ...expectedPost, authorId: realAuthor.id }));
+      expect(formatEntry(expectedRealUserPost)).toEqual(
+        formatEntry({ ...expectedPost, authorId: realAuthor.id, blogId: realBlog.id }),
+      );
       expect(realUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedRealUserPostImprint)).toBe(true);
 
       expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[0]));
-      expect(formatEntry(expectedMockUserPost)).toEqual(formatEntry({ ...expectedPost, authorId: mockAuthor.id }));
+      expect(formatEntry(expectedMockUserPost)).toEqual(
+        formatEntry({ ...expectedPost, authorId: mockAuthor.id, blogId: mockBlog.id }),
+      );
       expect(mockUserPostCreatedAt).toBeInstanceOf(Date);
       expect(isUUID(expectedMockUserImprint)).toBe(true);
     });

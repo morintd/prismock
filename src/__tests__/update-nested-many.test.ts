@@ -1,4 +1,4 @@
-import { PrismaClient, User } from '@prisma/client';
+import { Blog, PrismaClient, User } from '@prisma/client';
 
 import {
   resetDb,
@@ -25,6 +25,9 @@ describe('updateMany (nested)', () => {
   let realAuthor: User;
   let mockAuthor: User;
 
+  let realBlog: Blog;
+  let mockBlog: Blog;
+
   const date = new Date();
 
   beforeAll(async () => {
@@ -38,6 +41,9 @@ describe('updateMany (nested)', () => {
   beforeAll(async () => {
     realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
     mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
+
+    realBlog = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+    mockBlog = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
 
     await prisma.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
     await prismock.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
@@ -94,8 +100,10 @@ describe('updateMany (nested)', () => {
       .map(({ imprint, ...post }) => post);
     const mockStored = prismock.getData().post.map(({ imprint, ...post }) => post);
 
-    expect(formatEntry(stored[0])).toEqual(formatEntry({ ...expected[0], authorId: realAuthor.id }));
-    expect(formatEntry(mockStored[0])).toEqual(formatEntry({ ...expected[0], authorId: mockAuthor.id }));
+    expect(formatEntry(stored[0])).toEqual(formatEntry({ ...expected[0], authorId: realAuthor.id, blogId: realBlog.id }));
+    expect(formatEntry(mockStored[0])).toEqual(
+      formatEntry({ ...expected[0], authorId: mockAuthor.id, blogId: mockBlog.id }),
+    );
 
     const { createdAt, ...post } = expected[1];
     const { createdAt: realCreatedAt, ...realPost } = stored[1];
