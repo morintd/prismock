@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable jest/no-conditional-expect */
+// @ts-nocheck
 import { Prisma, PrismaClient } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
+import { Generator } from '@prisma/internals';
 
 import { resetDb, seededBlogs, seededPosts, seededUsers, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
-import { generateDMMF, generatePrismock } from '../lib/prismock';
+import { fetchGenerators, generatePrismock, getProvider } from '../lib/prismock';
 
 jest.setTimeout(40000);
 
@@ -16,7 +19,7 @@ describe('client', () => {
   let prismock: PrismockClient;
   let prisma: PrismaClient;
 
-  let schema: DMMF.Document;
+  let generators: Generator[];
 
   async function reset() {
     await resetDb();
@@ -25,7 +28,7 @@ describe('client', () => {
     prismock = await generatePrismock();
     simulateSeed(prismock);
 
-    schema = await generateDMMF();
+    generators = await fetchGenerators();
   }
 
   beforeAll(async () => {
@@ -47,11 +50,25 @@ describe('client', () => {
     expect(() => prismock.$on('beforeExit', jest.fn())).not.toThrow();
   });
 
-  it('Should handle $use', () => {});
+  it('Should handle $use', () => {
+    expect(() =>
+      prisma.$use(async (params, next) => {
+        const result = await next(params);
+        return result;
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      prismock.$use(async (params, next) => {
+        const result = await next(params);
+        return result;
+      }),
+    ).not.toThrow();
+  });
 
   /* SQL only */
   it('Should handle executeRaw', async () => {
-    if (isSQL(schema)) {
+    if (getProvider(generators) === 'postgresql') {
       await expect(
         prisma.$executeRaw(Prisma.sql`DELETE FROM public."User" where email = 'does-not-exist@gmail.com'`),
       ).resolves.toBe(0);
@@ -62,7 +79,7 @@ describe('client', () => {
   });
 
   it('Should handle executeRawUnsafe', async () => {
-    if (isSQL(schema)) {
+    if (getProvider(generators) === 'postgresql') {
       await expect(
         prisma.$executeRawUnsafe(`DELETE FROM public."User" where email = 'does-not-exist@gmail.com'`),
       ).resolves.toBe(0);
@@ -73,7 +90,7 @@ describe('client', () => {
   });
 
   it('Should handle $queryRaw', async () => {
-    if (isSQL(schema)) {
+    if (getProvider(generators) === 'postgresql') {
       await expect(
         prisma.$queryRaw(Prisma.sql`SELECT * from public."User" where email = 'does-not-exist@gmail.com'`),
       ).resolves.toEqual([]);
@@ -84,7 +101,7 @@ describe('client', () => {
   });
 
   it('Should handle $queryRawUnsafe', async () => {
-    if (isSQL(schema)) {
+    if (getProvider(generators) === 'postgresql') {
       await expect(
         prisma.$queryRawUnsafe(`SELECT * from public."User" where email = 'does-not-exist@gmail.com'`),
       ).resolves.toEqual([]);
@@ -95,7 +112,7 @@ describe('client', () => {
   });
 
   it('Should handle $transaction', async () => {
-    if (isSQL(schema)) {
+    if (getProvider(generators) === 'postgresql') {
       await reset();
 
       await expect(prisma.$transaction([prisma.post.deleteMany()])).resolves.toEqual([{ count: seededPosts.length }]);
