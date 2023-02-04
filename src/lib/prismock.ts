@@ -16,7 +16,7 @@ export type Data = Record<string, Item[]>;
 export type Properties = Record<string, DelegateProperties>;
 export type Delegates = Record<string, Delegate>;
 
-async function generateDMMF(schemaPath?: string) {
+export async function generateDMMF(schemaPath?: string) {
   const pathToModule = schemaPath ?? require.resolve(path.resolve(process.cwd(), 'prisma/schema.prisma'));
   return getDMMF({ datamodel: getSchemaSync(pathToModule) });
 }

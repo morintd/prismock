@@ -258,6 +258,7 @@ prismock.getData(); // { user: [] }
 - Refactoring of update operation.
 - Replace item formating with function composition
 - Restore test on `_count` for mongodb
+- Add custom client method for MongoDB (`$runCommandRaw`, `findRaw`, `aggregateRaw`)
 
 # Motivation
 
