@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { DMMF } from '@prisma/generator-helper';
-import { getDMMF, getSchemaSync } from '@prisma/internals';
+import { Generator, getDMMF, getGenerator, getSchemaSync } from '@prisma/internals';
 
 import { isAutoIncrement } from './operations';
 import { Delegate, DelegateProperties, generateDelegate, Item } from './delegate';
@@ -16,9 +16,21 @@ export type Data = Record<string, Item[]>;
 export type Properties = Record<string, DelegateProperties>;
 export type Delegates = Record<string, Delegate>;
 
-async function generateDMMF(schemaPath?: string) {
+export async function generateDMMF(schemaPath?: string) {
   const pathToModule = schemaPath ?? require.resolve(path.resolve(process.cwd(), 'prisma/schema.prisma'));
   return getDMMF({ datamodel: getSchemaSync(pathToModule) });
+}
+
+export async function fetchGenerator(schemaPath?: string) {
+  const pathToModule = schemaPath ?? require.resolve(path.resolve(process.cwd(), 'prisma/schema.prisma'));
+  return getGenerator({
+    schemaPath: pathToModule,
+    dataProxy: false,
+  });
+}
+
+export function getProvider(generator: Generator) {
+  return generator.options?.datasources[0].activeProvider;
 }
 
 export async function generatePrismock(options: Options = {}) {

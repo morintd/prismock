@@ -11,12 +11,31 @@ export type PrismockClient = PrismaClient & {
   setData: SetData;
 };
 
+type TransactionArgs = (tx: Omit<PrismaClient, '$transaction'>) => unknown | Promise<unknown>[];
+
 export function generateClient(delegates: Record<string, Delegate>, getData: GetData, setData: SetData) {
-  return {
+  const client = {
     $connect: () => Promise.resolve(),
     $disconnect: () => Promise.resolve(),
+    $on: () => {},
+    $use: () => {},
+    $executeRaw: () => Promise.resolve(0),
+    $executeRawUnsafe: () => Promise.resolve(0),
+    $queryRaw: () => Promise.resolve([]),
+    $queryRawUnsafe: () => Promise.resolve([]),
     getData,
     setData,
     ...delegates,
-  } as PrismockClient;
+  } as unknown as PrismockClient;
+
+  return {
+    ...client,
+    $transaction: async (args: TransactionArgs) => {
+      if (Array.isArray(args)) {
+        return Promise.all(args);
+      }
+
+      return args(client);
+    },
+  } as unknown as PrismockClient;
 }
