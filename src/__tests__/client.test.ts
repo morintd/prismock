@@ -24,6 +24,7 @@ describe('client', () => {
 
     const generator = await fetchGenerator();
     provider = getProvider(generator);
+    generator.stop();
   }
 
   beforeAll(async () => {
