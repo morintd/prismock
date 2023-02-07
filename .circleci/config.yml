@@ -3,7 +3,7 @@ version: 2.1
 setup: &setup
   working_directory: ~/repo
   docker:
-    - image: cimg/node:19.5.0
+    - image: cimg/node:19.6.0
 
 # Define the jobs we want to run for this project
 jobs:
