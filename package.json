@@ -87,7 +87,7 @@
   "dependencies": {
     "@prisma/generator-helper": "4.10.1",
     "@prisma/internals": "4.10.1",
-    "bson": "5.0.0"
+    "bson": "5.0.1"
   },
   "peerDependencies": {
     "@prisma/client": "*"
