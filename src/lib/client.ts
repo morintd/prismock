@@ -11,7 +11,7 @@ export type PrismockClient<T = PrismaClient> = T & {
   setData: SetData;
 };
 
-type TransactionArgs<T = PrismaClient> = (tx: Omit<T, '$transaction'>) => unknown | Promise<unknown>[];
+type TransactionArgs<T> = (tx: Omit<T, '$transaction'>) => unknown | Promise<unknown>[];
 
 export function generateClient<T = PrismaClient>(delegates: Record<string, Delegate>, getData: GetData, setData: SetData) {
   const client = {
