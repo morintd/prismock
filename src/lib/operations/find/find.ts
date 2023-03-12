@@ -32,7 +32,7 @@ export function where(whereArgs: FindArgs['where'] = {}, current: Delegate, dele
 
 export function paginate(items: Item[], skip?: number, take?: number) {
   if (!skip && !take) return items;
-  return items.slice(skip ?? 0, take);
+  return items.slice(skip ?? 0, take === undefined ? undefined : take + (skip ?? 0));
 }
 
 export function includes(args: FindArgs, current: Delegate, delegates: Delegates) {

@@ -211,6 +211,24 @@ describe('find', () => {
       expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
     });
 
+    it('Should return corresponding items with take and skip', async () => {
+      const expected = [seededUsers[1], seededUsers[2]];
+      const realUsers = await prisma.user.findMany({
+        where: {},
+        take: 2,
+        skip: 1,
+      });
+
+      const mockUsers = await prismock.user.findMany({
+        where: {},
+        take: 2,
+        skip: 1,
+      });
+
+      expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
+      expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
+    });
+
     it("Should return empty list if doesn't exist", async () => {
       const realUser = await prisma.user.findMany({
         where: { email: 'user0@company.com' },
