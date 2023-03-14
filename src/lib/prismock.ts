@@ -1,5 +1,6 @@
 import path from 'path';
 
+import { PrismaClient } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
 import { Generator, getDMMF, getGenerator, getSchemaSync } from '@prisma/internals';
 
@@ -33,7 +34,7 @@ export function getProvider(generator: Generator) {
   return generator.options?.datasources[0].activeProvider;
 }
 
-export async function generatePrismock(options: Options = {}) {
+export async function generatePrismock<T = PrismaClient>(options: Options = {}) {
   const schema = await generateDMMF(options.schemaPath);
   const { models } = schema.datamodel;
 
@@ -87,5 +88,5 @@ export async function generatePrismock(options: Options = {}) {
     };
   }, {} as Delegates);
 
-  return generateClient(clientDelegates, getData, setData);
+  return generateClient<T>(clientDelegates, getData, setData);
 }

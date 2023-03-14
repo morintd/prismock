@@ -6,14 +6,14 @@ import { Data } from './prismock';
 type GetData = () => Data;
 type SetData = (data: Data) => void;
 
-export type PrismockClient = PrismaClient & {
+export type PrismockClient<T = PrismaClient> = T & {
   getData: GetData;
   setData: SetData;
 };
 
-type TransactionArgs = (tx: Omit<PrismaClient, '$transaction'>) => unknown | Promise<unknown>[];
+type TransactionArgs<T> = (tx: Omit<T, '$transaction'>) => unknown | Promise<unknown>[];
 
-export function generateClient(delegates: Record<string, Delegate>, getData: GetData, setData: SetData) {
+export function generateClient<T = PrismaClient>(delegates: Record<string, Delegate>, getData: GetData, setData: SetData) {
   const client = {
     $connect: () => Promise.resolve(),
     $disconnect: () => Promise.resolve(),
@@ -26,16 +26,16 @@ export function generateClient(delegates: Record<string, Delegate>, getData: Get
     getData,
     setData,
     ...delegates,
-  } as unknown as PrismockClient;
+  } as unknown as PrismockClient<T>;
 
   return {
     ...client,
-    $transaction: async (args: TransactionArgs) => {
+    $transaction: async (args: TransactionArgs<T>) => {
       if (Array.isArray(args)) {
         return Promise.all(args);
       }
 
       return args(client);
     },
-  } as unknown as PrismockClient;
+  } as unknown as PrismockClient<T>;
 }
