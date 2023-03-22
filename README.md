@@ -77,6 +77,31 @@ beforeAll(async () => {
 
 Then, you will be able to write your tests as if your app was using an in-memory Prisma client.
 
+### Alternative Synchronous Client Generation
+
+You may have the option to generate the Prismock client synchronously if you have access to the DMMF (Datamodel Meta Format).
+
+```ts
+import { generatePrismockSync } from 'prismock';
+import { Prisma } from "__generated__/client";
+
+const models  = Prisma.dmmf.datamodel.models;
+
+let app: INestApplication;
+
+beforeAll(async () => {
+  const prismock = generatePrismockSync({ models });
+
+  const moduleRef = await Test.createTestingModule({ imports: [] })
+    .overrideProvider(PrismaService)
+    .useValue(prismock)
+    .compile();
+
+  app = moduleRef.createNestApplication();
+  await app.init();
+})
+```
+
 # API
 
 ```ts
