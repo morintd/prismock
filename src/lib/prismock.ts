@@ -6,11 +6,12 @@ import { Generator, getDMMF, getGenerator, getSchemaSync } from '@prisma/interna
 
 import { isAutoIncrement } from './operations';
 import { Delegate, DelegateProperties, generateDelegate, Item } from './delegate';
-import { generateClient } from './client';
+import { generateClient, PrismockClient } from './client';
 import { camelize, omit } from './helpers';
 
 type Options = {
   schemaPath?: string;
+  models?: DMMF.Model[];
 };
 
 export type Data = Record<string, Item[]>;
@@ -34,10 +35,16 @@ export function getProvider(generator: Generator) {
   return generator.options?.datasources[0].activeProvider;
 }
 
-export async function generatePrismock<T = PrismaClient>(options: Options = {}) {
+export async function generatePrismock<T = PrismaClient>(options: Options = {}): Promise<PrismockClient<T>> {
+  if (options.models !== undefined && options.models.length > 0) {
+    return generatePrismockSync<T>(options);
+  }
   const schema = await generateDMMF(options.schemaPath);
-  const { models } = schema.datamodel;
+  return generatePrismockSync<T>({ models: schema.datamodel.models });
+}
 
+export function generatePrismockSync<T = PrismockClient>(options: Omit<Options, 'schemaPath'> = {}): PrismockClient<T> {
+  const models = options.models ?? [];
   const data: Data = {};
   const properties: Properties = {};
   const delegates: Delegates = {};
