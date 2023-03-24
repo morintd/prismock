@@ -11,7 +11,10 @@ import { camelize, omit } from './helpers';
 
 type Options = {
   schemaPath?: string;
-  models?: DMMF.Model[];
+};
+
+type OptionsSync = {
+  models: DMMF.Model[];
 };
 
 export type Data = Record<string, Item[]>;
@@ -36,14 +39,11 @@ export function getProvider(generator: Generator) {
 }
 
 export async function generatePrismock<T = PrismaClient>(options: Options = {}): Promise<PrismockClient<T>> {
-  if (options.models !== undefined && options.models.length > 0) {
-    return generatePrismockSync<T>(options);
-  }
   const schema = await generateDMMF(options.schemaPath);
   return generatePrismockSync<T>({ models: schema.datamodel.models });
 }
 
-export function generatePrismockSync<T = PrismockClient>(options: Omit<Options, 'schemaPath'> = {}): PrismockClient<T> {
+export function generatePrismockSync<T = PrismockClient>(options: OptionsSync): PrismockClient<T> {
   const models = options.models ?? [];
   const data: Data = {};
   const properties: Properties = {};
