@@ -1,1 +1,1 @@
-export { generatePrismock } from './lib/prismock';
+export { generatePrismock, generatePrismockSync } from './lib/prismock';
