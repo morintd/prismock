@@ -199,8 +199,8 @@ prismock.getData(); // { user: [] }
 | AND       | ✔     |
 | OR        | ✔     |
 | NOT       | ✔     |
+| mode      | ✔    |
 | search    | ⛔    |
-| mode      | ⛔    |
 
 ## Relation filters
 

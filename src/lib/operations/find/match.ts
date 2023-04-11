@@ -26,7 +26,7 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
     };
 
   function match(child: string, item: Item, where: FindWhereArgs) {
-    const val: any = item[child];
+    let val: any = item[child];
     const filter = where[child] as Prisma.Enumerable<FindWhereArgs>;
 
     if (child === 'OR') return matchOr(item, filter as FindWhereArgs[]);
@@ -47,6 +47,11 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
       }
     } else {
       if (typeof filter === 'object') {
+        const modeValueTransformer: <T>(v: T) => T =
+          'mode' in filter ? <T>(v: T) => (typeof v === 'string' ? (v.toLocaleLowerCase() as T) : v) : <T>(v: T) => v;
+
+        val = modeValueTransformer(val);
+
         const info = current.model.fields.find((field) => field.name === child);
         if (info?.relationName) {
           const childName = camelize(info.type);
@@ -98,37 +103,37 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
 
         let match = true;
         if ('equals' in filter && match) {
-          match = filter.equals === val;
+          match = modeValueTransformer(filter.equals) === val;
         }
         if ('startsWith' in filter && match) {
-          match = val.indexOf(filter.startsWith) === 0;
+          match = val.indexOf(modeValueTransformer(filter.startsWith)) === 0;
         }
         if ('endsWith' in filter && match) {
-          match = val.indexOf(filter.endsWith) === val.length - (filter as any).endsWith.length;
+          match = val.indexOf(modeValueTransformer(filter.endsWith)) === val.length - (filter as any).endsWith.length;
         }
         if ('contains' in filter && match) {
-          match = val.indexOf(filter.contains) > -1;
+          match = val.indexOf(modeValueTransformer(filter.contains)) > -1;
         }
         if ('gt' in filter && match) {
-          match = val > filter.gt!;
+          match = val > modeValueTransformer(filter.gt)!;
         }
         if ('gte' in filter && match) {
-          match = val >= filter.gte!;
+          match = val >= modeValueTransformer(filter.gte)!;
         }
         if ('lt' in filter && match) {
-          match = val < filter.lt!;
+          match = val < modeValueTransformer(filter.lt)!;
         }
         if ('lte' in filter && match) {
-          match = val <= filter.lte!;
+          match = val <= modeValueTransformer(filter.lte)!;
         }
         if ('in' in filter && match) {
-          match = (filter.in as any)!.includes(val);
+          match = (filter.in as any[]).map((inEntry) => modeValueTransformer(inEntry)).includes(val);
         }
         if ('not' in filter && match) {
-          match = val !== filter.not;
+          match = val !== modeValueTransformer(filter.not);
         }
         if ('notIn' in filter && match) {
-          match = !(filter as any).notIn.includes(val);
+          match = !(filter.notIn as any[]).map((notInEntry) => modeValueTransformer(notInEntry)).includes(val);
         }
         if (!match) return false;
       } else if (val !== filter) {
