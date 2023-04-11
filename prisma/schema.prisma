@@ -36,7 +36,7 @@ model Post {
   imprint   String   @default(uuid())
   author    User     @relation(fields: [authorId], references: [id])
   authorId  Int
-  blog      Blog     @relation(fields: [blogId], references: [id])
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
 }
 
