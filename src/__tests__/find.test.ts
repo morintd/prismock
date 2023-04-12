@@ -35,9 +35,7 @@ describe('find', () => {
     simulateSeed(prismock);
 
     const generator = await fetchGenerator();
-    console.log('generator');
     provider = getProvider(generator)!;
-    console.log('provider', provider);
     generator.stop();
 
     realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
