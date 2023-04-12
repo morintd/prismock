@@ -12,11 +12,12 @@ import {
   simulateSeed,
 } from '../../testing';
 import { PrismockClient } from '../lib/client';
-import { generatePrismock } from '../lib/prismock';
+import { fetchGenerator, generatePrismock, getProvider } from '../lib/prismock';
 
 jest.setTimeout(40000);
 
 describe('find', () => {
+  let provider: string;
   let prismock: PrismockClient;
   let prisma: PrismaClient;
 
@@ -32,6 +33,10 @@ describe('find', () => {
     prisma = new PrismaClient();
     prismock = await generatePrismock();
     simulateSeed(prismock);
+
+    const generator = await fetchGenerator();
+    provider = getProvider(generator)!;
+    generator.stop();
 
     realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
     mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;
@@ -147,8 +152,35 @@ describe('find', () => {
         ['not', { where: { warnings: { not: 0 } } }, user],
         ['notIn', { where: { warnings: { notIn: [0, 5] } } }, seededUsers[2]],
         ['and', { where: { AND: [{ warnings: { gt: 0 } }, { email: { startsWith: 'user3' } }] } }, seededUsers[2]],
+
         ['or', { where: { OR: [{ warnings: { gt: 10 } }, { email: { startsWith: 'user3' } }] } }, seededUsers[2]],
         ['not', { where: { NOT: [{ warnings: { lt: 5 } }, { email: { startsWith: 'user2' } }] } }, seededUsers[2]],
+      ];
+
+      // Adding case-sentive test but ignoring db where it's not a feature (case-insensitive by default)
+      // https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#case-insensitive-filtering
+
+      const insensitiveMatchers: [string, Prisma.UserFindFirstArgs, User][] = [
+        [
+          'equals',
+          { where: { email: { equals: 'USER2@COMPANY.com', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
+          user,
+        ],
+        ['startsWith', { where: { email: { startsWith: 'USER2', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs, user],
+        [
+          'endsWith',
+          { where: { email: { endsWith: '2@COMPANY.COM', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
+          user,
+        ],
+        ['contains', { where: { email: { contains: '2@COMPANY', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs, user],
+        ['in', { where: { email: { in: ['USER2@COMPANY.COM'], mode: 'insensitive' } } } as Prisma.UserFindFirstArgs, user],
+        [
+          'and',
+          {
+            where: { AND: [{ warnings: { gt: 0 } }, { email: { startsWith: 'USER3', mode: 'insensitive' } }] },
+          } as Prisma.UserFindFirstArgs,
+          seededUsers[2],
+        ],
       ];
 
       matchers.forEach(([name, find, expected]) => {
@@ -159,6 +191,24 @@ describe('find', () => {
 
           expect(formatEntry(realUser)).toEqual(formatEntry(expected));
           expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
+        });
+      });
+
+      insensitiveMatchers.forEach(([name, find, expected]) => {
+        it(`Should match on ${name} [insensitive]`, async () => {
+          if (!['mysql', 'sqlserver'].includes(provider)) {
+            const realUser = (await prisma.user.findFirst(find)) as User;
+
+            const mockUser = (await prismock.user.findFirst(find)) as User;
+
+            // eslint-disable-next-line jest/no-conditional-expect
+            expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+            // eslint-disable-next-line jest/no-conditional-expect
+            expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
+          } else {
+            // eslint-disable-next-line no-console
+            console.log('[SKIPPED] Insensitive is not supported on the current db');
+          }
         });
       });
     });
