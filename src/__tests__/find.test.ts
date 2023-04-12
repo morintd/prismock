@@ -146,7 +146,7 @@ describe('find', () => {
         ['endsWith', { where: { email: { endsWith: '2@company.com' } } }, user],
         ['endsWith [mode: insensitive]', { where: { email: { endsWith: '2@COMPANY.COM', mode: 'insensitive' } } }, user],
         ['contains', { where: { email: { contains: '2@company' } } }, user],
-        ['contains', { where: { email: { contains: '2@COMPANY', mode: 'insensitive' } } }, user],
+        ['contains [mode: insensitive]', { where: { email: { contains: '2@COMPANY', mode: 'insensitive' } } }, user],
         ['gt', { where: { warnings: { gt: 5 } } }, seededUsers[2]],
         ['gt/lt', { where: { warnings: { gt: 0, lt: 10 } } }, user],
         ['gte/lte (gte)', { where: { warnings: { gte: 5, lte: 9 } } }, user],
