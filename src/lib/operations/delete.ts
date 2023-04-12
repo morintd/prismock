@@ -3,7 +3,7 @@ import { Item, Delegate } from '../delegate';
 import { FindWhereArgs, SelectArgs } from '../types';
 import { camelize } from '../helpers';
 
-import { getJoinField, where } from './find';
+import { getJoinField, includes, select, where } from './find';
 
 export type DeleteArgs = {
   select?: SelectArgs | null;
@@ -21,9 +21,12 @@ export function deleteMany(args: DeleteArgs, current: Delegate, delegates: Deleg
     (accumulator: DeletionMap, currentValue: Item) => {
       const shouldDelete = where(args.where, current, delegates)(currentValue);
 
+      const withIncludes = includes(args, current, delegates)(currentValue);
+      const withSelect = select(withIncludes, args.select);
+
       if (shouldDelete) {
         return {
-          toDelete: [...accumulator.toDelete, currentValue],
+          toDelete: [...accumulator.toDelete, withSelect],
           withoutDeleted: accumulator.withoutDeleted,
         };
       }
