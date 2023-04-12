@@ -35,7 +35,9 @@ describe('find', () => {
     simulateSeed(prismock);
 
     const generator = await fetchGenerator();
+    console.log('generator');
     provider = getProvider(generator)!;
+    console.log('provider', provider);
     generator.stop();
 
     realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
@@ -160,42 +162,29 @@ describe('find', () => {
       // Adding case-sentive test but ignoring db where it's not a feature (case-insensitive by default)
       // https://www.prisma.io/docs/concepts/components/prisma-client/filtering-and-sorting#case-insensitive-filtering
 
-      if (!['mysql', 'sqlserver'].includes(provider)) {
-        matchers.push(
-          [
-            'equals [mode: insensitive])',
-            { where: { email: { equals: 'USER2@COMPANY.com', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
-            user,
-          ],
-          [
-            'startsWith [mode: insensitive]',
-            { where: { email: { startsWith: 'USER2', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
-            user,
-          ],
-          [
-            'endsWith [mode: insensitive]',
-            { where: { email: { endsWith: '2@COMPANY.COM', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
-            user,
-          ],
-          [
-            'contains [mode: insensitive]',
-            { where: { email: { contains: '2@COMPANY', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
-            user,
-          ],
-          [
-            'in [mode: insensitive]',
-            { where: { email: { in: ['USER2@COMPANY.COM'], mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
-            user,
-          ],
-          [
-            'and [mode: insensitive]',
-            {
-              where: { AND: [{ warnings: { gt: 0 } }, { email: { startsWith: 'USER3', mode: 'insensitive' } }] },
-            } as Prisma.UserFindFirstArgs,
-            seededUsers[2],
-          ],
-        );
-      }
+      const insensitiveMatchers: [string, Prisma.UserFindFirstArgs, User][] = [
+        [
+          'equals',
+          { where: { email: { equals: 'USER2@COMPANY.com', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
+          user,
+        ],
+        ['startsWith', { where: { email: { startsWith: 'USER2', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs, user],
+        [
+          'endsWith',
+          { where: { email: { endsWith: '2@COMPANY.COM', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs,
+          user,
+        ],
+        ['contains', { where: { email: { contains: '2@COMPANY', mode: 'insensitive' } } } as Prisma.UserFindFirstArgs, user],
+        ['in', { where: { email: { in: ['USER2@COMPANY.COM'], mode: 'insensitive' } } } as Prisma.UserFindFirstArgs, user],
+        [
+          'and',
+          {
+            where: { AND: [{ warnings: { gt: 0 } }, { email: { startsWith: 'USER3', mode: 'insensitive' } }] },
+          } as Prisma.UserFindFirstArgs,
+          seededUsers[2],
+        ],
+      ];
+
       matchers.forEach(([name, find, expected]) => {
         it(`Should match on ${name}`, async () => {
           const realUser = (await prisma.user.findFirst(find)) as User;
@@ -204,6 +193,24 @@ describe('find', () => {
 
           expect(formatEntry(realUser)).toEqual(formatEntry(expected));
           expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
+        });
+      });
+
+      insensitiveMatchers.forEach(([name, find, expected]) => {
+        it(`Should match on ${name} [insensitive]`, async () => {
+          if (!['mysql', 'sqlserver'].includes(provider)) {
+            const realUser = (await prisma.user.findFirst(find)) as User;
+
+            const mockUser = (await prismock.user.findFirst(find)) as User;
+
+            // eslint-disable-next-line jest/no-conditional-expect
+            expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+            // eslint-disable-next-line jest/no-conditional-expect
+            expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
+          } else {
+            // eslint-disable-next-line no-console
+            console.log('[SKIPPED] Insensitive is not supported on the current db');
+          }
         });
       });
     });
