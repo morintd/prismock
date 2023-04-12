@@ -55,7 +55,7 @@ describe('delete (select)', () => {
   });
 
   it('Should delete a single element', () => {
-    expect(formatEntry(realDelete)).toEqual({
+    expect(realDelete).toEqual({
       ...seededBlogs[0],
       id: realBlog1.id,
       posts: [
@@ -66,7 +66,7 @@ describe('delete (select)', () => {
         },
       ],
     });
-    expect(formatEntry(mockDelete)).toEqual({
+    expect(mockDelete).toEqual({
       ...seededBlogs[0],
       id: mockBlog1.id,
       posts: [
