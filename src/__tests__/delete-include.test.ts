@@ -13,6 +13,18 @@ describe('delete (includes)', () => {
   let realDelete: Blog & { posts: Post[] };
   let mockDelete: Blog & { posts: Post[] };
 
+  let realBlog1: Blog;
+  let mockBlog1: Blog;
+
+  let realBlog2: Blog;
+  let mockBlog2: Blog;
+
+  let realPost1: Post;
+  let mockPost1: Post;
+
+  let realPost2: Post;
+  let mockPost2: Post;
+
   beforeAll(async () => {
     await resetDb();
 
@@ -20,50 +32,64 @@ describe('delete (includes)', () => {
     prismock = await generatePrismock();
     simulateSeed(prismock);
 
+    realBlog1 = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+    mockBlog1 = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+
+    realBlog2 = (await prisma.blog.findUnique({ where: { title: seededBlogs[1].title } }))!;
+    mockBlog2 = (await prismock.blog.findUnique({ where: { title: seededBlogs[1].title } }))!;
+
+    realPost1 = (await prisma.post.findUnique({ where: { title: seededPosts[0].title } }))!;
+    mockPost1 = (await prisma.post.findUnique({ where: { title: seededPosts[0].title } }))!;
+
+    realPost2 = (await prisma.post.findUnique({ where: { title: seededPosts[1].title } }))!;
+    mockPost2 = (await prisma.post.findUnique({ where: { title: seededPosts[1].title } }))!;
+
     realDelete = await prisma.blog.delete({ where: { title: 'blog-1' }, include: { posts: true } });
     mockDelete = await prismock.blog.delete({ where: { title: 'blog-1' }, include: { posts: true } });
   });
 
-  describe('delete', () => {
-    it('Should delete a single element', () => {
-      const expected: Blog & { posts: Post[] } = {
-        id: 1,
-        title: 'blog-1',
-        posts: [
-          {
-            authorId: 1,
-            blogId: 1,
-            createdAt: expect.any(Date),
-            id: 1,
-            imprint: expect.any(String),
-            title: 'title1',
-          },
-        ],
-      };
-
-      expect(formatEntry(realDelete)).toEqual(formatEntry(expected));
-      expect(formatEntry(mockDelete)).toEqual(formatEntry(expected));
+  it('Should delete a single element', () => {
+    expect(formatEntry(realDelete)).toEqual({
+      ...seededBlogs[0],
+      id: realBlog1.id,
+      posts: [
+        {
+          ...seededPosts[0],
+          id: realPost1.id,
+          authorId: realPost1.authorId,
+          createdAt: expect.any(Date),
+          imprint: expect.any(String),
+        },
+      ],
     });
-
-    it('Should delete blog from stored data', async () => {
-      const expected = [seededBlogs[1]];
-
-      const stored = await prisma.blog.findMany();
-      const mockStored = prismock.getData().blog;
-
-      expect(stored).toEqual(expected);
-      expect(mockStored).toEqual(expected);
+    expect(formatEntry(mockDelete)).toEqual({
+      ...seededBlogs[0],
+      id: mockBlog1.id,
+      posts: [
+        {
+          ...seededPosts[0],
+          id: mockPost1.id,
+          authorId: mockPost1.authorId,
+          createdAt: expect.any(Date),
+          imprint: expect.any(String),
+        },
+      ],
     });
+  });
 
-    it('Should delete posts from stored data', async () => {
-      const { imprint, createdAt, ...expectedPost } = seededPosts[1];
-      const expected = [expectedPost];
+  it('Should delete blog from stored data', async () => {
+    const stored = await prisma.blog.findMany();
+    const mockStored = prismock.getData().blog;
 
-      const stored = await prisma.post.findMany({ select: { authorId: true, blogId: true, id: true, title: true } });
-      const mockStored = await prismock.post.findMany({ select: { authorId: true, blogId: true, id: true, title: true } });
+    expect(stored).toEqual([realBlog2]);
+    expect(mockStored).toEqual([mockBlog2]);
+  });
 
-      expect(stored).toEqual(expected);
-      expect(mockStored).toEqual(expected);
-    });
+  it('Should delete posts from stored data', async () => {
+    const stored = await prisma.post.findMany();
+    const mockStored = await prismock.post.findMany();
+
+    expect(stored).toEqual([{ ...realPost2, createdAt: expect.any(Date), imprint: expect.any(String) }]);
+    expect(mockStored).toEqual([{ ...mockPost2, createdAt: expect.any(Date), imprint: expect.any(String) }]);
   });
 });
