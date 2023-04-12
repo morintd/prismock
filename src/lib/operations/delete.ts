@@ -33,7 +33,7 @@ export function deleteMany(args: DeleteArgs, current: Delegate, delegates: Deleg
 
       return {
         toDelete: accumulator.toDelete,
-        withoutDeleted: [...accumulator.withoutDeleted, withSelect],
+        withoutDeleted: [...accumulator.withoutDeleted, currentValue],
       };
     },
     { toDelete: [], withoutDeleted: [] },
