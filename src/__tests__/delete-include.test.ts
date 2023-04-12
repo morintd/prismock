@@ -39,10 +39,10 @@ describe('delete (includes)', () => {
     mockBlog2 = (await prismock.blog.findUnique({ where: { title: seededBlogs[1].title } }))!;
 
     realPost1 = (await prisma.post.findUnique({ where: { title: seededPosts[0].title } }))!;
-    mockPost1 = (await prisma.post.findUnique({ where: { title: seededPosts[0].title } }))!;
+    mockPost1 = (await prismock.post.findUnique({ where: { title: seededPosts[0].title } }))!;
 
     realPost2 = (await prisma.post.findUnique({ where: { title: seededPosts[1].title } }))!;
-    mockPost2 = (await prisma.post.findUnique({ where: { title: seededPosts[1].title } }))!;
+    mockPost2 = (await prismock.post.findUnique({ where: { title: seededPosts[1].title } }))!;
 
     realDelete = await prisma.blog.delete({ where: { title: 'blog-1' }, include: { posts: true } });
     mockDelete = await prismock.blog.delete({ where: { title: 'blog-1' }, include: { posts: true } });
