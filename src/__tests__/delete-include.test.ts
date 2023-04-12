@@ -1,6 +1,6 @@
 import { Blog, Post, PrismaClient } from '@prisma/client';
 
-import { formatEntry, resetDb, seededBlogs, seededPosts, simulateSeed } from '../../testing';
+import { resetDb, seededBlogs, seededPosts, simulateSeed } from '../../testing';
 import { PrismockClient } from '../lib/client';
 import { generatePrismock } from '../lib/prismock';
 
