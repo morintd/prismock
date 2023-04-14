@@ -101,19 +101,19 @@ describe('update (create)', () => {
       buildPost(1, { authorId: seededUsers[0].id, blogId: seededBlogs[0].id }),
       buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
       buildPost(3, { authorId: seededUsers[0].id, title: 'nested', blogId: seededBlogs[0].id }),
-    ].map(({ createdAt, imprint, ...post }) => post);
+    ].map((post) => ({ ...post, createdAt: expect.any(Date), imprint: expect.any(String) }));
 
     const stored = await prisma.post.findMany();
     const mockStored = prismock.getData().post;
 
-    expect(formatEntries(stored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
+    expect(formatEntries(stored)).toEqual(
       formatEntries([
         { ...expected[0], authorId: realAuthor1.id, blogId: realBlog1.id },
         { ...expected[1], authorId: realAuthor2.id, blogId: realBlog2.id },
         { ...expected[2], authorId: realAuthor1.id, blogId: realBlog1.id },
       ]),
     );
-    expect(formatEntries(mockStored.map(({ createdAt, imprint, ...post }) => post))).toEqual(
+    expect(formatEntries(mockStored)).toEqual(
       formatEntries([
         { ...expected[0], authorId: mockAuthor1.id, blogId: mockBlog1.id },
         { ...expected[1], authorId: mockAuthor2.id, blogId: mockBlog2.id },
