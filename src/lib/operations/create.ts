@@ -7,7 +7,7 @@ import { camelize, uuid } from '../helpers';
 import { Delegates } from '../prismock';
 import { ConnectOrCreate, CreateArgs, FindWhereArgs } from '../types';
 
-import { findNextIncrement, findOne, includes, select } from './find';
+import { findNextIncrement, findOne, getJoinField, includes, select } from './find';
 
 export const isAutoIncrement = (field: DMMF.Field) => {
   return (field.default as DMMF.FieldDefault)?.name === 'autoincrement';
@@ -93,17 +93,39 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
         const connect = (value as Record<string, unknown>).connect as FindWhereArgs;
 
         const field = delegate.model.fields.find((field) => field.name === key);
+        const joinField = getJoinField(field!, delegates);
         const subDelegate = delegates[camelize(field!.type)];
 
-        const connected = findOne({ where: connect }, subDelegate, delegates);
-        // if (!connected) connected = create(connectOrCreate.create, {}, subDelegate, delegates, subDelegate.onChange);
+        if (Array.isArray(connect)) {
+          connect.forEach((c) => {
+            subDelegate.update({
+              where: c,
+              data: {
+                [joinField!.relationFromFields![0]]: accumulator[joinField!.relationToFields![0]],
+              },
+            });
+          });
+        } else {
+          if (field!.relationFromFields!.length > 0) {
+            const connected = findOne({ where: connect }, subDelegate, delegates);
 
-        if (connected) {
-          return {
-            ...accumulator,
-            [field!.relationFromFields![0]]: connected[field!.relationToFields![0]],
-          };
+            if (connected) {
+              return {
+                ...accumulator,
+                [field!.relationFromFields![0]]: connected[field!.relationToFields![0]],
+              };
+            }
+          } else {
+            subDelegate.update({
+              where: connect,
+              data: {
+                [joinField!.relationFromFields![0]]: accumulator[joinField!.relationToFields![0]],
+              },
+            });
+          }
         }
+
+        return accumulator;
       }
 
       return {
