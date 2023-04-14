@@ -1,14 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 
 import { buildUser, formatEntries, formatEntry, resetDb, seededUsers, simulateSeed } from '../../testing';
-import { PrismockClient } from '../lib/client';
+import { PrismockClient, PrismockClientType } from '../lib/client';
 import { Item } from '../lib/delegate';
-import { generatePrismock } from '../lib/prismock';
 
 jest.setTimeout(40000);
 
 describe('update', () => {
-  let prismock: PrismockClient;
+  let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
   let realUpdate: Item;
@@ -18,7 +17,7 @@ describe('update', () => {
     await resetDb();
 
     prisma = new PrismaClient();
-    prismock = await generatePrismock();
+    prismock = new PrismockClient() as PrismockClientType;
     simulateSeed(prismock);
 
     realUpdate = await prisma.user.update({

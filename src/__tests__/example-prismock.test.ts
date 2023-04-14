@@ -1,22 +1,17 @@
+import { PrismockClient } from '../lib/client';
 import { PrismaClient } from '@prisma/client';
 
-import { generatePrismock } from '../lib/prismock';
 import { buildUser, formatEntries, formatEntry } from '../../testing';
 
 jest.mock('@prisma/client', () => {
   return {
     ...jest.requireActual('@prisma/client'),
-    PrismaClient: jest.fn(),
+    PrismaClient: PrismockClient,
   };
 });
 
 describe('Example', () => {
   describe('With mock', () => {
-    beforeAll(async () => {
-      const prismock = await generatePrismock();
-      (PrismaClient as jest.Mock).mockReturnValue(prismock);
-    });
-
     it('Should use prismock instead of prisma', async () => {
       const prisma = new PrismaClient();
 

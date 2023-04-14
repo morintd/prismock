@@ -11,14 +11,14 @@ import {
   seededUsers,
   simulateSeed,
 } from '../../testing';
-import { PrismockClient } from '../lib/client';
-import { fetchGenerator, generatePrismock, getProvider } from '../lib/prismock';
+import { PrismockClient, PrismockClientType } from '../lib/client';
+import { fetchGenerator, getProvider } from '../lib/prismock';
 
 jest.setTimeout(40000);
 
 describe('find', () => {
   let provider: string;
-  let prismock: PrismockClient;
+  let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
   let realAuthor: User;
@@ -31,7 +31,7 @@ describe('find', () => {
     await resetDb();
 
     prisma = new PrismaClient();
-    prismock = await generatePrismock();
+    prismock = new PrismockClient() as PrismockClientType;
     simulateSeed(prismock);
 
     const generator = await fetchGenerator();

@@ -11,13 +11,12 @@ import {
   seededUsers,
   simulateSeed,
 } from '../../testing';
-import { PrismockClient } from '../lib/client';
-import { generatePrismock } from '../lib/prismock';
+import { PrismockClient, PrismockClientType } from '../lib/client';
 
 jest.setTimeout(40000);
 
 describe('create', () => {
-  let prismock: PrismockClient;
+  let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
   const mockUsers: User[] = [];
@@ -45,7 +44,7 @@ describe('create', () => {
     await resetDb();
 
     prisma = new PrismaClient();
-    prismock = await generatePrismock();
+    prismock = new PrismockClient() as PrismockClientType;
     simulateSeed(prismock);
 
     mockUsers.push(await prismock.user.create({ data: data.user1 }));

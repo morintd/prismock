@@ -11,13 +11,12 @@ import {
   seededPosts,
   seededBlogs,
 } from '../../testing';
-import { PrismockClient } from '../lib/client';
-import { generatePrismock } from '../lib/prismock';
+import { PrismockClient, PrismockClientType } from '../lib/client';
 
 jest.setTimeout(40000);
 
 describe('updateMany (nested/multiple)', () => {
-  let prismock: PrismockClient;
+  let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
   let realUser: User;
@@ -41,7 +40,7 @@ describe('updateMany (nested/multiple)', () => {
     await resetDb();
 
     prisma = new PrismaClient();
-    prismock = await generatePrismock();
+    prismock = new PrismockClient() as PrismockClientType;
     simulateSeed(prismock);
   });
 

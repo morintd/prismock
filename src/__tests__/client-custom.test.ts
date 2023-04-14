@@ -1,12 +1,13 @@
 import { DMMF } from '@prisma/generator-helper';
 
 import { seededBlogs, seededPosts, seededUsers } from '../../testing';
-import { generateDMMF, generatePrismock, generatePrismockSync } from '../lib/prismock';
+import { generateDMMF, generatePrismockSync } from '../lib/prismock';
+import { PrismockClient, PrismockClientType } from '../lib/client';
 
 describe('client (custom)', () => {
   describe('generatePrismock', () => {
-    it('Should set/get data', async () => {
-      const prismock = await generatePrismock();
+    it('Should set/get data', () => {
+      const prismock = new PrismockClient() as PrismockClientType;
       prismock.setData({ user: seededUsers, post: seededPosts, blog: seededBlogs });
       expect(prismock.getData()).toEqual({ user: seededUsers, post: seededPosts, blog: seededBlogs });
     });
