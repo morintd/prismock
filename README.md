@@ -57,7 +57,7 @@ import { PrismaService } from './prisma.service';
 let app: INestApplication;
 
 beforeAll(async () => {
-  const prismock = new Prismock();
+  const prismock = new PrismockClient();
 
   const moduleRef = await Test.createTestingModule({ imports: [] })
     .overrideProvider(PrismaService)
