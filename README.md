@@ -37,12 +37,10 @@ There is two options here, depending on your application architecture.
 You can mock the PrismaClient directly ([Example](https://github.com/morintd/prismock/blob/master/src/__tests__/example-prismock.test.ts)):
 
 ```ts
-import { PrismockClient } from '../lib/client';
-
 jest.mock('@prisma/client', () => {
   return {
     ...jest.requireActual('@prisma/client'),
-    PrismaClient: PrismockClient,
+    PrismaClient: jest.requireActual('prismock').PrismockClient,
   };
 });
 ```
@@ -54,7 +52,7 @@ If you are using dependency injection, you can directly use `prismock`. I person
 ```ts
 import { PrismockClient } from 'prismock';
 
-import { PrismaService } from './prisma.service.ts';
+import { PrismaService } from './prisma.service';
 
 let app: INestApplication;
 

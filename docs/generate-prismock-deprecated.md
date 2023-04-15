@@ -7,12 +7,10 @@
 You now have access to a class called `PrismockClient`. It can be used to mock the `PrismaClient` directly:
 
 ```ts
-import { PrismockClient } from '../lib/client';
-
 jest.mock('@prisma/client', () => {
   return {
     ...jest.requireActual('@prisma/client'),
-    PrismaClient: PrismockClient,
+    PrismaClient: jest.requireActual('prismock').PrismockClient,
   };
 });
 ```
@@ -20,7 +18,7 @@ jest.mock('@prisma/client', () => {
 Or can be used in your codebase as-is:
 
 ```ts
-import { PrismockClient } from '../lib/client';
+import { PrismockClient } from 'prismock';
 
 const prismock = new PrismockClient();
 ```
@@ -29,6 +27,10 @@ In the end:
 
 - Mocking is easier, and doesn't rely on async functions anymore
 - PrismockClient can be extended from
+
+## Feedback
+
+Please let me know if you have any issue with the newly introduced `PrismockClient`. While the current test suite validate its behavior, there might be some edge-cases making it hard to use.
 
 ## What's going on
 

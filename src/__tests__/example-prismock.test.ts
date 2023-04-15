@@ -1,4 +1,3 @@
-import { PrismockClient } from '../lib/client';
 import { PrismaClient } from '@prisma/client';
 
 import { buildUser, formatEntries, formatEntry } from '../../testing';
@@ -6,7 +5,7 @@ import { buildUser, formatEntries, formatEntry } from '../../testing';
 jest.mock('@prisma/client', () => {
   return {
     ...jest.requireActual('@prisma/client'),
-    PrismaClient: PrismockClient,
+    PrismaClient: jest.requireActual('../lib/client').PrismockClient,
   };
 });
 
