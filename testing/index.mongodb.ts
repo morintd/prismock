@@ -4,7 +4,7 @@ import { ObjectId } from 'bson';
 import { Post, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 
-import { PrismockClient } from '../src/lib/client';
+import { PrismockClientType } from '../src/lib/client';
 
 dotenv.config();
 
@@ -15,7 +15,7 @@ export const seededPosts = [
   buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
 ];
 
-export function simulateSeed(prismock: PrismockClient) {
+export function simulateSeed(prismock: PrismockClientType) {
   prismock.setData({
     user: seededUsers,
     post: seededPosts,

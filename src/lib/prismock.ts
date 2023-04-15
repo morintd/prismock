@@ -6,7 +6,7 @@ import { Generator, getDMMF, getGenerator, getSchema } from '@prisma/internals';
 
 import { isAutoIncrement } from './operations';
 import { Delegate, DelegateProperties, generateDelegate, Item } from './delegate';
-import { generateClient, PrismockClient } from './client';
+import { generateClient, PrismockClientType } from './client';
 import { camelize, omit } from './helpers';
 
 type Options = {
@@ -39,12 +39,17 @@ export function getProvider(generator: Generator) {
   return generator.options?.datasources[0].activeProvider;
 }
 
-export async function generatePrismock<T = PrismaClient>(options: Options = {}): Promise<PrismockClient<T>> {
+export async function generatePrismock<T = PrismaClient>(options: Options = {}): Promise<PrismockClientType<T>> {
   const schema = await generateDMMF(options.schemaPath);
   return generatePrismockSync<T>({ models: schema.datamodel.models });
 }
 
-export function generatePrismockSync<T = PrismockClient>(options: OptionsSync): PrismockClient<T> {
+export function generatePrismockSync<T = PrismockClientType>(options: OptionsSync): PrismockClientType<T> {
+  const { delegates, getData, setData } = generateDelegates(options);
+  return generateClient<T>(delegates, getData, setData);
+}
+
+export function generateDelegates(options: OptionsSync) {
   const models = options.models ?? [];
   const data: Data = {};
   const properties: Properties = {};
@@ -96,5 +101,5 @@ export function generatePrismockSync<T = PrismockClient>(options: OptionsSync): 
     };
   }, {} as Delegates);
 
-  return generateClient<T>(clientDelegates, getData, setData);
+  return { delegates: clientDelegates, getData, setData };
 }

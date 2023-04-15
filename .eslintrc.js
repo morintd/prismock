@@ -43,4 +43,12 @@ module.exports = {
     '@typescript-eslint/no-unsafe-return': 'off',
     'jest/no-standalone-expect': 'off',
   },
+  overrides: [
+    {
+      files: '**/*.test.ts',
+      rules: {
+        'import/order': ['off'],
+      },
+    },
+  ],
 };

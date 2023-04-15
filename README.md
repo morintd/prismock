@@ -37,19 +37,11 @@ There is two options here, depending on your application architecture.
 You can mock the PrismaClient directly ([Example](https://github.com/morintd/prismock/blob/master/src/__tests__/example-prismock.test.ts)):
 
 ```ts
-import { PrismaClient } from '@prisma/client';
-import { generatePrismock } from 'prismock';
-
 jest.mock('@prisma/client', () => {
   return {
     ...jest.requireActual('@prisma/client'),
-    PrismaClient: jest.fn(),
+    PrismaClient: jest.requireActual('prismock').PrismockClient,
   };
-});
-
-beforeAll(async () => {
-  const prismock = await generatePrismock();
-  (PrismaClient as jest.Mock).mockReturnValue(prismock);
 });
 ```
 
@@ -58,12 +50,14 @@ beforeAll(async () => {
 If you are using dependency injection, you can directly use `prismock`. I personally do so with the amazing [NestJS](https://docs.nestjs.com/fundamentals/testing#end-to-end-testing):
 
 ```ts
-import { generatePrismock } from 'prismock';
+import { PrismockClient } from 'prismock';
+
+import { PrismaService } from './prisma.service';
 
 let app: INestApplication;
 
 beforeAll(async () => {
-  const prismock = await generatePrismock();
+  const prismock = new Prismock();
 
   const moduleRef = await Test.createTestingModule({ imports: [] })
     .overrideProvider(PrismaService)
@@ -77,61 +71,19 @@ beforeAll(async () => {
 
 Then, you will be able to write your tests as if your app was using an in-memory Prisma client.
 
-## Alternative Synchronous Client Generation
-
-You may have the option to generate the Prismock client synchronously if you have access to the DMMF (Datamodel Meta Format).
-
-```ts
-import { generatePrismockSync } from 'prismock';
-import { Prisma } from '__generated__/client';
-
-const models = Prisma.dmmf.datamodel.models;
-const prismock = generatePrismockSync({ models });
-```
-
-# API
-
-## generatePrismock
-
-```ts
-generatePrismock(
-  pathToSchema?: string,
-): Promise<PrismaClient>
-```
-
-The returned object is similar to a PrismaClient, which can be used as-is.
-
-### pathToSchema
-
-Path to the schema file. If not provided, the schema is `prisma/schema.prisma`.
-
-## generatePrismockSync
-
-```ts
-generatePrismockSync(
-  models?: DMMF.Model[],
-): PrismaClient
-```
-
-The returned object is similar to a PrismaClient, which can be used as-is.
-
-### models
-
-List of models extracted from the DMMF document.
-
 ## Internal data
 
-Two additional functions are returned with the PrismaClient, `getData` and `setData`. In some edge-case, we need to directly access, or change, the data store management by _prismock_.
+Two additional functions are returned compared to the PrismaClient, `getData` and `setData`. In some edge-case, we need to directly access, or change, the data store management by _prismock_.
 
 Most of the time, you won't need it in your test, but keep in mind they exist
 
 ```ts
-const prismock = await generatePrismock();
+const prismock = new PrismockClient();
 prismock.setData({ user: [] });
 ```
 
 ```ts
-const prismock = await generatePrismock();
+const prismock = new PrismockClient();
 prismock.getData(); // { user: [] }
 ```
 
@@ -199,7 +151,7 @@ prismock.getData(); // { user: [] }
 | AND       | ✔     |
 | OR        | ✔     |
 | NOT       | ✔     |
-| mode      | ✔    |
+| mode      | ✔     |
 | search    | ⛔    |
 
 ## Relation filters
