@@ -51,7 +51,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: cimg/node:lts
-      - image: cimg/postgres:15.2
+      - image: cimg/postgres:15.3
         environment:
           POSTGRES_PASSWORD: 'postgres'
           POSTGRES_DB: prisma-mock
