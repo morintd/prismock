@@ -1706,10 +1706,26 @@
     "@octokit/tsconfig" "^1.0.2"
     "@octokit/types" "^9.2.3"
 
+"@octokit/plugin-paginate-rest@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-paginate-rest/-/plugin-paginate-rest-7.0.0.tgz#c3bf44cb7ef5b495137b4f0adab28637696d7029"
+  integrity sha512-NNm6DlYBEyKs9OZvy2Ax9YKn7e0/G7js+/I80icBTHUf6kB/nfaZkdXOF1Z32OaB+LDH6GIYpdYC3Bm3vwX5Ow==
+  dependencies:
+    "@octokit/tsconfig" "^1.0.2"
+    "@octokit/types" "^9.2.3"
+
 "@octokit/plugin-retry@^4.1.3":
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/@octokit/plugin-retry/-/plugin-retry-4.1.3.tgz#c717d7908be26a5570941d9688e3e8a3da95e714"
   integrity sha512-3YKBj7d0J/4mpEc4xzMociWsMNl5lZqrpAnYcW6mqiSGF3wFjU+c6GHih6GLClk31JNvKDr0x9jc5cfm7evkZg==
+  dependencies:
+    "@octokit/types" "^9.0.0"
+    bottleneck "^2.15.3"
+
+"@octokit/plugin-retry@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-retry/-/plugin-retry-5.0.0.tgz#f84087541035035a1969a265ab3e274988524208"
+  integrity sha512-mfON7q30NLdivuJktZuSP6I4/WPMjc/bcoxcHEWXd4esedHTqQpp3OUq2NzD2+M+J6o33zYDtJTl4qtRYh8HQQ==
   dependencies:
     "@octokit/types" "^9.0.0"
     bottleneck "^2.15.3"
@@ -1958,7 +1974,29 @@
     micromatch "^4.0.0"
     p-reduce "^2.0.0"
 
-"@semantic-release/github@9.0.0", "@semantic-release/github@^9.0.0":
+"@semantic-release/github@9.0.2":
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/@semantic-release/github/-/github-9.0.2.tgz#2e1c7cbaa15ba2009ae0607e55354aa5e4cacc77"
+  integrity sha512-FDwR9Tkz14MR/HF6srbHDuqLPUI0GmPgn4tkjfPi45/1oZedqEXC3TqSHK3+ykJmWj1sXgs94zwGI10VR5o6kg==
+  dependencies:
+    "@octokit/core" "^4.2.1"
+    "@octokit/plugin-paginate-rest" "^7.0.0"
+    "@octokit/plugin-retry" "^5.0.0"
+    "@octokit/plugin-throttling" "^6.0.0"
+    "@semantic-release/error" "^3.0.0"
+    aggregate-error "^4.0.1"
+    debug "^4.3.4"
+    dir-glob "^3.0.1"
+    globby "^13.1.4"
+    http-proxy-agent "^7.0.0"
+    https-proxy-agent "^7.0.0"
+    issue-parser "^6.0.0"
+    lodash-es "^4.17.21"
+    mime "^3.0.0"
+    p-filter "^3.0.0"
+    url-join "^5.0.0"
+
+"@semantic-release/github@^9.0.0":
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/@semantic-release/github/-/github-9.0.0.tgz#b2422eeb20abc4ef7aa4caeeddc39b5d018ce2bc"
   integrity sha512-ZAZTB6RGhyVHRzzXJW9Hjj4Yxagx4Lx6NqXk0AbOtIIH/mKEIwqSTYZR3iTm/KOy4/Bm5oQXIcwJ+p4+SkNWPg==
