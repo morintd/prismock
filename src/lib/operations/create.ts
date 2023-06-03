@@ -136,6 +136,45 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
   };
 }
 
+export function nestedCreate(item: Item, current: Delegate, delegates: Delegates) {
+  const created = { ...createDefaultValues(current.model.fields, current.getProperties()), ...item };
+
+  current.model.fields.forEach((field) => {
+    const value = created[field.name];
+
+    if (value) {
+      const joinfield = getJoinField(field, delegates)!;
+
+      if (joinfield) {
+        const delegate = delegates[camelize(field.type)];
+        const connect = {
+          [joinfield.relationFromFields![0]]: created[joinfield.relationToFields![0]],
+        };
+
+        if ((value as { create: Item }).create) {
+          delete created[field.name];
+
+          const data = (value as { create: Item }).create;
+
+          create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
+        }
+
+        if ((value as { createMany: Item[] }).createMany) {
+          delete created[field.name];
+
+          const { data } = (value as { createMany: { data: Item[] } }).createMany;
+
+          data.forEach((d) => {
+            create({ ...d, ...connect }, {}, delegate, delegates, delegate.onChange);
+          });
+        }
+      }
+    }
+  });
+
+  return created;
+}
+
 export function create(
   item: Item,
   options: Omit<CreateArgs, 'data'>,
@@ -143,8 +182,7 @@ export function create(
   delegates: Delegates,
   onChange: (items: Item[]) => void,
 ) {
-  const created = { ...createDefaultValues(delegate.model.fields, delegate.getProperties()), ...item };
-
+  const created = nestedCreate(item, delegate, delegates);
   const withConnectOrCreate = connectOrCreate(delegate, delegates)(created);
 
   const withIncludes = includes(options, delegate, delegates)(withConnectOrCreate);
