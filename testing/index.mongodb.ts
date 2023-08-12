@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { ObjectId } from 'bson';
 import { Post, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
+import { createId } from '@paralleldrive/cuid2';
 
 import { PrismockClientType } from '../src/lib/client';
 
@@ -61,10 +62,11 @@ export function buildPost(id: number, post: Partial<Omit<Post, 'authorId'>> & { 
   };
 }
 
-export function buildBlog(id: number, title: string) {
+export function buildBlog(id: number, title: string, imprint = createId()) {
   return {
     id: new ObjectId(id).toString(),
     title,
+    imprint,
   };
 }
 

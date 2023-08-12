@@ -12,6 +12,7 @@ import {
   simulateSeed,
 } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
+import { isCuid } from '@paralleldrive/cuid2';
 
 jest.setTimeout(40000);
 
@@ -90,6 +91,14 @@ describe('create', () => {
 
       expect(formatEntry(realUsers[1])).toEqual(formatEntry(expected));
       expect(formatEntry(mockUsers[1])).toEqual(formatEntry(expected));
+    });
+
+    it('Should creat with default cuid value', async () => {
+      const mockBlog3 = await prismock.blog.create({ data: { title: 'blog-3' } });
+      const realBlog3 = await prisma.blog.create({ data: { title: 'blog-3' } });
+
+      expect(isCuid(mockBlog3.imprint)).toBe(true);
+      expect(isCuid(realBlog3.imprint)).toBe(true);
     });
 
     it('Should create without default value if already set', () => {

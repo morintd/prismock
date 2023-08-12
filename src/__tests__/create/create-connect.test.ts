@@ -30,6 +30,10 @@ describe('create (connect)', () => {
           connect: [{ title: seededPosts[0].title }],
         },
       },
+      select: {
+        id: true,
+        title: true,
+      },
     });
 
     const realBlog = await prisma.blog.create({
@@ -38,6 +42,10 @@ describe('create (connect)', () => {
         posts: {
           connect: [{ title: seededPosts[0].title }],
         },
+      },
+      select: {
+        id: true,
+        title: true,
       },
     });
 
@@ -58,6 +66,10 @@ describe('create (connect)', () => {
           connect: { title: seededPosts[0].title },
         },
       },
+      select: {
+        id: true,
+        title: true,
+      },
     });
 
     const realBlog = await prisma.blog.create({
@@ -66,6 +78,10 @@ describe('create (connect)', () => {
         posts: {
           connect: { title: seededPosts[0].title },
         },
+      },
+      select: {
+        id: true,
+        title: true,
       },
     });
 

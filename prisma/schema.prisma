@@ -41,7 +41,8 @@ model Post {
 }
 
 model Blog {
-  id    Int    @id @default(autoincrement())
-  title String @unique @db.VarChar(255)
-  posts Post[]
+  id      Int    @id @default(autoincrement())
+  title   String @unique @db.VarChar(255)
+  imprint String @default(cuid())
+  posts   Post[]
 }
