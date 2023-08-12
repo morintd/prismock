@@ -2,6 +2,7 @@ import { Blog, Post, PrismaClient } from '@prisma/client';
 
 import { seededBlogs, resetDb, simulateSeed, seededPosts } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
+import { omit } from '../../lib/helpers';
 
 jest.setTimeout(40000);
 
@@ -55,7 +56,7 @@ describe('delete (select)', () => {
 
   it('Should delete a single element', () => {
     expect(realDelete).toEqual({
-      ...seededBlogs[0],
+      ...omit(seededBlogs[0], ['imprint']),
       id: realBlog1.id,
       posts: [
         {
@@ -66,7 +67,7 @@ describe('delete (select)', () => {
       ],
     });
     expect(mockDelete).toEqual({
-      ...seededBlogs[0],
+      ...omit(seededBlogs[0], ['imprint']),
       id: mockBlog1.id,
       posts: [
         {

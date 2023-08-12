@@ -41,7 +41,8 @@ model Post {
 }
 
 model Blog {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  title String @unique
-  posts Post[]
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  title   String @unique
+  imprint String @default(cuid())
+  posts   Post[]
 }
