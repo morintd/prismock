@@ -85,6 +85,7 @@
     ]
   },
   "dependencies": {
+    "@paralleldrive/cuid2": "2.2.2",
     "@prisma/generator-helper": "4.16.2",
     "@prisma/internals": "4.16.2",
     "bson": "5.4.0"
