@@ -6,15 +6,15 @@ import {
   buildUser,
   buildPost,
   formatEntry,
-  seededPosts,
   seededUsers,
+  seededPosts,
   seededBlogs,
-} from '../../testing';
-import { PrismockClient, PrismockClientType } from '../lib/client';
+} from '../../../testing';
+import { PrismockClient, PrismockClientType } from '../../lib/client';
 
 jest.setTimeout(40000);
 
-describe('updateMany (nested)', () => {
+describe('update (nested)', () => {
   let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
@@ -58,7 +58,7 @@ describe('updateMany (nested)', () => {
       data: {
         friends: 1,
         posts: {
-          updateMany: {
+          update: {
             where: {
               title: 'title1',
             },
@@ -75,7 +75,7 @@ describe('updateMany (nested)', () => {
       data: {
         friends: 1,
         posts: {
-          updateMany: {
+          update: {
             where: {
               title: 'title1',
             },

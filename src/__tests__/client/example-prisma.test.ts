@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-import { resetDb } from '../../testing';
+import { resetDb } from '../../../testing';
 
 jest.setTimeout(40000);
 

@@ -1,7 +1,7 @@
 import { PrismaClient, Role, User } from '@prisma/client';
 
-import { formatEntries, formatEntry, generateId, resetDb, simulateSeed } from '../../testing';
-import { PrismockClient, PrismockClientType } from '../lib/client';
+import { formatEntries, formatEntry, generateId, resetDb, simulateSeed } from '../../../testing';
+import { PrismockClient, PrismockClientType } from '../../lib/client';
 
 jest.setTimeout(40000);
 
