@@ -1,16 +1,16 @@
 import { Blog, Post, PrismaClient } from '@prisma/client';
 
-import { resetDb, seededBlogs, seededPosts, simulateSeed } from '../../testing';
-import { PrismockClient, PrismockClientType } from '../lib/client';
+import { seededBlogs, resetDb, simulateSeed, seededPosts } from '../../../testing';
+import { PrismockClient, PrismockClientType } from '../../lib/client';
 
 jest.setTimeout(40000);
 
-describe('delete (includes)', () => {
+describe('delete (select)', () => {
   let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
-  let realDelete: Blog & { posts: Post[] };
-  let mockDelete: Blog & { posts: Post[] };
+  let realDelete: Partial<Blog> & { posts: Partial<Post>[] };
+  let mockDelete: Partial<Blog> & { posts: Partial<Post>[] };
 
   let realBlog1: Blog;
   let mockBlog1: Blog;
@@ -43,8 +43,14 @@ describe('delete (includes)', () => {
     realPost2 = (await prisma.post.findUnique({ where: { title: seededPosts[1].title } }))!;
     mockPost2 = (await prismock.post.findUnique({ where: { title: seededPosts[1].title } }))!;
 
-    realDelete = await prisma.blog.delete({ where: { title: 'blog-1' }, include: { posts: true } });
-    mockDelete = await prismock.blog.delete({ where: { title: 'blog-1' }, include: { posts: true } });
+    realDelete = await prisma.blog.delete({
+      where: { title: 'blog-1' },
+      select: { id: true, title: true, posts: { select: { id: true, title: true, authorId: true } } },
+    });
+    mockDelete = await prismock.blog.delete({
+      where: { title: 'blog-1' },
+      select: { id: true, title: true, posts: { select: { id: true, title: true, authorId: true } } },
+    });
   });
 
   it('Should delete a single element', () => {
@@ -53,12 +59,9 @@ describe('delete (includes)', () => {
       id: realBlog1.id,
       posts: [
         {
-          ...seededPosts[0],
           id: realPost1.id,
           authorId: realPost1.authorId,
-          blogId: realBlog1.id,
-          createdAt: expect.any(Date),
-          imprint: expect.any(String),
+          title: mockPost1.title,
         },
       ],
     });
@@ -67,12 +70,9 @@ describe('delete (includes)', () => {
       id: mockBlog1.id,
       posts: [
         {
-          ...seededPosts[0],
           id: mockPost1.id,
           authorId: mockPost1.authorId,
-          blogId: mockBlog1.id,
-          createdAt: expect.any(Date),
-          imprint: expect.any(String),
+          title: mockPost1.title,
         },
       ],
     });

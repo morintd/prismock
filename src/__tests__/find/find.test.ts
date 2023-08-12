@@ -10,9 +10,9 @@ import {
   seededBlogs,
   seededUsers,
   simulateSeed,
-} from '../../testing';
-import { PrismockClient, PrismockClientType } from '../lib/client';
-import { fetchGenerator, getProvider } from '../lib/prismock';
+} from '../../../testing';
+import { PrismockClient, PrismockClientType } from '../../lib/client';
+import { fetchGenerator, getProvider } from '../../lib/prismock';
 
 jest.setTimeout(40000);
 

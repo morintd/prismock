@@ -109,14 +109,14 @@ prismock.getData(); // { user: [] }
 
 ## Model query options
 
-| Feature        | State |
-| -------------- | ----- |
-| distinct       | ✔     |
-| include        | ✔     |
-| where          | ✔     |
-| select         | ✔     |
-| orderBy        | ⛔    |
-| select + count | ⛔    |
+| Feature           | State |
+| ----------------- | ----- |
+| distinct          | ✔     |
+| include           | ✔     |
+| where             | ✔     |
+| select            | ✔     |
+| orderBy (Partial) | ✔     |
+| select + count    | ⛔    |
 
 ## Nested queries
 

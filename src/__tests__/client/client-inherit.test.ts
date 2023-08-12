@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable jest/no-conditional-expect */
-// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 
-import { resetDb, simulateSeed } from '../../testing';
-import { PrismockClient } from '../lib/client';
+import { resetDb, simulateSeed } from '../../../testing';
+import { PrismockClient } from '../../lib/client';
 
 jest.setTimeout(40000);
 
@@ -29,6 +26,7 @@ describe('client', () => {
 
     prisma = new PrismaService();
     prismock = new PrismockService();
+    // @ts-expect-error Not exactly a prismock client
     simulateSeed(prismock);
   }
 

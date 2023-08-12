@@ -3,9 +3,9 @@
 // @ts-nocheck
 import { Prisma, PrismaClient } from '@prisma/client';
 
-import { resetDb, seededBlogs, seededPosts, seededUsers, simulateSeed } from '../../testing';
-import { PrismockClient, PrismockClientType } from '../lib/client';
-import { fetchGenerator, getProvider } from '../lib/prismock';
+import { resetDb, seededBlogs, seededPosts, seededUsers, simulateSeed } from '../../../testing';
+import { PrismockClient, PrismockClientType } from '../../lib/client';
+import { fetchGenerator, getProvider } from '../../lib/prismock';
 
 jest.setTimeout(40000);
 

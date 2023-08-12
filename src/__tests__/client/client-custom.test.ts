@@ -1,8 +1,8 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { seededBlogs, seededPosts, seededUsers } from '../../testing';
-import { generateDMMF, generatePrismockSync } from '../lib/prismock';
-import { PrismockClient, PrismockClientType } from '../lib/client';
+import { seededBlogs, seededPosts, seededUsers } from '../../../testing';
+import { generateDMMF, generatePrismockSync } from '../../lib/prismock';
+import { PrismockClient, PrismockClientType } from '../../lib/client';
 
 describe('client (custom)', () => {
   describe('generatePrismock', () => {

@@ -36,3 +36,16 @@ export type FindArgs = {
   skip?: number;
   distinct?: Prisma.Enumerable<string[]>;
 };
+
+export type Order = 'asc' | 'desc';
+
+export type OrderWithNulls = {
+  sort: 'asc' | 'desc';
+  nulls: 'first' | 'last';
+};
+
+export type OrderByRelation = {
+  [x: string]: { _count: 'asc' | 'desc' };
+};
+
+export type OrderedValue = Order | OrderWithNulls | OrderByRelation;
