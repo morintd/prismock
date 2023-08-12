@@ -5,7 +5,7 @@ import { buildUser, formatEntries, formatEntry } from '../../../testing';
 jest.mock('@prisma/client', () => {
   return {
     ...jest.requireActual('@prisma/client'),
-    PrismaClient: jest.requireActual('../lib/client').PrismockClient,
+    PrismaClient: jest.requireActual('../../lib/client').PrismockClient,
   };
 });
 
