@@ -18,24 +18,14 @@ describe('find', () => {
 
     const users = [
       {
-        email: 'user4@company.com',
-        warnings: 5,
-        password: 'password3',
-      },
-      {
-        email: 'user7@company.com',
-        warnings: null,
-        password: 'password8',
-      },
-      {
-        email: 'user6@company.com',
-        warnings: 4,
-        password: 'password2',
-      },
-      {
         email: 'user5@company.com',
         warnings: null,
         password: 'password5',
+      },
+      {
+        email: 'user4@company.com',
+        warnings: 15,
+        password: 'password3',
       },
     ];
 
@@ -123,12 +113,12 @@ describe('find', () => {
 
   it('Should return ordered items based on numbers', async () => {
     const mockUsers = await prismock.user.findMany({
-      orderBy: { warnings: 'asc' },
+      orderBy: { warnings: { sort: 'asc', nulls: 'last' } },
       select: { warnings: true, email: true },
     });
 
     const realUsers = await prisma.user.findMany({
-      orderBy: { warnings: 'asc' },
+      orderBy: { warnings: { sort: 'asc', nulls: 'last' } },
       select: { warnings: true, email: true },
     });
 
@@ -148,15 +138,14 @@ describe('find', () => {
 
     expect(mockUsers).toEqual(realUsers);
   });
-
   it('Should return ordered items with two orderBy', async () => {
     const mockUsers = await prismock.user.findMany({
-      orderBy: [{ warnings: 'desc' }, { email: 'desc' }],
+      orderBy: [{ warnings: { sort: 'desc', nulls: 'last' } }, { email: 'desc' }],
       select: { warnings: true, email: true },
     });
 
     const realUsers = await prisma.user.findMany({
-      orderBy: [{ warnings: 'desc' }, { email: 'desc' }],
+      orderBy: [{ warnings: { sort: 'desc', nulls: 'last' } }, { email: 'desc' }],
       select: { warnings: true, email: true },
     });
 

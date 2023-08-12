@@ -48,16 +48,11 @@ function isOrderByRelation(orderedProperties: Record<string, OrderedValue>) {
   const orderedProperty = Object.keys(orderedProperties)[0];
   return Object.keys(orderedProperties[orderedProperty]).includes('_count');
 }
-/*
- * It seems like there are some weird and unintuitive rules when it comes to orderBy
- * I tried my best to replicate them here, and it seems like they correspond to the real rules.
- * @TODO: probably refactor that part
- */
+
 export function calculateOrder(
   a: Item,
   b: Item,
   orderedProperties: Record<string, OrderedValue>,
-  isSorted: boolean,
   current: Delegate,
   delegates: Delegates,
 ) {
@@ -75,19 +70,17 @@ export function calculateOrder(
     const values = [a[orderedProperty], b[orderedProperty]];
 
     if (values.every((value) => value === null)) {
-      if (!isSorted && nullOrder === 'last' && sortOrder === 'asc') return -1;
-      if (isSorted && nullOrder === 'last' && sortOrder === 'asc') return 1;
+      return 0;
     } else if (values.some((value) => value === null)) {
-      if (nullOrder === 'first' || (nullOrder === 'last' && sortOrder === 'desc')) weight = -1;
-      else weight = 1;
+      if (values[0] === null) weight = -1;
+      if (values[1] === null) weight = 1;
 
-      if (values[0] === null) return weight;
-      if (values[1] === null) return weight * -1;
+      if (nullOrder === 'last') return weight * -1;
+      else return weight;
     }
 
     if (typeof values[0] === 'number' && typeof values[1] === 'number') {
       weight = values[0] - values[1];
-      if (weight === 0 && sortOrder === 'desc') return weightMultiplier * -1;
     }
 
     if (typeof values[0] === 'string' && typeof values[1] === 'string') {
@@ -139,8 +132,6 @@ export function calculateRelationOrder(
 
   const weightMultiplier = sortOrder === 'desc' ? -1 : 1;
   const weight = counts.a - counts.b;
-  if (weight === 0 && sortOrder === 'desc') return weightMultiplier * -1;
-  if (weight === 0 && sortOrder === 'asc') return weightMultiplier;
 
   if (weight !== 0) return weight * weightMultiplier;
 
@@ -151,14 +142,10 @@ export function order(items: Item[], args: FindArgs, delegate: Delegate, delegat
   if (!args.orderBy) return items;
   const propertiesToOrderBy = Array.isArray(args.orderBy) ? args.orderBy : [args.orderBy as Record<string, OrderedValue>];
 
-  const baseItems = propertiesToOrderBy.length === 1 && isOrderByRelation(propertiesToOrderBy[0]) ? items : items.reverse();
-
-  const o = propertiesToOrderBy.reduceRight((accumulator, currentValue, i) => {
-    const acc = accumulator.sort((a, b) =>
-      calculateOrder(a, b, currentValue, i < propertiesToOrderBy.length - 1, delegate, delegates),
-    );
+  const o = propertiesToOrderBy.reduceRight((accumulator, currentValue) => {
+    const acc = accumulator.sort((a, b) => calculateOrder(a, b, currentValue, delegate, delegates));
     return acc;
-  }, baseItems);
+  }, items);
   return o;
 }
 
