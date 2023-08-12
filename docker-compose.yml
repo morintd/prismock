@@ -17,3 +17,11 @@ services:
       MYSQL_PASSWORD: mysql
     ports:
       - '3306:3306'
+  mongodb:
+    image: bitnami/mongodb:6.0.8
+    environment:
+      MONGODB_ADVERTISED_HOSTNAME: 127.0.0.1
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_ROOT_USER: admin
+      MONGODB_ROOT_PASSWORD: admin
+      MONGODB_REPLICA_SET_KEY: replicasetkey123
