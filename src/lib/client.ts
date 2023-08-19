@@ -6,10 +6,12 @@ import { Data, generateDelegates } from './prismock';
 type GetData = () => Data;
 type SetData = (data: Data) => void;
 
-export type PrismockClientType<T = PrismaClient> = T & {
+interface PrismockData {
   getData: GetData;
   setData: SetData;
-};
+  reset: () => void;
+}
+export type PrismockClientType<T = PrismaClient> = T & PrismockData;
 
 type TransactionArgs<T> = (tx: Omit<T, '$transaction'>) => unknown | Promise<unknown>[];
 
@@ -47,6 +49,14 @@ export function generateClient<T = PrismaClient>(delegates: Record<string, Deleg
 
 class Prismock {
   constructor() {
+    this.generate();
+  }
+
+  reset() {
+    this.generate();
+  }
+
+  private generate() {
     const { delegates, setData, getData } = generateDelegates({ models: Prisma.dmmf.datamodel.models });
     Object.assign(this, { setData, getData, ...delegates });
   }
@@ -86,11 +96,6 @@ class Prismock {
 
     return args(this);
   }
-}
-
-interface PrismockData {
-  getData: GetData;
-  setData: SetData;
 }
 
 export const PrismockClient = Prismock as unknown as typeof PrismaClient & PrismockData;
