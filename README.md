@@ -73,7 +73,7 @@ Then, you will be able to write your tests as if your app was using an in-memory
 
 ## Internal data
 
-Two additional functions are returned compared to the PrismaClient, `getData` and `setData`. In some edge-case, we need to directly access, or change, the data store management by _prismock_.
+Three additional functions are returned compared to the PrismaClient, `getData`, `setData`, and `reset`. In some edge-case, we need to directly access, or change, the data store management by _prismock_.
 
 Most of the time, you won't need it in your test, but keep in mind they exist
 
@@ -85,6 +85,11 @@ prismock.setData({ user: [] });
 ```ts
 const prismock = new PrismockClient();
 prismock.getData(); // { user: [] }
+```
+
+```ts
+const prismock = new PrismockClient();
+prismock.reset(); // State of prismock back to its original
 ```
 
 # Supported features
