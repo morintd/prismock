@@ -1,9 +1,9 @@
 import { Delegate, Item } from '../delegate';
 import { camelize, omit, removeUndefined } from '../helpers';
 import { Delegates } from '../prismock';
-import { FindWhereArgs, SelectArgs } from '../types';
+import { FindArgs, FindWhereArgs, SelectArgs, UpsertArgs } from '../types';
 
-import { calculateDefaultFieldValue, connectOrCreate } from './create';
+import { calculateDefaultFieldValue, connectOrCreate, create } from './create';
 import { findOne, getFieldRelationshipWhere, getJoinField, includes, select, where } from './find';
 
 export type UpdateArgs = {
@@ -147,6 +147,35 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
               const item = findOne(args, delegates[camelize(joinfield.type)], delegates)!;
 
               delegate.updateMany({ where: getFieldRelationshipWhere(item, field, delegates), data: c.update.data });
+            }
+          }
+        }
+        if (c.upsert) {
+          const upsert: Pick<UpsertArgs, 'create' | 'update'> = c.upsert;
+
+          const schema = current.model.fields.find((f) => f.name === field.name);
+          if (schema?.relationName) {
+            const subDelegate = delegates[camelize(schema.type)];
+            const searchFields = subDelegate.model.fields.reduce((accumulator, currentValue) => {
+              if (currentValue.isUnique) return [...accumulator, currentValue.name];
+              return accumulator;
+            }, [] as string[]);
+
+            const where = Object.entries(upsert.create).reduce((accumulator, currentValue) => {
+              if (searchFields.includes(currentValue[0]))
+                return {
+                  ...accumulator,
+                  [currentValue[0]]: currentValue[1],
+                };
+              return accumulator;
+            }, {} as Item);
+
+            const item = findOne({ where } as FindArgs, subDelegate, delegates);
+
+            if (item) {
+              updateMany({ where, data: upsert.update } as UpdateArgs, subDelegate, delegates, subDelegate.onChange);
+            } else {
+              create(upsert.create, {}, subDelegate, delegates, subDelegate.onChange);
             }
           }
         }
