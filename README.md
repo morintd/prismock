@@ -128,9 +128,9 @@ prismock.getData(); // { user: [] }
 | updateMany      | ✔     |
 | connect         | ✔     |
 | connectOrCreate | ✔     |
+| upsert          | ✔     |
 | set             | ⛔    |
 | disconnect      | ⛔    |
-| upsert          | ⛔    |
 | delete          | ⛔    |
 
 ## Filter conditions and operators
@@ -220,8 +220,8 @@ prismock.getData(); // { user: [] }
 | autoincrement() | ✔     |
 | now()           | ✔     |
 | uuid()          | ✔     |
-| auto()          | ⛔    |
-| cuid()          | ⛔    |
+| auto()          | ✔     |
+| cuid()          | ✔     |
 | dbgenerated     | ⛔    |
 
 ## Referential actions
