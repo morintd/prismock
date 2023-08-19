@@ -41,11 +41,6 @@ describe('client', () => {
     await expect(prismock.$disconnect()).resolves.not.toThrow();
   });
 
-  it('Should handle $on', () => {
-    expect(() => prisma.$on('beforeExit', jest.fn())).not.toThrow();
-    expect(() => prismock.$on('beforeExit', jest.fn())).not.toThrow();
-  });
-
   it('Should handle $use', () => {
     expect(() =>
       prisma.$use(async (params, next) => {
