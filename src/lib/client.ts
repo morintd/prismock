@@ -71,7 +71,9 @@ class Prismock {
 
   $on() {}
 
-  $use() {}
+  $use() {
+    return this;
+  }
 
   $executeRaw() {
     return Promise.resolve(0);
@@ -87,6 +89,10 @@ class Prismock {
 
   $queryRawUnsafe() {
     return Promise.resolve([]);
+  }
+
+  $extends() {
+    return this;
   }
 
   async $transaction(args: any) {
