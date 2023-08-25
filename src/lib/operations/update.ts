@@ -1,9 +1,9 @@
 import { Delegate, Item } from '../delegate';
 import { camelize, omit, removeUndefined } from '../helpers';
 import { Delegates } from '../prismock';
-import { FindWhereArgs, SelectArgs } from '../types';
+import { FindWhereArgs, SelectArgs, UpsertArgs } from '../types';
 
-import { calculateDefaultFieldValue, connectOrCreate } from './create';
+import { calculateDefaultFieldValue, connectOrCreate, create } from './create';
 import { findOne, getFieldRelationshipWhere, getJoinField, includes, select, where } from './find';
 
 export type UpdateArgs = {
@@ -150,6 +150,33 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
             }
           }
         }
+        if (c.upsert) {
+          const upsert: Pick<UpsertArgs, 'create' | 'update'> = c.upsert;
+          d = omit(d, [field.name]);
+
+          const subDelegate = delegates[camelize(field.type)];
+          const item = findOne({ where: args.where }, current, delegates);
+
+          if (item) {
+            const joinWhere = getFieldRelationshipWhere(item, field, delegates);
+            const joined = Object.values(joinWhere)[0] ? findOne({ where: joinWhere }, subDelegate, delegates) : null;
+
+            if (joined) {
+              updateMany(
+                { where: joinWhere, data: upsert.update } as UpdateArgs,
+                subDelegate,
+                delegates,
+                subDelegate.onChange,
+              );
+            } else {
+              const created = create(upsert.create, {}, subDelegate, delegates, subDelegate.onChange);
+
+              Object.assign(d, {
+                [field.relationFromFields![0]]: created[field.relationToFields![0]],
+              });
+            }
+          }
+        }
       }
       if (c.increment) {
         d = Object.assign(d, { [field.name]: (item[field.name] as number) + (c.increment as number) });
@@ -194,7 +221,7 @@ export function updateMany(args: UpdateArgs, current: Delegate, delegates: Deleg
 
         return {
           toUpdate: [...accumulator.toUpdate, updatedValueWithSelect],
-          updated: [...accumulator.updated, updatedValueWithSelect],
+          updated: [...accumulator.updated, updatedValue],
         };
       }
       return {

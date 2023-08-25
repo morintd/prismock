@@ -133,9 +133,9 @@ prismock.reset(); // State of prismock back to its original
 | updateMany      | ✔     |
 | connect         | ✔     |
 | connectOrCreate | ✔     |
+| upsert          | ✔     |
 | set             | ⛔    |
 | disconnect      | ⛔    |
-| upsert          | ⛔    |
 | delete          | ⛔    |
 
 ## Filter conditions and operators
@@ -225,8 +225,8 @@ prismock.reset(); // State of prismock back to its original
 | autoincrement() | ✔     |
 | now()           | ✔     |
 | uuid()          | ✔     |
-| auto()          | ⛔    |
-| cuid()          | ⛔    |
+| auto()          | ✔     |
+| cuid()          | ✔     |
 | dbgenerated     | ⛔    |
 
 ## Referential actions

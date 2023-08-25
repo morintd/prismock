@@ -27,6 +27,7 @@ model User {
   signal     Bytes?
   parameters Json    @default("{}")
   posts      Post[]
+  Blog       Blog[]
 }
 
 model Post {
@@ -44,5 +45,7 @@ model Blog {
   id      Int    @id @default(autoincrement())
   title   String @unique @db.VarChar(255)
   imprint String @default(cuid())
+  author  User?  @relation(fields: [userId], references: [id])
   posts   Post[]
+  userId  Int?
 }
