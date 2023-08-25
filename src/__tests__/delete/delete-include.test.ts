@@ -49,8 +49,8 @@ describe('delete (includes)', () => {
   });
 
   it('Should delete a single element', () => {
-    expect(omit(realDelete, ['imprint'])).toEqual({
-      ...omit(seededBlogs[0], ['imprint']),
+    expect(omit(realDelete, ['imprint', 'userId'])).toEqual({
+      ...omit(seededBlogs[0], ['imprint', 'userId']),
       id: realBlog1.id,
       posts: [
         {
@@ -64,7 +64,7 @@ describe('delete (includes)', () => {
       ],
     });
     expect(omit(mockDelete, ['imprint'])).toEqual({
-      ...omit(seededBlogs[0], ['imprint']),
+      ...omit(seededBlogs[0], ['imprint', 'userId']),
       id: mockBlog1.id,
       posts: [
         {

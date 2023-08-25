@@ -1,7 +1,7 @@
 import { Delegate, Item } from '../delegate';
 import { camelize, omit, removeUndefined } from '../helpers';
 import { Delegates } from '../prismock';
-import { FindArgs, FindWhereArgs, SelectArgs, UpsertArgs } from '../types';
+import { FindWhereArgs, SelectArgs, UpsertArgs } from '../types';
 
 import { calculateDefaultFieldValue, connectOrCreate, create } from './create';
 import { findOne, getFieldRelationshipWhere, getJoinField, includes, select, where } from './find';
@@ -152,30 +152,28 @@ const nestedUpdate = (args: UpdateArgs, isCreating: boolean, item: Item, current
         }
         if (c.upsert) {
           const upsert: Pick<UpsertArgs, 'create' | 'update'> = c.upsert;
+          d = omit(d, [field.name]);
 
-          const schema = current.model.fields.find((f) => f.name === field.name);
-          if (schema?.relationName) {
-            const subDelegate = delegates[camelize(schema.type)];
-            const searchFields = subDelegate.model.fields.reduce((accumulator, currentValue) => {
-              if (currentValue.isUnique) return [...accumulator, currentValue.name];
-              return accumulator;
-            }, [] as string[]);
+          const subDelegate = delegates[camelize(field.type)];
+          const item = findOne({ where: args.where }, current, delegates);
 
-            const where = Object.entries(upsert.create).reduce((accumulator, currentValue) => {
-              if (searchFields.includes(currentValue[0]))
-                return {
-                  ...accumulator,
-                  [currentValue[0]]: currentValue[1],
-                };
-              return accumulator;
-            }, {} as Item);
+          if (item) {
+            const joinWhere = getFieldRelationshipWhere(item, field, delegates);
+            const joined = Object.values(joinWhere)[0] ? findOne({ where: joinWhere }, subDelegate, delegates) : null;
 
-            const item = findOne({ where } as FindArgs, subDelegate, delegates);
-
-            if (item) {
-              updateMany({ where, data: upsert.update } as UpdateArgs, subDelegate, delegates, subDelegate.onChange);
+            if (joined) {
+              updateMany(
+                { where: joinWhere, data: upsert.update } as UpdateArgs,
+                subDelegate,
+                delegates,
+                subDelegate.onChange,
+              );
             } else {
-              create(upsert.create, {}, subDelegate, delegates, subDelegate.onChange);
+              const created = create(upsert.create, {}, subDelegate, delegates, subDelegate.onChange);
+
+              Object.assign(d, {
+                [field.relationFromFields![0]]: created[field.relationToFields![0]],
+              });
             }
           }
         }
@@ -223,7 +221,7 @@ export function updateMany(args: UpdateArgs, current: Delegate, delegates: Deleg
 
         return {
           toUpdate: [...accumulator.toUpdate, updatedValueWithSelect],
-          updated: [...accumulator.updated, updatedValueWithSelect],
+          updated: [...accumulator.updated, updatedValue],
         };
       }
       return {
