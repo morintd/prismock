@@ -27,6 +27,7 @@ model User {
   signal     Bytes?
   parameters Json    @default("{}")
   posts      Post[]
+  Blog       Blog[]
 }
 
 model Post {
@@ -41,8 +42,10 @@ model Post {
 }
 
 model Blog {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  title   String @unique
-  imprint String @default(cuid())
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  title   String  @unique
+  imprint String  @default(cuid())
+  author  User?   @relation(fields: [userId], references: [id])
   posts   Post[]
+  userId  String? @db.ObjectId
 }
