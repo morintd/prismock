@@ -3141,10 +3141,10 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
-bson@5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-5.4.0.tgz#0eea77276d490953ad8616b483298dbff07384c6"
-  integrity sha512-WRZ5SQI5GfUuKnPTNmAYPiKIof3ORXAF4IRU5UcgmivNIon01rWQlw5RUH954dpu8yGL8T59YShVddIPaU/gFA==
+bson@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-6.0.0.tgz#685f631a2ce255e2ed3987a7355210e4beace17e"
+  integrity sha512-FoWvdELfF2wQaUo8S/a1Rh2BDwJEUancDDnzdTpYymJTZjmvRpLWoqRPelKn+XSeh5D4YddWDG66cLtEhGGvcg==
 
 buffer-crc32@^0.2.1, buffer-crc32@^0.2.13:
   version "0.2.13"
