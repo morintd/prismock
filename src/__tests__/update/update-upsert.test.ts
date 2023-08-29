@@ -15,7 +15,7 @@ describe('create (connectOrCreate)', () => {
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
 
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   });
 
   describe('On update post with existing user', () => {

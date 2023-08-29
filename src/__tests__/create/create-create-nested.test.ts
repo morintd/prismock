@@ -17,7 +17,7 @@ describe('create', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     realBlog = (await prisma.blog.findUnique({ where: { title: 'blog-1' } }))!;
     mockBlog = (await prismock.blog.findUnique({ where: { title: 'blog-1' } }))!;

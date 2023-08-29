@@ -4,11 +4,19 @@ import { ObjectId } from 'bson';
 import { createId as createCuid } from '@paralleldrive/cuid2';
 
 import { Delegate, DelegateProperties, Item } from '../delegate';
-import { camelize, uuid } from '../helpers';
+import { pipe, uuid } from '../helpers';
 import { Delegates } from '../prismock';
 import { ConnectOrCreate, CreateArgs, FindWhereArgs } from '../types';
 
-import { findNextIncrement, findOne, getJoinField, includes, select } from './find';
+import {
+  findNextIncrement,
+  findOne,
+  getDelegateFromField,
+  getFieldFromRelationshipWhere,
+  getJoinField,
+  includes,
+  select,
+} from './find';
 
 export const isAutoIncrement = (field: DMMF.Field) => {
   return (field.default as DMMF.FieldDefault)?.name === 'autoincrement';
@@ -85,14 +93,14 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
         const connectOrCreate = (value as Record<string, unknown>).connectOrCreate as ConnectOrCreate;
 
         const field = delegate.model.fields.find((field) => field.name === key);
-        const subDelegate = delegates[camelize(field!.type)];
+        const subDelegate = getDelegateFromField(field!, delegates);
 
         let connected = findOne({ where: connectOrCreate.where }, subDelegate, delegates);
         if (!connected) connected = create(connectOrCreate.create, {}, subDelegate, delegates, subDelegate.onChange);
 
         return {
           ...accumulator,
-          [field!.relationFromFields![0]]: connected[field!.relationToFields![0]],
+          ...getFieldFromRelationshipWhere(connected, field!),
         };
       }
 
@@ -101,15 +109,13 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
 
         const field = delegate.model.fields.find((field) => field.name === key);
         const joinField = getJoinField(field!, delegates);
-        const subDelegate = delegates[camelize(field!.type)];
+        const subDelegate = getDelegateFromField(field!, delegates);
 
         if (Array.isArray(connect)) {
           connect.forEach((c) => {
             subDelegate.update({
               where: c,
-              data: {
-                [joinField!.relationFromFields![0]]: accumulator[joinField!.relationToFields![0]],
-              },
+              data: getFieldFromRelationshipWhere(accumulator, joinField!),
             });
           });
         } else {
@@ -119,14 +125,14 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
             if (connected) {
               return {
                 ...accumulator,
-                [field!.relationFromFields![0]]: connected[field!.relationToFields![0]],
+                ...getFieldFromRelationshipWhere(connected, field!),
               };
             }
           } else {
             subDelegate.update({
               where: connect,
               data: {
-                [joinField!.relationFromFields![0]]: accumulator[joinField!.relationToFields![0]],
+                ...getFieldFromRelationshipWhere(accumulator, joinField!),
               },
             });
           }
@@ -143,43 +149,43 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
   };
 }
 
-export function nestedCreate(item: Item, current: Delegate, delegates: Delegates) {
-  const created = { ...createDefaultValues(current.model.fields, current.getProperties()), ...item };
+export function nestedCreate(current: Delegate, delegates: Delegates) {
+  return (item: Item) => {
+    const created = { ...createDefaultValues(current.model.fields, current.getProperties()), ...item };
 
-  current.model.fields.forEach((field) => {
-    const value = created[field.name];
+    current.model.fields.forEach((field) => {
+      const value = created[field.name];
 
-    if (value) {
-      const joinfield = getJoinField(field, delegates)!;
+      if (value) {
+        const joinfield = getJoinField(field, delegates)!;
 
-      if (joinfield) {
-        const delegate = delegates[camelize(field.type)];
-        const connect = {
-          [joinfield.relationFromFields![0]]: created[joinfield.relationToFields![0]],
-        };
+        if (joinfield) {
+          const delegate = getDelegateFromField(field, delegates);
+          const connect = getFieldFromRelationshipWhere(created, joinfield);
 
-        if ((value as { create: Item }).create) {
-          delete created[field.name];
+          if ((value as { create: Item }).create) {
+            delete created[field.name];
 
-          const data = (value as { create: Item }).create;
+            const data = (value as { create: Item }).create;
 
-          create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
-        }
+            create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
+          }
 
-        if ((value as { createMany: Item[] }).createMany) {
-          delete created[field.name];
+          if ((value as { createMany: Item[] }).createMany) {
+            delete created[field.name];
 
-          const { data } = (value as { createMany: { data: Item[] } }).createMany;
+            const { data } = (value as { createMany: { data: Item[] } }).createMany;
 
-          data.forEach((d) => {
-            create({ ...d, ...connect }, {}, delegate, delegates, delegate.onChange);
-          });
+            data.forEach((d) => {
+              create({ ...d, ...connect }, {}, delegate, delegates, delegate.onChange);
+            });
+          }
         }
       }
-    }
-  });
+    });
 
-  return created;
+    return created;
+  };
 }
 
 export function create(
@@ -189,13 +195,10 @@ export function create(
   delegates: Delegates,
   onChange: (items: Item[]) => void,
 ) {
-  const created = nestedCreate(item, delegate, delegates);
-  const withConnectOrCreate = connectOrCreate(delegate, delegates)(created);
+  const formated = pipe(nestedCreate(delegate, delegates), connectOrCreate(delegate, delegates))(item);
+  const created = pipe(includes(options, delegate, delegates), select(options.select))(formated);
 
-  const withIncludes = includes(options, delegate, delegates)(withConnectOrCreate);
-  const withSelect = select(withIncludes, options.select);
+  onChange([...delegate.getItems(), formated]);
 
-  onChange([...delegate.getItems(), withConnectOrCreate]);
-
-  return withSelect;
+  return created;
 }

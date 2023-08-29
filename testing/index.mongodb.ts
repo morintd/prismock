@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 
 import { ObjectId } from 'bson';
-import { Post, Role, User } from '@prisma/client';
+import { Post, PrismaClient, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -16,12 +16,19 @@ export const seededPosts = [
   buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
 ];
 
-export function simulateSeed(prismock: PrismockClientType) {
-  prismock.setData({
-    user: seededUsers,
-    post: seededPosts,
-    blog: seededBlogs,
-  });
+export async function simulateSeed(prisma: PrismaClient) {
+  await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
+  await prisma.blog.createMany({ data: seededBlogs.map(({ id, ...blog }) => blog) });
+
+  const savedUsers = await prisma.user.findMany();
+  const savedBlogs = await prisma.blog.findMany();
+
+  const postsToSave = [
+    buildPost(1, { authorId: savedUsers[0].id, blogId: savedBlogs[0].id }),
+    buildPost(2, { authorId: savedUsers[1].id, blogId: savedBlogs[1].id }),
+  ];
+
+  await prisma.post.createMany({ data: postsToSave.map(({ id, ...post }) => ({ ...post })) });
 }
 
 export async function resetDb() {
@@ -36,7 +43,7 @@ export async function resetDb() {
   });
 }
 
-export function buildUser(id: number, user: Partial<User> = {}) {
+export function buildUser(id: number, user: Partial<User> = {}): User & { parameters: any } {
   return {
     id: new ObjectId(id).toString(),
     email: `user${id}@company.com`,

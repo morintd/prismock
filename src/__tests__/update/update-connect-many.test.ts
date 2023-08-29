@@ -20,7 +20,7 @@ describe('update (connect - many)', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     // realAuthor1 = (await prisma.user.findFirst({ where: { email: seededUsers[0].email } }))!;
     realAuthor2 = (await prisma.user.findFirst({ where: { email: seededUsers[1].email } }))!;

@@ -1,10 +1,8 @@
 import { exec } from 'child_process';
 
-import { Post, Role, User } from '@prisma/client';
+import { Post, PrismaClient, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
-
-import { PrismockClientType } from '../src/lib/client';
 
 dotenv.config();
 
@@ -12,12 +10,10 @@ export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUs
 export const seededBlogs = [buildBlog(1, 'blog-1'), buildBlog(2, 'blog-2')];
 export const seededPosts = [buildPost(1, { authorId: 1, blogId: 1 }), buildPost(2, { authorId: 2, blogId: 2 })];
 
-export function simulateSeed(prismock: PrismockClientType) {
-  prismock.setData({
-    user: seededUsers,
-    post: seededPosts,
-    blog: seededBlogs,
-  });
+export async function simulateSeed(prisma: PrismaClient) {
+  await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
+  await prisma.blog.createMany({ data: seededBlogs.map(({ id, ...blog }) => blog) });
+  await prisma.post.createMany({ data: seededPosts.map(({ id, ...post }) => post) });
 }
 
 export async function resetDb() {
@@ -29,7 +25,7 @@ export async function resetDb() {
   });
 }
 
-export function buildUser(id: number, user: Partial<User> = {}) {
+export function buildUser(id: number, user: Partial<User> = {}): User & { parameters: any } {
   return {
     id,
     email: `user${id}@company.com`,

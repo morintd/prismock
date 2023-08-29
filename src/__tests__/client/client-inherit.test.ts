@@ -26,8 +26,7 @@ describe('client', () => {
 
     prisma = new PrismaService();
     prismock = new PrismockService();
-    // @ts-expect-error Not exactly a prismock client
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   }
 
   beforeAll(async () => {

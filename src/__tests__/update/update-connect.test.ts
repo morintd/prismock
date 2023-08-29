@@ -20,7 +20,7 @@ describe('update (connect)', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     realAuthor = (await prisma.user.findUnique({ where: { email: 'user1@company.com' } }))!;
     mockAuthor = (await prismock.user.findUnique({ where: { email: 'user1@company.com' } }))!;

@@ -19,7 +19,7 @@ describe('find', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     const users = [
       {

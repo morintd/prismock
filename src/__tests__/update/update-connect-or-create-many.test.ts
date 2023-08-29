@@ -23,7 +23,7 @@ describe('update (connectOrCreate)', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   });
 
   it('Should update and connect to existing', async () => {

@@ -59,13 +59,13 @@ describe('delete', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     const user1 = await prisma.user.create({ data: data.user1 });
     const user2 = await prisma.user.create({ data: data.user2 });
     const user3 = await prisma.user.create({ data: data.user3 });
 
-    prismock.setData({ user: [...prismock.getData().user, user1, user2, user3] });
+    await prismock.user.createMany({ data: [user1, user2, user3].map(({ id, ...user }) => ({ ...user, parameters: {} })) });
     expect(formatEntries(prismock.getData().user.slice(-3))).toEqual(formatEntries(expected));
   });
 

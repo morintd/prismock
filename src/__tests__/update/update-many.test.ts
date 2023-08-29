@@ -17,7 +17,7 @@ describe('updateMany', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     realUpdateMany = await prisma.user.updateMany({
       where: { email: { in: ['user2@company.com', 'user3@company.com'] } },

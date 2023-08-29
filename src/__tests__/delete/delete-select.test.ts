@@ -30,7 +30,7 @@ describe('delete (select)', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     realBlog1 = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
     mockBlog1 = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;

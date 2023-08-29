@@ -30,7 +30,7 @@ describe('delete (includes)', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     realBlog1 = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
     mockBlog1 = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
@@ -63,7 +63,7 @@ describe('delete (includes)', () => {
         },
       ],
     });
-    expect(omit(mockDelete, ['imprint'])).toEqual({
+    expect(omit(mockDelete, ['imprint', 'userId'])).toEqual({
       ...omit(seededBlogs[0], ['imprint', 'userId']),
       id: mockBlog1.id,
       posts: [

@@ -46,7 +46,7 @@ describe('create', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     mockUsers.push(await prismock.user.create({ data: data.user1 }));
     mockUsers.push(await prismock.user.create({ data: data.user2 }));
