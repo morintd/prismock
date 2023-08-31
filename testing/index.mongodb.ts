@@ -5,8 +5,6 @@ import { Post, PrismaClient, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
-import { PrismockClientType } from '../src/lib/client';
-
 dotenv.config();
 
 export const seededUsers = [buildUser(1, { warnings: 0 }), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
