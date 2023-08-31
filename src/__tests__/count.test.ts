@@ -14,7 +14,7 @@ describe('count', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   });
 
   it('Should return count', async () => {

@@ -1,15 +1,21 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { seededBlogs, seededPosts, seededUsers } from '../../../testing';
+import { seededUsers } from '../../../testing';
 import { generateDMMF, generatePrismockSync } from '../../lib/prismock';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 
 describe('client (custom)', () => {
   describe('generatePrismock', () => {
-    it('Should set/get data', () => {
+    it('Should get data', async () => {
       const prismock = new PrismockClient() as PrismockClientType;
-      prismock.setData({ user: seededUsers, post: seededPosts, blog: seededBlogs });
-      expect(prismock.getData()).toEqual({ user: seededUsers, post: seededPosts, blog: seededBlogs });
+      await prismock.user.createMany({ data: seededUsers.map(({ id, ...user }) => ({ ...user, parameters: {} })) });
+
+      const data = prismock.getData();
+
+      expect({
+        ...data,
+        user: data.user.map(({ id, ...user }) => user),
+      }).toEqual({ user: seededUsers.map(({ id, ...user }) => user), blog: [], post: [] });
     });
   });
 
@@ -21,10 +27,16 @@ describe('client (custom)', () => {
       models = schema.datamodel.models;
     });
 
-    it('Should set/get data', () => {
+    it('Should get data', async () => {
       const prismock = generatePrismockSync({ models });
-      prismock.setData({ user: seededUsers, post: seededPosts, blog: seededBlogs });
-      expect(prismock.getData()).toEqual({ user: seededUsers, post: seededPosts, blog: seededBlogs });
+      await prismock.user.createMany({ data: seededUsers.map(({ id, ...user }) => ({ ...user, parameters: {} })) });
+
+      const data = prismock.getData();
+
+      expect({
+        ...data,
+        user: data.user.map(({ id, ...user }) => user),
+      }).toEqual({ user: seededUsers.map(({ id, ...user }) => user), blog: [], post: [] });
     });
   });
 });

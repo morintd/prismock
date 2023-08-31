@@ -14,7 +14,7 @@ describe('create (connect)', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   });
 
   it('Should create with multiple dependencies and connect to it', async () => {

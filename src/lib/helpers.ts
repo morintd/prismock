@@ -45,3 +45,19 @@ export function removeUndefined(o: Record<string, unknown>) {
     return accumulator;
   }, {} as Item);
 }
+
+export function pipe<T>(...functions: Array<(arg: T) => T>) {
+  return (value: T) => {
+    return functions.reduce((currentValue, currentFunction) => {
+      return currentFunction(currentValue);
+    }, value);
+  };
+}
+
+export function compose<T>(...functions: Array<(arg: T) => T>) {
+  return (value: T) => {
+    return functions.reduceRight((currentValue, currentFunction) => {
+      return currentFunction(currentValue);
+    }, value);
+  };
+}

@@ -41,7 +41,7 @@ describe('updateMany (nested/multiple)', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   });
 
   beforeAll(async () => {

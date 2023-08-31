@@ -15,7 +15,7 @@ describe('aggregate', () => {
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
 
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
     await prisma.user.create({ data: { email: 'user4@company.com', password: 'password' } });
     await prismock.user.create({ data: { email: 'user4@company.com', password: 'password' } });
   });

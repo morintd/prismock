@@ -18,7 +18,7 @@ describe('update', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     realUpdate = await prisma.user.update({
       where: { email: seededUsers[0].email },

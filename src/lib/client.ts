@@ -18,7 +18,7 @@ type TransactionArgs<T> = (tx: Omit<T, '$transaction'>) => unknown | Promise<unk
 export function generateClient<T = PrismaClient>(delegates: Record<string, Delegate>, getData: GetData, setData: SetData) {
   // eslint-disable-next-line no-console
   console.log(
-    'Deprecation notice: generatePrismock and generatePrismockSync should be replaced with PrismockClient. See https://github.com/morintd/prismock/docs/generate-prismock-deprecated.md',
+    'Deprecation notice: generatePrismock and generatePrismockSync should be replaced with PrismockClient. See https://github.com/morintd/prismock/blob/master/docs/generate-prismock-deprecated.md',
   );
 
   const client = {

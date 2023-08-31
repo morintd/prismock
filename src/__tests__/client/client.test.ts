@@ -20,7 +20,7 @@ describe('client', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
 
     const generator = await fetchGenerator();
     provider = getProvider(generator);

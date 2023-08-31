@@ -1,9 +1,9 @@
 import { Delegates } from '../prismock';
 import { Item, Delegate } from '../delegate';
 import { FindWhereArgs, SelectArgs } from '../types';
-import { camelize } from '../helpers';
+import { pipe } from '../helpers';
 
-import { getJoinField, includes, select, where } from './find';
+import { getDelegateFromField, getFieldFromRelationshipWhere, getJoinField, includes, select, where } from './find';
 
 export type DeleteArgs = {
   select?: SelectArgs | null;
@@ -20,13 +20,11 @@ export function deleteMany(args: DeleteArgs, current: Delegate, delegates: Deleg
   const { toDelete, withoutDeleted } = current.getItems().reduce(
     (accumulator: DeletionMap, currentValue: Item) => {
       const shouldDelete = where(args.where, current, delegates)(currentValue);
-
-      const withIncludes = includes(args, current, delegates)(currentValue);
-      const withSelect = select(withIncludes, args.select);
+      const deleted = pipe(includes(args, current, delegates), select(args.select))(currentValue);
 
       if (shouldDelete) {
         return {
-          toDelete: [...accumulator.toDelete, withSelect],
+          toDelete: [...accumulator.toDelete, deleted],
           withoutDeleted: accumulator.withoutDeleted,
         };
       }
@@ -46,23 +44,18 @@ export function deleteMany(args: DeleteArgs, current: Delegate, delegates: Deleg
       const joinfield = getJoinField(field, delegates);
       if (!joinfield) return;
 
-      const delegateName = camelize(field.type);
-      const delegate = delegates[delegateName];
+      const delegate = getDelegateFromField(field, delegates);
 
       if (joinfield.relationOnDelete === 'SetNull') {
         delegate.updateMany({
-          where: {
-            [joinfield.relationFromFields![0]]: item[joinfield.relationToFields![0]],
-          } as any,
+          where: getFieldFromRelationshipWhere(item, joinfield),
           data: {
             [joinfield.relationFromFields![0]]: null,
           },
         });
       } else if (joinfield.relationOnDelete === 'Cascade') {
         delegate.deleteMany({
-          where: {
-            [joinfield.relationFromFields![0]]: item[joinfield.relationToFields![0]],
-          } as any,
+          where: getFieldFromRelationshipWhere(item, joinfield),
         });
       }
     });

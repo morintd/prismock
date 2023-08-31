@@ -6,9 +6,9 @@ jest.setTimeout(40000);
 describe('client (reset)', () => {
   let prismock: PrismockClientType;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   });
 
   it('Should reset data', async () => {

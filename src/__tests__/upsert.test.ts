@@ -14,7 +14,7 @@ describe('upsert', () => {
 
     prisma = new PrismaClient();
     prismock = new PrismockClient() as PrismockClientType;
-    simulateSeed(prismock);
+    await simulateSeed(prismock);
   });
 
   describe('When already exist', () => {
