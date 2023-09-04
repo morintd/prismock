@@ -42,10 +42,12 @@ model Post {
 }
 
 model Blog {
-  id      String  @id @default(auto()) @map("_id") @db.ObjectId
-  title   String  @unique
-  imprint String  @default(cuid())
-  author  User?   @relation(fields: [userId], references: [id])
-  posts   Post[]
-  userId  String? @db.ObjectId
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  title    String  @unique
+  imprint  String  @default(cuid())
+  priority Int     @default(1)
+  category String  @default("normal")
+  author   User?   @relation(fields: [userId], references: [id])
+  posts    Post[]
+  userId   String? @db.ObjectId
 }
