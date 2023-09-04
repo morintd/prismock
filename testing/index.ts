@@ -51,11 +51,13 @@ export function buildPost(id: number, post: Partial<Post> & { authorId: number; 
   };
 }
 
-export function buildBlog(id: number, title: string, imprint = createId()) {
+export function buildBlog(id: number, title: string, imprint = createId(), priority = 1, category = 'normal') {
   return {
     id,
     title,
     imprint,
+    priority,
+    category,
   };
 }
 

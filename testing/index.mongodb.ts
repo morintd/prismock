@@ -67,11 +67,13 @@ export function buildPost(id: number, post: Partial<Omit<Post, 'authorId'>> & { 
   };
 }
 
-export function buildBlog(id: number, title: string, imprint = createId()) {
+export function buildBlog(id: number, title: string, imprint = createId(), priority = 1, category = 'normal') {
   return {
     id: new ObjectId(id).toString(),
     title,
     imprint,
+    priority,
+    category,
   };
 }
 

@@ -94,11 +94,35 @@ describe('create', () => {
     });
 
     it('Should creat with default cuid value', async () => {
-      const mockBlog3 = await prismock.blog.create({ data: { title: 'blog-3' } });
       const realBlog3 = await prisma.blog.create({ data: { title: 'blog-3' } });
+      const mockBlog3 = await prismock.blog.create({ data: { title: 'blog-3' } });
 
-      expect(isCuid(mockBlog3.imprint)).toBe(true);
       expect(isCuid(realBlog3.imprint)).toBe(true);
+      expect(isCuid(mockBlog3.imprint)).toBe(true);
+    });
+
+    it('Should creat with default string value', async () => {
+      const realBlog4 = await prisma.blog.create({ data: { title: 'blog-4' } });
+      const mockBlog4 = await prismock.blog.create({ data: { title: 'blog-4' } });
+
+      expect(realBlog4.category).toBe('normal');
+      expect(mockBlog4.category).toBe('normal');
+    });
+
+    it('Should create with default int value', async () => {
+      const realBlog5 = await prisma.blog.create({ data: { title: 'blog-5' } });
+      const mockBlog5 = await prismock.blog.create({ data: { title: 'blog-5' } });
+
+      expect(realBlog5.priority).toBe(1);
+      expect(mockBlog5.priority).toBe(1);
+    });
+
+    it('Should create with default value if receive undefined', async () => {
+      const realBlog6 = await prisma.blog.create({ data: { title: 'blog-6', category: undefined } });
+      const mockBlog6 = await prismock.blog.create({ data: { title: 'blog-6', category: undefined } });
+
+      expect(realBlog6.category).toBe('normal');
+      expect(mockBlog6.category).toBe('normal');
     });
 
     it('Should create without default value if already set', () => {

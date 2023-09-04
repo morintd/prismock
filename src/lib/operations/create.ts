@@ -4,7 +4,7 @@ import { ObjectId } from 'bson';
 import { createId as createCuid } from '@paralleldrive/cuid2';
 
 import { Delegate, DelegateProperties, Item } from '../delegate';
-import { pipe, uuid } from '../helpers';
+import { pipe, removeUndefined, uuid } from '../helpers';
 import { Delegates } from '../prismock';
 import { ConnectOrCreate, CreateArgs, FindWhereArgs } from '../types';
 
@@ -151,7 +151,7 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
 
 export function nestedCreate(current: Delegate, delegates: Delegates) {
   return (item: Item) => {
-    const created = { ...createDefaultValues(current.model.fields, current.getProperties()), ...item };
+    const created = { ...createDefaultValues(current.model.fields, current.getProperties()), ...removeUndefined(item) };
 
     current.model.fields.forEach((field) => {
       const value = created[field.name];
