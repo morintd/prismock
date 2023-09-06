@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 
 import { Delegate } from './delegate';
-import { Data, generateDelegates } from './prismock';
+import { Data, Delegates, generateDelegates } from './prismock';
 
 type GetData = () => Data;
 type SetData = (data: Data) => void;
@@ -59,6 +59,11 @@ class Prismock {
   private generate() {
     const { delegates, setData, getData } = generateDelegates({ models: Prisma.dmmf.datamodel.models });
     Object.assign(this, { setData, getData, ...delegates });
+
+    Object.entries(delegates).forEach(([key, value]) => {
+      if (key in this) Object.assign((this as unknown as Delegates)[key], value);
+      else Object.assign(this, { [key]: value });
+    });
   }
 
   async $connect() {
