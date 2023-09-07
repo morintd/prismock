@@ -58,9 +58,8 @@ class Prismock {
 
   private generate() {
     const { delegates, setData, getData } = generateDelegates({ models: Prisma.dmmf.datamodel.models });
-    Object.assign(this, { setData, getData, ...delegates });
 
-    Object.entries(delegates).forEach(([key, value]) => {
+    Object.entries({ ...delegates, setData, getData }).forEach(([key, value]) => {
       if (key in this) Object.assign((this as unknown as Delegates)[key], value);
       else Object.assign(this, { [key]: value });
     });
