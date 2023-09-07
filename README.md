@@ -32,9 +32,24 @@ $ npm add --save-dev prismock
 
 There is two options here, depending on your application architecture.
 
+## Automatically (recommended)
+
+You can create a `__mocks__` directory at the root of your project, with a sub-directory named `@prisma`. Inside the `@prisma` directory, create a `client.js` file (or `client.ts` for TypeScript).
+
+Inside the `client` file, you can re-export the `@prisma/client` module, and replace `PrismaClient` by `PrismockClient`:
+
+```ts
+import { PrismockClient } from 'prismock';
+
+export * from '@prisma/client';
+export { PrismockClient as PrismaClient };
+```
+
+That's it, prisma will be mocked in all your tests (tested with Jest & ViTest)
+
 ## PrismaClient
 
-You can mock the PrismaClient directly ([Example](https://github.com/morintd/prismock/blob/master/src/__tests__/example-prismock.test.ts)):
+You can mock the PrismaClient directly in your test, or setupTests ([Example](https://github.com/morintd/prismock/blob/master/src/__tests__/example-prismock.test.ts)):
 
 ```ts
 jest.mock('@prisma/client', () => {
@@ -45,28 +60,17 @@ jest.mock('@prisma/client', () => {
 });
 ```
 
-## Dependency injection
+## Use prismock manually
 
-If you are using dependency injection, you can directly use `prismock`. I personally do so with the amazing [NestJS](https://docs.nestjs.com/fundamentals/testing#end-to-end-testing):
+You can instanciate a `PrismockClient` directly and use it in your test, or pass it to a test version of your app.
 
 ```ts
 import { PrismockClient } from 'prismock';
 
 import { PrismaService } from './prisma.service';
 
-let app: INestApplication;
-
-beforeAll(async () => {
-  const prismock = new PrismockClient();
-
-  const moduleRef = await Test.createTestingModule({ imports: [] })
-    .overrideProvider(PrismaService)
-    .useValue(prismock)
-    .compile();
-
-  app = moduleRef.createNestApplication();
-  await app.init();
-});
+const prismock = new PrismockClient();
+const app = createApp(prismock);
 ```
 
 Then, you will be able to write your tests as if your app was using an in-memory Prisma client.
