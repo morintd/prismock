@@ -115,10 +115,16 @@ describe('create', () => {
           password: 'password',
           warnings: 0,
           posts: {
-            create: {
-              title: 'title-user5',
-              blogId: realBlog.id,
-            },
+            create: [
+              {
+                title: 'title-user5',
+                blogId: mockBlog.id,
+              },
+              {
+                title: 'title-user5-2',
+                blogId: mockBlog.id,
+              },
+            ],
           },
         },
       });
@@ -129,10 +135,16 @@ describe('create', () => {
           password: 'password',
           warnings: 0,
           posts: {
-            create: {
-              title: 'title-user5',
-              blogId: mockBlog.id,
-            },
+            create: [
+              {
+                title: 'title-user5',
+                blogId: mockBlog.id,
+              },
+              {
+                title: 'title-user5-2',
+                blogId: mockBlog.id,
+              },
+            ],
           },
         },
       });
@@ -154,9 +166,26 @@ describe('create', () => {
           blogId: true,
         },
       }))!;
+      const realPost2 = (await prisma.post.findUnique({
+        where: { title: 'title-user5-2' },
+        select: {
+          title: true,
+          authorId: true,
+          blogId: true,
+        },
+      }))!;
 
       const mockPost = (await prismock.post.findUnique({
         where: { title: 'title-user5' },
+        select: {
+          title: true,
+          authorId: true,
+          blogId: true,
+        },
+      }))!;
+
+      const mockPost2 = (await prismock.post.findUnique({
+        where: { title: 'title-user5-2' },
         select: {
           title: true,
           authorId: true,
@@ -169,8 +198,19 @@ describe('create', () => {
         authorId: realUser.id,
         blogId: realBlog.id,
       });
+      expect(formatEntry(realPost2)).toEqual({
+        title: 'title-user5-2',
+        authorId: realUser.id,
+        blogId: realBlog.id,
+      });
+
       expect(formatEntry(mockPost)).toEqual({
         title: 'title-user5',
+        authorId: mockUser.id,
+        blogId: mockBlog.id,
+      });
+      expect(formatEntry(mockPost2)).toEqual({
+        title: 'title-user5-2',
         authorId: mockUser.id,
         blogId: mockBlog.id,
       });
