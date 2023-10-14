@@ -168,7 +168,13 @@ export function nestedCreate(current: Delegate, delegates: Delegates) {
 
             const data = (value as { create: Item }).create;
 
-            create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
+            if (Array.isArray(data)) {
+              data.forEach((item) => {
+                create({ ...item, ...connect }, {}, delegate, delegates, delegate.onChange);
+              });
+            } else {
+              create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
+            }
           }
 
           if ((value as { createMany: Item[] }).createMany) {
