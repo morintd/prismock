@@ -118,11 +118,11 @@ describe('create', () => {
             create: [
               {
                 title: 'title-user5',
-                blogId: mockBlog.id,
+                blogId: realBlog.id,
               },
               {
                 title: 'title-user5-2',
-                blogId: mockBlog.id,
+                blogId: realBlog.id,
               },
             ],
           },
