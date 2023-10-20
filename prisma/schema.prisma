@@ -16,18 +16,32 @@ enum Role {
 }
 
 model User {
-  id         Int     @id @default(autoincrement())
-  email      String  @unique
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
   password   String
-  role       Role    @default(USER)
+  role       Role     @default(USER)
   warnings   Int?
-  banned     Boolean @default(false)
-  money      BigInt  @default(0)
-  friends    Float   @default(0)
+  banned     Boolean  @default(false)
+  money      BigInt   @default(0)
+  friends    Float    @default(0)
   signal     Bytes?
-  parameters Json    @default("{}")
+  parameters Json     @default("{}")
   posts      Post[]
   Blog       Blog[]
+  profile    Profile?
+}
+
+model Profile {
+  id     Int     @id @default(autoincrement())
+  bio    String?
+  gender Gender
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int     @unique
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 model Post {

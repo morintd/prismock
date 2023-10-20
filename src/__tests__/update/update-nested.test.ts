@@ -57,6 +57,11 @@ describe('update (nested)', () => {
       where: { email: seededUsers[0].email },
       data: {
         friends: 1,
+        profile: {
+          update: {
+            bio: 'new bio',
+          },
+        },
         posts: {
           update: {
             where: {
@@ -74,6 +79,11 @@ describe('update (nested)', () => {
       where: { email: seededUsers[0].email },
       data: {
         friends: 1,
+        profile: {
+          update: {
+            bio: 'new bio',
+          },
+        },
         posts: {
           update: {
             where: {

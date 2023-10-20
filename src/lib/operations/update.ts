@@ -128,10 +128,10 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
 
             if (Array.isArray(fieldData.updateMany)) {
               fieldData.updateMany.forEach((toUpdateMany: UpdateArgs) => {
-                delegate.updateMany({ where, data: toUpdateMany.data });
+                delegate.updateMany({ where, data: toUpdateMany.data ?? toUpdateMany });
               });
             } else {
-              delegate.updateMany({ where, data: fieldData.updateMany.data });
+              delegate.updateMany({ where, data: fieldData.updateMany.data ?? fieldData.updateMany });
             }
           } else {
             const joinfield = getJoinField(field, delegates)!;
@@ -139,12 +139,15 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
 
             if (Array.isArray(fieldData.update)) {
               fieldData.update.forEach((toUpdate: UpdateArgs) => {
-                delegate.updateMany({ where, data: toUpdate.data });
+                delegate.updateMany({ where, data: toUpdate.data ?? toUpdate });
               });
             } else {
               const item = findOne(args, delegates[camelize(joinfield.type)], delegates)!;
 
-              delegate.updateMany({ where: getFieldRelationshipWhere(item, field, delegates), data: fieldData.update.data });
+              delegate.updateMany({
+                where: getFieldRelationshipWhere(item, field, delegates),
+                data: fieldData.update.data ?? fieldData.update,
+              });
             }
           }
         }
