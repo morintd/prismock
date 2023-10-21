@@ -1,4 +1,4 @@
-import { Blog, PrismaClient, User } from '@prisma/client';
+import { Blog, Gender, PrismaClient, User } from '@prisma/client';
 
 import {
   resetDb,
@@ -52,6 +52,12 @@ describe('update (nested)', () => {
 
     await prisma.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
     await prismock.post.update({ where: { title: seededPosts[1].title }, data: { authorId: seededUsers[0].id } });
+
+    realUser = (await prisma.user.findFirst({ where: { email: seededUsers[0].email } }))!;
+    mockUser = (await prismock.user.findFirst({ where: { email: seededUsers[0].email } }))!;
+
+    await prisma.profile.create({ data: { gender: Gender.MALE, bio: 'user-bio', userId: realUser.id } });
+    await prismock.profile.create({ data: { gender: Gender.MALE, bio: 'user-bio', userId: mockUser.id } });
 
     realUser = await prisma.user.update({
       where: { email: seededUsers[0].email },
