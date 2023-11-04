@@ -14,7 +14,7 @@ import { PrismockClient, PrismockClientType } from '../../lib/client';
 
 jest.setTimeout(40000);
 
-describe.only('update (createMany)', () => {
+describe('update (createMany)', () => {
   let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
