@@ -63,7 +63,7 @@ describe('update (createMany)', () => {
             data: [
               {
                 title: 'nested',
-                blogId: seededBlogs[0].id,
+                blogId: realBlog1.id,
               },
             ],
           },
@@ -80,7 +80,7 @@ describe('update (createMany)', () => {
             data: [
               {
                 title: 'nested',
-                blogId: seededBlogs[0].id,
+                blogId: mockBlog1.id,
               },
             ],
           },
