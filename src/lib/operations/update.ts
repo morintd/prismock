@@ -91,7 +91,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
               } as Record<string, Item>;
             };
             if (fieldData.createMany) {
-              fieldData.createMany
+              fieldData.createMany.data
                 .map(formatCreatedItem)
                 .forEach((createSingle: Item) => delegate.create({ data: createSingle }));
             } else {
