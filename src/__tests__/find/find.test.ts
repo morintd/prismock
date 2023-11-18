@@ -212,6 +212,125 @@ describe('find', () => {
         });
       });
     });
+    it.only('should correctly query on Datetime type field', async () => {
+      const realPost1 = await prisma.post.findFirst({
+        where: {
+          createdAt: {
+            gt: new Date('2021-01-01T00:00:00.000Z'),
+          },
+        },
+      });
+
+      const realPost1Variation = await prisma.post.findFirst({
+        where: {
+          createdAt: {
+            gt: '2021-01-01T00:00:00.000Z',
+          },
+        },
+      });
+     
+      const realPost2 = await prisma.post.findFirst({
+        where: {
+          createdAt: {
+            lt: new Date('2021-01-01T00:00:00.000Z'),
+          },
+        },
+      });
+
+      const realPost2Variation = await prisma.post.findFirst({
+        where: {
+          createdAt: {
+            lt: new Date('2021-01-01T00:00:00.000Z'),
+          },
+        },
+      });
+
+      const mockPost1 = await prismock.post.findFirst({
+        where: {
+          createdAt: {
+            gt: new Date('2021-01-01T00:00:00.000Z'),
+          },
+        },
+      });
+
+      const mockPost1Variation = await prismock.post.findFirst({
+        where: {
+          createdAt: {
+            gt: '2021-01-01T00:00:00.000Z',
+          },
+        },
+      })!;
+
+      const mockPost2 = await prismock.post.findFirst({
+        where: {
+          createdAt: {
+            lt: new Date('2021-01-01T00:00:00.000Z'),
+          },
+        },
+      })!;
+
+      const mockPost2Variation = await prismock.post.findFirst({
+        where: {
+          createdAt: {
+            lt: new Date('2021-01-01T00:00:00.000Z'),
+          },
+        },
+      });
+
+      expect(formatEntry(realPost1)).toEqual(
+        expect.objectContaining(
+          formatEntry({
+            id: 1,
+            title: 'title1',
+            imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
+            authorId: 1,
+            blogId: 1,
+          }),
+        ),
+      );
+
+      expect(formatEntry(realPost1Variation)).toEqual(
+        expect.objectContaining(
+          formatEntry({
+            id: 1,
+            title: 'title1',
+            imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
+            authorId: 1,
+            blogId: 1,
+          }),
+        ),
+      );
+
+      expect(formatEntry(realPost2)).toBeNull();
+      expect(formatEntry(realPost2Variation)).toBeNull();
+
+      expect(formatEntry(mockPost1)).toEqual(
+        expect.objectContaining(
+          formatEntry({
+            id: 1,
+            title: 'title1',
+            imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
+            authorId: 1,
+            blogId: 1,
+          }),
+        ),
+      );
+
+      expect(formatEntry(mockPost1Variation)).toEqual(
+        expect.objectContaining(
+          formatEntry({
+            id: 1,
+            title: 'title1',
+            imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
+            authorId: 1,
+            blogId: 1,
+          }),
+        ),
+      );
+
+      expect(formatEntry(mockPost2)).toBeNull();
+      expect(formatEntry(mockPost2Variation)).toBeNull();
+    });
   });
 
   describe('findMany', () => {
