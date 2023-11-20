@@ -213,7 +213,7 @@ describe('find', () => {
         });
       });
     });
-    it.only('should correctly query on Datetime type field', async () => {
+    it('should correctly query on Datetime type field', async () => {
       const realPost1 = await prisma.post.findFirst({
         where: {
           createdAt: {
