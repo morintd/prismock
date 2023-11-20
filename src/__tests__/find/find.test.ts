@@ -155,6 +155,7 @@ describe('find', () => {
 
         ['or', { where: { OR: [{ warnings: { gt: 10 } }, { email: { startsWith: 'user3' } }] } }, seededUsers[2]],
         ['not', { where: { NOT: [{ warnings: { lt: 5 } }, { email: { startsWith: 'user2' } }] } }, seededUsers[2]],
+        ['not', { where: { NOT: { email: { startsWith: 'user2' } } } }, seededUsers[0]],
       ];
 
       // Adding case-sentive test but ignoring db where it's not a feature (case-insensitive by default)

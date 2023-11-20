@@ -43,7 +43,7 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
 
     if (child === 'OR') return matchOr(item, filter as FindWhereArgs[]);
     if (child === 'AND') return matchAnd(item, filter as FindWhereArgs[]);
-    if (child === 'NOT') return !matchOr(item, filter as FindWhereArgs[]);
+    if (child === 'NOT') return !matchOr(item, filter instanceof Array ? filter : [filter]);
 
     if (filter == null || filter === undefined) {
       if (filter === null) return val === null || val === undefined;
