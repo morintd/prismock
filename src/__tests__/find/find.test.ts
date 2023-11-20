@@ -229,7 +229,7 @@ describe('find', () => {
           },
         },
       });
-     
+
       const realPost2 = await prisma.post.findFirst({
         where: {
           createdAt: {
