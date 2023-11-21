@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { DMMF } from '@prisma/client/runtime/library';
 
 import { Delegate, Item } from '../../delegate';
 import { camelize, shallowCompare } from '../../helpers';
@@ -7,12 +8,14 @@ import { FindWhereArgs } from '../../types';
 
 import { getFieldRelationshipWhere } from './find';
 
-function formatValueWithMode<T>(baseValue: T, filter: Prisma.Enumerable<FindWhereArgs>) {
+function formatValueWithMode<T>(baseValue: T, filter: Prisma.Enumerable<FindWhereArgs>, info?: DMMF.Field | null) {
   const format =
     'mode' in filter
       ? <T>(baseValue: T) => (typeof baseValue === 'string' ? (baseValue.toLocaleLowerCase() as T) : baseValue)
       : <T>(v: T) => v;
-
+  if (info?.type === 'DateTime' && typeof baseValue === 'string') {
+    return new Date(baseValue);
+  }
   return format(baseValue);
 }
 
@@ -56,9 +59,9 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
       }
     } else {
       if (typeof filter === 'object') {
-        val = formatValueWithMode(val, filter);
-
         const info = current.model.fields.find((field) => field.name === child);
+        val = formatValueWithMode(val, filter, info);
+
         if (info?.relationName) {
           const childName = camelize(info.type);
           let childWhere: any = {};
@@ -109,37 +112,38 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
 
         let match = true;
         if ('equals' in filter && match) {
-          match = formatValueWithMode(filter.equals, filter) === val;
+          match = formatValueWithMode(filter.equals, filter, info) === val;
         }
         if ('startsWith' in filter && match) {
-          match = val.indexOf(formatValueWithMode(filter.startsWith, filter)) === 0;
+          match = val.indexOf(formatValueWithMode(filter.startsWith, filter, info)) === 0;
         }
         if ('endsWith' in filter && match) {
-          match = val.indexOf(formatValueWithMode(filter.endsWith, filter)) === val.length - (filter as any).endsWith.length;
+          match =
+            val.indexOf(formatValueWithMode(filter.endsWith, filter, info)) === val.length - (filter as any).endsWith.length;
         }
         if ('contains' in filter && match) {
-          match = val.indexOf(formatValueWithMode(filter.contains, filter)) > -1;
+          match = val.indexOf(formatValueWithMode(filter.contains, filter, info)) > -1;
         }
         if ('gt' in filter && match) {
-          match = val > formatValueWithMode(filter.gt, filter)!;
+          match = val > formatValueWithMode(filter.gt, filter, info)!;
         }
         if ('gte' in filter && match) {
-          match = val >= formatValueWithMode(filter.gte, filter)!;
+          match = val >= formatValueWithMode(filter.gte, filter, info)!;
         }
         if ('lt' in filter && match) {
-          match = val < formatValueWithMode(filter.lt, filter)!;
+          match = val < formatValueWithMode(filter.lt, filter, info)!;
         }
         if ('lte' in filter && match) {
-          match = val <= formatValueWithMode(filter.lte, filter)!;
+          match = val <= formatValueWithMode(filter.lte, filter, info)!;
         }
         if ('in' in filter && match) {
-          match = (filter.in as any[]).map((inEntry) => formatValueWithMode(inEntry, filter)).includes(val);
+          match = (filter.in as any[]).map((inEntry) => formatValueWithMode(inEntry, filter, info)).includes(val);
         }
         if ('not' in filter && match) {
           match = val !== formatValueWithMode(filter.not, filter);
         }
         if ('notIn' in filter && match) {
-          match = !(filter.notIn as any[]).map((notInEntry) => formatValueWithMode(notInEntry, filter)).includes(val);
+          match = !(filter.notIn as any[]).map((notInEntry) => formatValueWithMode(notInEntry, filter, info)).includes(val);
         }
         if (!match) return false;
       } else if (val !== filter) {

@@ -66,7 +66,7 @@ export function isUUID(maybeUUID: string) {
   return regexUUID.test(maybeUUID);
 }
 
-export function formatEntry(entry: Record<string, unknown>) {
+export function formatEntry(entry: Record<string, unknown> | null) {
   return entry;
 }
 
