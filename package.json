@@ -26,8 +26,8 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "@commitlint/cli": "18.4.2",
-    "@commitlint/config-conventional": "18.4.2",
+    "@commitlint/cli": "18.4.3",
+    "@commitlint/config-conventional": "18.4.3",
     "@prisma/client": "5.1.1",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/commit-analyzer": "11.1.0",
