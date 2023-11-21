@@ -281,7 +281,7 @@ describe('find', () => {
       expect(formatEntry(realPost1)).toEqual(
         expect.objectContaining(
           formatEntry({
-            id: 1,
+            id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
             authorId: 1,
@@ -293,7 +293,7 @@ describe('find', () => {
       expect(formatEntry(realPost1Variation)).toEqual(
         expect.objectContaining(
           formatEntry({
-            id: 1,
+            id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
             authorId: 1,
@@ -308,7 +308,7 @@ describe('find', () => {
       expect(formatEntry(mockPost1)).toEqual(
         expect.objectContaining(
           formatEntry({
-            id: 1,
+            id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
             authorId: 1,
@@ -320,7 +320,7 @@ describe('find', () => {
       expect(formatEntry(mockPost1Variation)).toEqual(
         expect.objectContaining(
           formatEntry({
-            id: 1,
+            id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
             authorId: 1,
