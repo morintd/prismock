@@ -86,8 +86,8 @@ export function hasObjectIdStructure(maybeObjectId: any) {
   return typeof maybeObjectId === 'string' && maybeObjectId.length === 24;
 }
 
-export function formatEntry(entry: Record<string, unknown>) {
-  if (entry.id) {
+export function formatEntry(entry: Record<string, unknown> | null) {
+  if (entry?.id) {
     const { id, ...formated } = entry;
 
     expect(hasObjectIdStructure(id)).toBe(true);
