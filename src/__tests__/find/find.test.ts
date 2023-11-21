@@ -311,8 +311,8 @@ describe('find', () => {
             id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
-            authorId: realAuthor.id,
-            blogId: realBlog.id,
+            authorId: mockAuthor.id,
+            blogId: mockBlog.id,
           }),
         ),
       );
@@ -323,8 +323,8 @@ describe('find', () => {
             id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
-            authorId: realAuthor.id,
-            blogId: realBlog.id,
+            authorId: mockAuthor.id,
+            blogId: mockBlog.id,
           }),
         ),
       );
