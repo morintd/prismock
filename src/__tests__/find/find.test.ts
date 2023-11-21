@@ -284,8 +284,8 @@ describe('find', () => {
             id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
-            authorId: 1,
-            blogId: 1,
+            authorId: realAuthor.id,
+            blogId: realBlog.id,
           }),
         ),
       );
@@ -296,8 +296,8 @@ describe('find', () => {
             id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
-            authorId: 1,
-            blogId: 1,
+            authorId: realAuthor.id,
+            blogId: realBlog.id,
           }),
         ),
       );
@@ -311,8 +311,8 @@ describe('find', () => {
             id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
-            authorId: 1,
-            blogId: 1,
+            authorId: realAuthor.id,
+            blogId: realBlog.id,
           }),
         ),
       );
@@ -323,8 +323,8 @@ describe('find', () => {
             id: generateId(1),
             title: 'title1',
             imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
-            authorId: 1,
-            blogId: 1,
+            authorId: realAuthor.id,
+            blogId: realBlog.id,
           }),
         ),
       );
