@@ -125,4 +125,36 @@ describe('aggregate', () => {
     expect(realAggregate).toEqual(expected);
     expect(mockAggregate).toEqual(expected);
   });
+  it('Should allow count all', async () => {
+    const expected = {
+      _count: { _all: 4 },
+    };
+
+    const realAggregate = await prisma.user.aggregate({
+      _count: { _all: true },
+    });
+
+    const mockAggregate = await prismock.user.aggregate({
+      _count: { _all: true },
+    });
+
+    expect(realAggregate).toEqual(expected);
+    expect(mockAggregate).toEqual(expected);
+  });
+  it('Should allow _count: true shorthand', async () => {
+    const expected = {
+      _count: 4,
+    };
+
+    const realAggregate = await prisma.user.aggregate({
+      _count: true,
+    });
+
+    const mockAggregate = await prismock.user.aggregate({
+      _count: true,
+    });
+
+    expect(realAggregate).toEqual(expected);
+    expect(mockAggregate).toEqual(expected);
+  });
 });

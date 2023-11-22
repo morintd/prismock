@@ -8,10 +8,7 @@
   "repository": "https://github.com/morintd/prismock",
   "author": "Teddy Morin <morin.td@gmail.com> (http://morintd.medium.com/)",
   "license": "MIT",
-  "keywords": [
-    "test",
-    "prisma"
-  ],
+  "keywords": ["test", "prisma"],
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
@@ -21,6 +18,7 @@
     "build:module": "tsc -p tsconfig.module.json",
     "lint": "eslint src --ext .ts",
     "test": "jest src/ --maxWorkers=1",
+    "db:init": "prisma migrate dev --name init",
     "db:reset": "prisma migrate reset -f",
     "test:coverage": "jest --coverage",
     "prepare": "husky install"
@@ -65,24 +63,14 @@
     "ts-toolbelt": "9.6.0",
     "typescript": "5.2.2"
   },
-  "files": [
-    "build/main",
-    "build/module",
-    "!**/*.spec.*",
-    "!**/*.json",
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md"
-  ],
+  "files": ["build/main", "build/module", "!**/*.spec.*", "!**/*.json", "CHANGELOG.md", "LICENSE", "README.md"],
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix"
-    ]
+    "*.{ts,tsx}": ["eslint --fix"]
   },
   "dependencies": {
     "@paralleldrive/cuid2": "2.2.2",

@@ -3,7 +3,7 @@ import { AggregateArgs } from '../types';
 
 type AggregateResult = {
   _avg?: Record<string, number>;
-  _count?: Record<string, number>;
+  _count?: number | Record<string, number>;
   _max?: Record<string, number>;
   _min?: Record<string, number>;
   _sum?: Record<string, number>;
@@ -73,12 +73,22 @@ function aggregateSum(arg: NonNullable<AggregateArgs['_sum']>, items: Item[]) {
   return _sum;
 }
 
-function aggregateCount(arg: NonNullable<AggregateArgs['_max']>, items: Item[]) {
+function aggregateCount(arg: NonNullable<AggregateArgs['_count']>, items: Item[]) {
   const _count: Record<string, number> = {};
+
+  // Short-circuit for the shorthand case
+  if (arg === true) {
+    return items.length;
+  }
 
   Object.keys(arg).forEach((property) => {
     _count[property] = items.filter((item) => item[property] !== undefined && item[property] !== null).length;
   });
+
+  // _all will always end up as '0' after the preceeding loop, so calculate it here
+  if (arg._all === true) {
+    _count._all = items.length;
+  }
 
   return _count;
 }
