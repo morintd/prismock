@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 
-import { buildUser, resetDb, simulateSeed } from '../../../testing';
+import { buildUser, resetDb, seededUsers, simulateSeed } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 
 jest.setTimeout(40000);
@@ -8,6 +8,12 @@ jest.setTimeout(40000);
 describe('groupBy', () => {
   let prismock: PrismockClientType;
   let prisma: PrismaClient;
+
+  let realAuthor1: User;
+  let mockAuthor1: User;
+
+  let realAuthor2: User;
+  let mockAuthor2: User;
 
   beforeAll(async () => {
     await resetDb();
@@ -18,6 +24,12 @@ describe('groupBy', () => {
     const users = [buildUser(4, { role: 'ADMIN' })];
     await prisma.user.createMany({ data: users });
     await prismock.user.createMany({ data: users });
+
+    realAuthor1 = (await prisma.user.findFirst({ where: { email: seededUsers[0].email } }))!;
+    mockAuthor1 = (await prismock.user.findFirst({ where: { email: seededUsers[0].email } }))!;
+
+    realAuthor2 = (await prisma.user.findFirst({ where: { email: seededUsers[1].email } }))!;
+    mockAuthor2 = (await prismock.user.findFirst({ where: { email: seededUsers[1].email } }))!;
   });
 
   it('Should get all matching groups', async () => {
@@ -33,10 +45,10 @@ describe('groupBy', () => {
     expect(realCount).toEqual(
       expect.arrayContaining([
         {
-          authorId: 1,
+          authorId: realAuthor1.id,
         },
         {
-          authorId: 2,
+          authorId: realAuthor2.id,
         },
       ]),
     );
@@ -45,10 +57,10 @@ describe('groupBy', () => {
     expect(mockCount).toEqual(
       expect.arrayContaining([
         {
-          authorId: 1,
+          authorId: mockAuthor1.id,
         },
         {
-          authorId: 2,
+          authorId: mockAuthor2.id,
         },
       ]),
     );
