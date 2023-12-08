@@ -1,6 +1,6 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { FindArgs, FindWhereFieldArg, Order, OrderedValue } from '../../types';
+import { FindArgs, GroupByFieldArg, Order, OrderedValue } from '../../types';
 import { Delegate, DelegateProperties, Item } from '../../delegate';
 import { camelize, pipe } from '../../helpers';
 import { Delegates } from '../../prismock';
@@ -210,27 +210,27 @@ export const getFieldRelationshipWhere = (
   item: Item,
   field: DMMF.Field,
   delegates: Delegates,
-): Record<string, FindWhereFieldArg> => {
+): Record<string, GroupByFieldArg> => {
   if (field.relationToFields?.length === 0) {
     field = getJoinField(field, delegates)!;
     return {
-      [field.relationFromFields![0]]: item[field.relationToFields![0]] as FindWhereFieldArg,
+      [field.relationFromFields![0]]: item[field.relationToFields![0]] as GroupByFieldArg,
     };
   }
   return {
-    [field.relationToFields![0]]: item[field.relationFromFields![0]] as FindWhereFieldArg,
+    [field.relationToFields![0]]: item[field.relationFromFields![0]] as GroupByFieldArg,
   };
 };
 
 export const getFieldFromRelationshipWhere = (item: Item, field: DMMF.Field) => {
   return {
-    [field.relationFromFields![0]]: item[field.relationToFields![0]] as FindWhereFieldArg,
+    [field.relationFromFields![0]]: item[field.relationToFields![0]] as GroupByFieldArg,
   };
 };
 
 export const getFieldToRelationshipWhere = (item: Item, field: DMMF.Field) => {
   return {
-    [field.relationToFields![0]]: item[field.relationFromFields![0]] as FindWhereFieldArg,
+    [field.relationToFields![0]]: item[field.relationFromFields![0]] as GroupByFieldArg,
   };
 };
 

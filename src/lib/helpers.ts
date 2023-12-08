@@ -15,6 +15,15 @@ export function shallowCompare(a: Item, b: Item) {
   return true;
 }
 
+export function pick(obj: Record<string, unknown>, keys: string[]) {
+  return Object.entries(obj).reduce((accumulator, [currentKey, currentValue]) => {
+    if (keys.includes(currentKey)) {
+      accumulator = { ...accumulator, [currentKey]: currentValue };
+    }
+    return accumulator;
+  }, {});
+}
+
 export function omit(obj: Record<string, unknown>, keys: string[]) {
   return Object.entries(obj).reduce((accumulator, [currentKey, currentValue]) => {
     if (!keys.includes(currentKey)) {
@@ -60,4 +69,12 @@ export function compose<T>(...functions: Array<(arg: T) => T>) {
       return currentFunction(currentValue);
     }, value);
   };
+}
+
+export function unique<T>(value: T[]) {
+  return Array.from(new Set(value));
+}
+
+export function ensureArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
 }
