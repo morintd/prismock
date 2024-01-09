@@ -20,5 +20,13 @@ describe('Example', () => {
       expect(formatEntry(user)).toEqual(formatEntry(buildUser(1)));
       expect(formatEntries(found)).toEqual(formatEntries([user]));
     });
+
+    it('Should allow mocking queries', () => {
+      const prisma = new PrismaClient();
+
+      jest.spyOn(prisma, '$queryRaw').mockResolvedValue(42);
+
+      return expect(prisma.$queryRaw`SOME QUERIES`).resolves.toBe(42);
+    });
   });
 });
