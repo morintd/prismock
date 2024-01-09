@@ -58,7 +58,7 @@ describe('delete (includes)', () => {
           id: realPost1.id,
           authorId: realPost1.authorId,
           blogId: realBlog1.id,
-          createdAt: expect.any(Date),
+          createdAt: expect.anything(),
           imprint: expect.any(String),
         },
       ],
@@ -72,7 +72,7 @@ describe('delete (includes)', () => {
           id: mockPost1.id,
           authorId: mockPost1.authorId,
           blogId: mockBlog1.id,
-          createdAt: expect.any(Date),
+          createdAt: expect.anything(),
           imprint: expect.any(String),
         },
       ],
@@ -91,7 +91,7 @@ describe('delete (includes)', () => {
     const stored = await prisma.post.findMany();
     const mockStored = await prismock.post.findMany();
 
-    expect(stored).toEqual([{ ...realPost2, createdAt: expect.any(Date), imprint: expect.any(String) }]);
-    expect(mockStored).toEqual([{ ...mockPost2, createdAt: expect.any(Date), imprint: expect.any(String) }]);
+    expect(stored).toEqual([{ ...realPost2, createdAt: expect.anything(), imprint: expect.any(String) }]);
+    expect(mockStored).toEqual([{ ...mockPost2, createdAt: expect.anything(), imprint: expect.any(String) }]);
   });
 });

@@ -19,7 +19,7 @@ export function findNextIncrement(properties: DelegateProperties, fieldName: str
 export function findOne(args: FindArgs, current: Delegate, delegates: Delegates) {
   const found = current.getItems().find(where(args.where, current, delegates));
   if (!found) return null;
-  return pipe(includes(args, current, delegates), select(args.select))(found);
+  return structuredClone(pipe(includes(args, current, delegates), select(args.select))(found));
 }
 
 export function where(whereArgs: FindArgs['where'] = {}, current: Delegate, delegates: Delegates) {
@@ -269,5 +269,5 @@ export function findMany(args: FindArgs, current: Delegate, delegates: Delegates
     });
   }
 
-  return found;
+  return structuredClone(found);
 }
