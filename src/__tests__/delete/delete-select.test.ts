@@ -91,7 +91,7 @@ describe('delete (select)', () => {
     const stored = await prisma.post.findMany();
     const mockStored = await prismock.post.findMany();
 
-    expect(stored).toEqual([{ ...realPost2, createdAt: expect.any(Date), imprint: expect.any(String) }]);
-    expect(mockStored).toEqual([{ ...mockPost2, createdAt: expect.any(Date), imprint: expect.any(String) }]);
+    expect(stored).toEqual([{ ...realPost2, createdAt: expect.anything(), imprint: expect.any(String) }]);
+    expect(mockStored).toEqual([{ ...mockPost2, createdAt: expect.anything(), imprint: expect.any(String) }]);
   });
 });

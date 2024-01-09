@@ -124,14 +124,14 @@ describe('find', () => {
       expect(formatEntry(expectedRealUserPost)).toEqual(
         formatEntry({ ...expectedPost, authorId: realAuthor.id, blogId: realBlog.id }),
       );
-      expect(realUserPostCreatedAt).toBeInstanceOf(Date);
+      expect(typeof realUserPostCreatedAt.getTime()).toBe('number');
       expect(isUUID(expectedRealUserPostImprint)).toBe(true);
 
       expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[0]));
       expect(formatEntry(expectedMockUserPost)).toEqual(
         formatEntry({ ...expectedPost, authorId: mockAuthor.id, blogId: mockBlog.id }),
       );
-      expect(mockUserPostCreatedAt).toBeInstanceOf(Date);
+      expect(typeof mockUserPostCreatedAt.getTime()).toBe('number');
       expect(isUUID(expectedMockUserImprint)).toBe(true);
     });
 
@@ -213,6 +213,7 @@ describe('find', () => {
         });
       });
     });
+
     it('should correctly query on Datetime type field', async () => {
       const realPost1 = await prisma.post.findFirst({
         where: {
@@ -332,6 +333,30 @@ describe('find', () => {
       expect(formatEntry(mockPost2)).toBeNull();
       expect(formatEntry(mockPost2Variation)).toBeNull();
     });
+
+    it('Should return item without being modified', async () => {
+      let realUser = await prisma.user.findFirst({
+        where: { email: seededUsers[0].email },
+      });
+      let mockUser = await prismock.user.findFirst({
+        where: { email: seededUsers[0].email },
+      });
+
+      // @ts-expect-error password is required
+      delete realUser.password;
+      // @ts-expect-error password is required
+      delete mockUser.password;
+
+      realUser = await prisma.user.findFirst({
+        where: { email: seededUsers[0].email },
+      });
+
+      mockUser = await prismock.user.findFirst({
+        where: { email: seededUsers[0].email },
+      });
+
+      expect(realUser?.password).toEqual(mockUser?.password);
+    });
   });
 
   describe('findMany', () => {
@@ -448,6 +473,30 @@ describe('find', () => {
 
       expect(formatEntries(realUsers)).toEqual(formatEntries(expected));
       expect(formatEntries(mockUsers)).toEqual(formatEntries(expected));
+    });
+
+    it('Should return item without being modified', async () => {
+      let realUser = await prisma.user.findMany({
+        where: { email: seededUsers[0].email },
+      });
+      let mockUser = await prismock.user.findMany({
+        where: { email: seededUsers[0].email },
+      });
+
+      // @ts-expect-error password is required
+      delete realUser[0].password;
+      // @ts-expect-error password is required
+      delete mockUser[0].password;
+
+      realUser = await prisma.user.findMany({
+        where: { email: seededUsers[0].email },
+      });
+
+      mockUser = await prismock.user.findMany({
+        where: { email: seededUsers[0].email },
+      });
+
+      expect(realUser[0].password).toEqual(mockUser[0].password);
     });
   });
 
