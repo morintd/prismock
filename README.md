@@ -62,7 +62,7 @@ jest.mock('@prisma/client', () => {
 
 ## Use prismock manually
 
-You can instanciate a `PrismockClient` directly and use it in your test, or pass it to a test version of your app.
+You can instantiate a `PrismockClient` directly and use it in your test, or pass it to a test version of your app.
 
 ```ts
 import { PrismockClient } from 'prismock';
@@ -74,6 +74,59 @@ const app = createApp(prismock);
 ```
 
 Then, you will be able to write your tests as if your app was using an in-memory Prisma client.
+
+## Using a custom client path
+
+If you generate your prisma client to a custom path, you must use `createPrismock` instead of `PrismockClient`.
+
+```
+generator client {
+  provider = "prisma-client-js"
+  output = "./custom-client"
+}
+```
+
+Automatic mocking using the `__mock__` directory will not work unless you generate your client in `node_modules`.
+
+Using `jest.mock`:
+
+```ts
+import { createPrismock } from 'prismock';
+
+jest.mock('./prisma/custom-client', () => {
+  const actual = jest.requireActual('./prisma/custom-client');
+  return {
+    ...actual,
+    PrismaClient: jest.requireActual('prismock').createPrismock(actual.Prisma),
+  };
+});
+```
+
+If using typescript, you may need to add the `<any>` type to the requireActual calls: `jest.requireActual<any>("./prisma/custom-client")`
+
+Or, using direct instantiation:
+
+```ts
+import { createPrismock } from 'prismock';
+import { Prisma } from './prisma/custom-client';
+
+import { PrismaService } from './prisma.service';
+
+const PrismockClient = createPrismock(Prisma);
+const prismock = new PrismockClient();
+const app = createApp(prismock);
+```
+
+### Pitfalls
+
+If you cause `@prisma/client` to be imported by your code instead of your custom path, you may see an error when mocking Prisma:
+
+```
+TypeError: jest.requireActual(...).createPrismock is not a function
+```
+
+If you encounter this, make sure that the paths you are importing while instantiating your prismock instance are correct and that you are
+always importing the custom directory instead of `@prisma/client`.
 
 ## Internal data
 
@@ -95,21 +148,21 @@ prismock.reset(); // State of prismock back to its original
 
 ## Model queries
 
-| Feature    | State |
-| ---------- | ----- |
-| findUnique | ✔     |
-| findFirst  | ✔     |
-| findMany   | ✔     |
-| create     | ✔     |
-| createMany | ✔     |
-| delete     | ✔     |
-| deleteMany | ✔     |
-| update     | ✔     |
-| updateMany | ✔     |
-| upsert     | ✔     |
-| count      | ✔     |
-| aggregate  | ✔     |
-| groupBy    | ⛔    |
+| Feature    | State                       |
+| ---------- | --------------------------- |
+| findUnique | ✔                           |
+| findFirst  | ✔                           |
+| findMany   | ✔                           |
+| create     | ✔                           |
+| createMany | ✔                           |
+| delete     | ✔                           |
+| deleteMany | ✔                           |
+| update     | ✔                           |
+| updateMany | ✔                           |
+| upsert     | ✔                           |
+| count      | ✔                           |
+| aggregate  | ✔                           |
+| groupBy    | 💬 [note](#groupby-support) |
 
 ## Model query options
 
@@ -236,11 +289,17 @@ prismock.reset(); // State of prismock back to its original
 | onDelete (Restrict, NoAction, SetDefault)() | ⛔    |
 | onUpdate                                    | ⛔    |
 
+## Notes
+
+### groupBy Support
+
+Basic groupBy queries are supported, including `having` and `orderBy`. `skip`, `take`, and `cursor` are not yet supported.
+
 # Roadmap
 
 - Complete supported features.
 - Refactoring of update operation.
-- Replace item formating with function composition
+- Replace item formatting with function composition
 - Restore test on `_count` for mongodb
 - Add custom client method for MongoDB (`$runCommandRaw`, `findRaw`, `aggregateRaw`)
 

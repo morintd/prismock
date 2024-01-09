@@ -1,11 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '.prisma-custom/client';
 
 import { buildUser, formatEntries, formatEntry } from '../../../testing';
 
-jest.mock('@prisma/client', () => {
+// This path existing depends on <rootDir>/testing/global-setup.ts running properly.
+jest.mock('.prisma-custom/client', () => {
+  const actual = jest.requireActual('.prisma-custom/client');
   return {
-    ...jest.requireActual('@prisma/client'),
-    PrismaClient: jest.requireActual('../../').PrismockClient,
+    ...actual,
+    PrismaClient: jest.requireActual('../../').createPrismock(actual.Prisma),
   };
 });
 
