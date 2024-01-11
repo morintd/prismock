@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { DMMF } from '@prisma/generator-helper';
 import { ObjectId } from 'bson';
 import { createId as createCuid } from '@paralleldrive/cuid2';
@@ -68,7 +68,7 @@ export function calculateDefaultFieldValue(field: DMMF.Field, properties: Delega
   if (field.type === 'BigInt' && typeof field.default === 'string') return BigInt(field.default);
   if (field.type === 'Json' && typeof field.default === 'string')
     return JSON.parse(field.default) as Record<string, unknown>;
-  if (field.type === 'Decimal' && typeof field.default === 'number') return new Prisma.Decimal(field.default);
+  if (field.type === 'Decimal' && typeof field.default === 'number') return new Decimal(field.default);
 
   if (['string', 'number', 'boolean'].includes(typeof field.default)) return field.default;
   return undefined;

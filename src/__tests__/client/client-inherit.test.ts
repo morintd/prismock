@@ -1,11 +1,20 @@
 import { PrismaClient } from '@prisma/client';
 
 import { resetDb, simulateSeed } from '../../../testing';
-import { PrismockClient } from '../../lib/client';
+import { PrismockClient, createPrismock } from '../../lib/client';
+import { Prisma as CustomPrisma } from '../../../node_modules/.prisma-custom/client';
+
+const CustomPrismockClient = createPrismock(CustomPrisma);
 
 jest.setTimeout(40000);
 
 class PrismockService extends PrismockClient {
+  findLastPost() {
+    return this.post.findMany({ take: 1, select: { title: true } });
+  }
+}
+
+class CustomPrismockService extends CustomPrismockClient {
   findLastPost() {
     return this.post.findMany({ take: 1, select: { title: true } });
   }
@@ -19,6 +28,7 @@ class PrismaService extends PrismaClient {
 
 describe('client', () => {
   let prismock: PrismockService;
+  let customPrismock: CustomPrismockService;
   let prisma: PrismaService;
 
   async function reset() {
@@ -26,7 +36,9 @@ describe('client', () => {
 
     prisma = new PrismaService();
     prismock = new PrismockService();
+    customPrismock = new CustomPrismockService();
     await simulateSeed(prismock);
+    await simulateSeed(customPrismock);
   }
 
   beforeAll(async () => {
@@ -38,8 +50,10 @@ describe('client', () => {
 
     const realPosts = await prisma.findLastPost();
     const mockPosts = await prismock.findLastPost();
+    const customMockPosts = await customPrismock.findLastPost();
 
     expect(realPosts).toEqual(expected);
     expect(mockPosts).toEqual(expected);
+    expect(customMockPosts).toEqual(expected);
   });
 });

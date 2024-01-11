@@ -30,7 +30,7 @@ $ npm add --save-dev prismock
 
 # Usage
 
-There is two options here, depending on your application architecture.
+There are a few options here, depending on your application architecture.
 
 ## Automatically (recommended)
 
@@ -62,7 +62,7 @@ jest.mock('@prisma/client', () => {
 
 ## Use prismock manually
 
-You can instanciate a `PrismockClient` directly and use it in your test, or pass it to a test version of your app.
+You can instantiate a `PrismockClient` directly and use it in your test, or pass it to a test version of your app.
 
 ```ts
 import { PrismockClient } from 'prismock';
@@ -74,6 +74,10 @@ const app = createApp(prismock);
 ```
 
 Then, you will be able to write your tests as if your app was using an in-memory Prisma client.
+
+## Using custom client path
+
+If you are using a custom [client path](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/generating-prisma-client#using-a-custom-output-path), you need the [createPrismock](https://github.com/morintd/prismock/blob/master/docs/using-custom-client-path.md) method.
 
 ## Internal data
 
@@ -95,21 +99,21 @@ prismock.reset(); // State of prismock back to its original
 
 ## Model queries
 
-| Feature    | State |
-| ---------- | ----- |
-| findUnique | ✔     |
-| findFirst  | ✔     |
-| findMany   | ✔     |
-| create     | ✔     |
-| createMany | ✔     |
-| delete     | ✔     |
-| deleteMany | ✔     |
-| update     | ✔     |
-| updateMany | ✔     |
-| upsert     | ✔     |
-| count      | ✔     |
-| aggregate  | ✔     |
-| groupBy    | ⛔    |
+| Feature    | State                       |
+| ---------- | --------------------------- |
+| findUnique | ✔                           |
+| findFirst  | ✔                           |
+| findMany   | ✔                           |
+| create     | ✔                           |
+| createMany | ✔                           |
+| delete     | ✔                           |
+| deleteMany | ✔                           |
+| update     | ✔                           |
+| updateMany | ✔                           |
+| upsert     | ✔                           |
+| count      | ✔                           |
+| aggregate  | ✔                           |
+| groupBy    | 💬 [note](#groupby-support) |
 
 ## Model query options
 
@@ -236,11 +240,17 @@ prismock.reset(); // State of prismock back to its original
 | onDelete (Restrict, NoAction, SetDefault)() | ⛔    |
 | onUpdate                                    | ⛔    |
 
+## Notes
+
+### groupBy Support
+
+Basic groupBy queries are supported, including `having` and `orderBy`. `skip`, `take`, and `cursor` are not yet supported.
+
 # Roadmap
 
 - Complete supported features.
 - Refactoring of update operation.
-- Replace item formating with function composition
+- Replace item formatting with function composition
 - Restore test on `_count` for mongodb
 - Add custom client method for MongoDB (`$runCommandRaw`, `findRaw`, `aggregateRaw`)
 
