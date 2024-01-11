@@ -77,7 +77,7 @@ Then, you will be able to write your tests as if your app was using an in-memory
 
 ## Using custom client path
 
-If you are using a custom [client path](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/generating-prisma-client#using-a-custom-output-path), you need the [createPrismock](https://github.com/morintd/prismock/blob/master/docs/using-custom-client-path) method.
+If you are using a custom [client path](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/generating-prisma-client#using-a-custom-output-path), you need the [createPrismock](https://github.com/morintd/prismock/blob/master/docs/using-custom-client-path.md) method.
 
 ## Internal data
 
