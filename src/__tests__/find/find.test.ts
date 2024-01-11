@@ -89,6 +89,31 @@ describe('find', () => {
       expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
     });
 
+    it('Should return item with orderBy', async () => {
+      const expected = { authorId: 2 };
+
+      const realPost = (await prisma.post.findFirst({
+        orderBy: {
+          authorId: 'desc',
+        },
+        select: {
+          authorId: true,
+        },
+      })) as Post;
+
+      const mockPost = (await prismock.post.findFirst({
+        orderBy: {
+          authorId: 'desc',
+        },
+        select: {
+          authorId: true,
+        },
+      })) as Post;
+
+      expect(formatEntry(realPost)).toEqual(formatEntry(expected));
+      expect(formatEntry(mockPost)).toEqual(formatEntry(expected));
+    });
+
     it('Should return item with includes', async () => {
       const {
         createdAt: expectedPostCreatedAt,
