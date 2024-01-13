@@ -21,9 +21,9 @@ export function findOne(args: FindArgs, current: Delegate, delegates: Delegates)
     (items: Item[]) => items.filter((item) => where(args.where, current, delegates)(item)),
     order(args, current, delegates),
     connect(args, current, delegates),
-    paginate(),
     paginate(args.skip, args.take),
   )(current.getItems()).at(0);
+
   if (!found) return null;
   return structuredClone(pipe(includes(args, current, delegates), select(args.select))(found));
 }
@@ -254,7 +254,6 @@ export function findMany(args: FindArgs, current: Delegate, delegates: Delegates
     (items: Item[]) => items.filter((item) => where(args.where, current, delegates)(item)),
     order(args, current, delegates),
     connect(args, current, delegates),
-    paginate(),
     paginate(args.skip, args.take),
   )(current.getItems());
 
