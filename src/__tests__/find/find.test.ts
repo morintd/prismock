@@ -8,6 +8,7 @@ import {
   isUUID,
   resetDb,
   seededBlogs,
+  seededPosts,
   seededUsers,
   simulateSeed,
 } from '../../../testing';
@@ -87,6 +88,29 @@ describe('find', () => {
 
       expect(formatEntry(realUser)).toEqual(formatEntry(expected));
       expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
+    });
+
+    it('Should not return item', async () => {
+      const realPost = await prisma.post.findFirst({
+        where: {
+          id: seededPosts[1].id,
+          author: {
+            id: seededUsers[0].id,
+          },
+        },
+      });
+
+      const mockPost = await prismock.post.findFirst({
+        where: {
+          id: seededPosts[1].id,
+          author: {
+            id: seededUsers[0].id,
+          },
+        },
+      });
+
+      expect(realPost).toBeNull();
+      expect(mockPost).toBeNull();
     });
 
     it('Should return item with includes', async () => {
