@@ -89,6 +89,31 @@ describe('find', () => {
       expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
     });
 
+    it('Should return item with orderBy', async () => {
+      const expected = { warnings: 10 };
+
+      const realUser = (await prisma.user.findFirst({
+        orderBy: {
+          warnings: 'desc',
+        },
+        select: {
+          warnings: true,
+        },
+      })) as User;
+
+      const mockUser = (await prismock.user.findFirst({
+        orderBy: {
+          warnings: 'desc',
+        },
+        select: {
+          warnings: true,
+        },
+      })) as User;
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(expected));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(expected));
+    });
+
     it('Should return item with includes', async () => {
       const {
         createdAt: expectedPostCreatedAt,
