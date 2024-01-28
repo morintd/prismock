@@ -34,7 +34,7 @@
     "@semantic-release/npm": "11.0.2",
     "@semantic-release/release-notes-generator": "12.1.0",
     "@types/jest": "29.5.11",
-    "@types/node": "20.11.7",
+    "@types/node": "20.11.9",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "cspell": "8.3.2",
