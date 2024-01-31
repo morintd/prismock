@@ -1,4 +1,4 @@
-import { Blog, PrismaClient, User } from '@prisma/client';
+import { Blog, Gender, PrismaClient, User } from '@prisma/client';
 
 import { buildUser, formatEntry, resetDb, simulateSeed } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
@@ -213,6 +213,50 @@ describe('create', () => {
         title: 'title-user5-2',
         authorId: mockUser.id,
         blogId: mockBlog.id,
+      });
+    });
+  });
+
+  describe('create (nested) single', () => {
+    const userToCreate = {
+      gender: Gender.MALE,
+      bio: 'user single bio',
+      user: {
+        create: {
+          email: 'user-single@company.com',
+          password: 'password',
+        },
+      },
+    };
+
+    beforeAll(async () => {
+      await prisma.profile.create({ data: userToCreate });
+      await prismock.profile.create({ data: userToCreate });
+    });
+
+    it('Should create profile with given user', async () => {
+      const realUser = await prisma.user.findFirst({ where: { email: userToCreate.user.create.email } });
+      const mockUser = await prismock.user.findFirst({ where: { email: userToCreate.user.create.email } });
+
+      const realProfile = await prisma.profile.findFirst({
+        where: { bio: userToCreate.bio },
+        select: { bio: true, gender: true, userId: true },
+      });
+      const mockProfile = await prismock.profile.findFirst({
+        where: { bio: userToCreate.bio },
+        select: { bio: true, gender: true, userId: true },
+      });
+
+      expect(realProfile).toEqual({
+        bio: userToCreate.bio,
+        gender: userToCreate.gender,
+        userId: realUser!.id,
+      });
+
+      expect(mockProfile).toEqual({
+        bio: userToCreate.bio,
+        gender: userToCreate.gender,
+        userId: mockUser!.id,
       });
     });
   });
