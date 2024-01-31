@@ -131,10 +131,10 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
           match = val >= formatValueWithMode(filter.gte, filter, info)!;
         }
         if ('lt' in filter && match) {
-          match = val < formatValueWithMode(filter.lt, filter, info)!;
+          match = val !== null && val < formatValueWithMode(filter.lt, filter, info)!;
         }
         if ('lte' in filter && match) {
-          match = val <= formatValueWithMode(filter.lte, filter, info)!;
+          match = val !== null && val <= formatValueWithMode(filter.lte, filter, info)!;
         }
         if ('in' in filter && match) {
           match = (filter.in as any[]).map((inEntry) => formatValueWithMode(inEntry, filter, info)).includes(val);
