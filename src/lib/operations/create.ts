@@ -173,7 +173,8 @@ export function nestedCreate(current: Delegate, delegates: Delegates) {
                 create({ ...item, ...connect }, {}, delegate, delegates, delegate.onChange);
               });
             } else {
-              create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
+              const nestedCreated = create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
+              Object.assign(created, getFieldFromRelationshipWhere(nestedCreated, field));
             }
           }
 
