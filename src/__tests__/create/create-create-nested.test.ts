@@ -234,6 +234,26 @@ describe('create', () => {
       await prismock.profile.create({ data: userToCreate });
     });
 
+    it('Should create given user', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { email: userToCreate.user.create.email },
+        select: {
+          email: true,
+          password: true,
+        },
+      });
+
+      const mockUser = await prismock.user.findFirst({
+        where: { email: userToCreate.user.create.email },
+        select: {
+          email: true,
+          password: true,
+        },
+      });
+
+      expect(realUser).toEqual(mockUser);
+    });
+
     it('Should create profile with given user', async () => {
       const realUser = await prisma.user.findFirst({ where: { email: userToCreate.user.create.email } });
       const mockUser = await prismock.user.findFirst({ where: { email: userToCreate.user.create.email } });
