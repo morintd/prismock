@@ -76,7 +76,7 @@
     "@paralleldrive/cuid2": "2.2.2",
     "@prisma/generator-helper": "5.1.1",
     "@prisma/internals": "5.1.1",
-    "bson": "6.2.0"
+    "bson": "6.3.0"
   },
   "peerDependencies": {
     "@prisma/client": "*"
