@@ -94,8 +94,8 @@ describe('create', () => {
     });
 
     it('Should creat with default cuid value', async () => {
-      const realBlog3 = await prisma.blog.create({ data: { title: 'blog-3' } });
-      const mockBlog3 = await prismock.blog.create({ data: { title: 'blog-3' } });
+      const realBlog3 = await prisma.blog.create({ data: { title: 'blog-3', category: '3' } });
+      const mockBlog3 = await prismock.blog.create({ data: { title: 'blog-3', category: '3' } });
 
       expect(isCuid(realBlog3.imprint)).toBe(true);
       expect(isCuid(mockBlog3.imprint)).toBe(true);
@@ -110,16 +110,20 @@ describe('create', () => {
     });
 
     it('Should create with default int value', async () => {
-      const realBlog5 = await prisma.blog.create({ data: { title: 'blog-5' } });
-      const mockBlog5 = await prismock.blog.create({ data: { title: 'blog-5' } });
+      const realBlog5 = await prisma.blog.create({ data: { title: 'blog-5', category: '5' } });
+      const mockBlog5 = await prismock.blog.create({ data: { title: 'blog-5', category: '5' } });
 
       expect(realBlog5.priority).toBe(1);
       expect(mockBlog5.priority).toBe(1);
     });
 
     it('Should create with default value if receive undefined', async () => {
-      const realBlog6 = await prisma.blog.create({ data: { title: 'blog-6', category: undefined } });
-      const mockBlog6 = await prismock.blog.create({ data: { title: 'blog-6', category: undefined } });
+      const realBlog6 = await prisma.blog.create({
+        data: { title: 'blog-6', category: undefined, userId: realUsers[0].id },
+      });
+      const mockBlog6 = await prismock.blog.create({
+        data: { title: 'blog-6', category: undefined, userId: realUsers[0].id },
+      });
 
       expect(realBlog6.category).toBe('normal');
       expect(mockBlog6.category).toBe('normal');

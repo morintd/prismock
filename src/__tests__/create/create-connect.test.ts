@@ -29,6 +29,7 @@ describe('create (connect)', () => {
         posts: {
           connect: [{ title: seededPosts[0].title }],
         },
+        category: 'connect',
       },
       select: {
         id: true,
@@ -42,6 +43,7 @@ describe('create (connect)', () => {
         posts: {
           connect: [{ title: seededPosts[0].title }],
         },
+        category: 'connect',
       },
       select: {
         id: true,
@@ -65,6 +67,7 @@ describe('create (connect)', () => {
         posts: {
           connect: { title: seededPosts[0].title },
         },
+        category: 'connect-single',
       },
       select: {
         id: true,
@@ -78,6 +81,7 @@ describe('create (connect)', () => {
         posts: {
           connect: { title: seededPosts[0].title },
         },
+        category: 'connect-single',
       },
       select: {
         id: true,
