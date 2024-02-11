@@ -7,7 +7,7 @@ import { createId } from '@paralleldrive/cuid2';
 dotenv.config();
 
 export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
-export const seededBlogs = [buildBlog(1, 'blog-1'), buildBlog(2, 'blog-2')];
+export const seededBlogs = [buildBlog(1, 'blog-1'), buildBlog(2, 'blog-2', createId(), 1, 'normal', seededUsers[0].id)];
 export const seededPosts = [buildPost(1, { authorId: 1, blogId: 1 }), buildPost(2, { authorId: 2, blogId: 2 })];
 
 export async function simulateSeed(prisma: PrismaClient) {
@@ -51,13 +51,21 @@ export function buildPost(id: number, post: Partial<Post> & { authorId: number; 
   };
 }
 
-export function buildBlog(id: number, title: string, imprint = createId(), priority = 1, category = 'normal') {
+export function buildBlog(
+  id: number,
+  title: string,
+  imprint = createId(),
+  priority = 1,
+  category = 'normal',
+  userId?: number,
+) {
   return {
     id,
     title,
     imprint,
     priority,
     category,
+    userId,
   };
 }
 

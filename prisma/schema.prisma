@@ -64,4 +64,6 @@ model Blog {
   category String @default("normal")
   posts    Post[]
   userId   Int?
+
+  @@unique([userId, category], name: "blogByUserAndCategory")
 }
