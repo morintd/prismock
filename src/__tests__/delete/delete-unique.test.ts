@@ -1,4 +1,4 @@
-import { Blog, PrismaClient } from '@prisma/client';
+import { Blog, PrismaClient, User } from '@prisma/client';
 import { createId } from '@paralleldrive/cuid2';
 
 import { resetDb, seededUsers, simulateSeed } from '../../../testing';
@@ -10,9 +10,8 @@ describe('delete unique', () => {
   let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
-  const data = {
-    blog1: { title: 'blog-9', imprint: createId(), priority: 1, category: 'test', userId: seededUsers[0].id },
-  };
+  let realUser: User;
+  let mockUser: User;
 
   beforeAll(async () => {
     await resetDb();
@@ -21,9 +20,29 @@ describe('delete unique', () => {
     prismock = new PrismockClient() as PrismockClientType;
     await simulateSeed(prismock);
 
-    const user1 = await prisma.blog.create({ data: data.blog1 });
+    realUser = (await prisma.user.findUnique({ where: { email: seededUsers[0].email } }))!;
+    mockUser = (await prismock.user.findUnique({ where: { email: seededUsers[0].email } }))!;
 
-    await prismock.blog.createMany({ data: [user1].map(({ id, ...blog }) => ({ ...blog, parameters: {} })) });
+    const imprint = createId();
+
+    await prisma.blog.create({
+      data: {
+        title: 'blog-9',
+        imprint,
+        priority: 1,
+        category: 'test',
+        userId: realUser.id,
+      },
+    });
+    await prismock.blog.create({
+      data: {
+        title: 'blog-9',
+        imprint,
+        priority: 1,
+        category: 'test',
+        userId: mockUser.id,
+      },
+    });
   });
 
   describe('delete', () => {
@@ -32,10 +51,10 @@ describe('delete unique', () => {
 
     beforeAll(async () => {
       realDelete = await prisma.blog.delete({
-        where: { blogByUserAndCategory: { userId: seededUsers[0].id, category: 'test' } },
+        where: { blogByUserAndCategory: { userId: realUser.id, category: 'test' } },
       });
       mockDelete = await prismock.blog.delete({
-        where: { blogByUserAndCategory: { userId: seededUsers[0].id, category: 'test' } },
+        where: { blogByUserAndCategory: { userId: mockUser.id, category: 'test' } },
       });
     });
 
@@ -54,11 +73,11 @@ describe('delete unique', () => {
 
     it('Should throw if no element is found', async () => {
       await expect(() =>
-        prisma.blog.delete({ where: { blogByUserAndCategory: { userId: seededUsers[0].id, category: 'does-not-exist' } } }),
+        prisma.blog.delete({ where: { blogByUserAndCategory: { userId: realUser.id, category: 'does-not-exist' } } }),
       ).rejects.toThrow();
       await expect(() =>
         prismock.blog.delete({
-          where: { blogByUserAndCategory: { userId: seededUsers[0].id, category: 'does-not-exist' } },
+          where: { blogByUserAndCategory: { userId: mockUser.id, category: 'does-not-exist' } },
         }),
       ).rejects.toThrow();
     });
