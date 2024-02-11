@@ -102,8 +102,8 @@ describe('create', () => {
     });
 
     it('Should creat with default string value', async () => {
-      const realBlog4 = await prisma.blog.create({ data: { title: 'blog-4' } });
-      const mockBlog4 = await prismock.blog.create({ data: { title: 'blog-4' } });
+      const realBlog4 = await prisma.blog.create({ data: { title: 'blog-4', userId: realUsers[1].id } });
+      const mockBlog4 = await prismock.blog.create({ data: { title: 'blog-4', userId: mockUsers[1].id } });
 
       expect(realBlog4.category).toBe('normal');
       expect(mockBlog4.category).toBe('normal');
