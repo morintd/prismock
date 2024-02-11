@@ -64,4 +64,6 @@ model Blog {
   author   User?   @relation(fields: [userId], references: [id])
   posts    Post[]
   userId   String? @db.ObjectId
+
+  @@unique([userId, category], name: "blogByUserAndCategory")
 }

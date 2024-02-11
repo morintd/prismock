@@ -218,7 +218,7 @@ prismock.reset(); // State of prismock back to its original
 | @default   | ✔     |
 | @relation  | ✔     |
 | @unique    | ⛔    |
-| @@unique   | ⛔    |
+| @@unique   | ✔     |
 | @updatedAt | ⛔    |
 
 ## Attribute functions

@@ -1,14 +1,15 @@
 import { exec } from 'child_process';
 
 import { ObjectId } from 'bson';
-import { Post, PrismaClient, Role, User } from '@prisma/client';
+import { Blog, Post, PrismaClient, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
 dotenv.config();
 
 export const seededUsers = [buildUser(1, { warnings: 0 }), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
-export const seededBlogs = [buildBlog(1, 'blog-1'), buildBlog(2, 'blog-2')];
+export const seededBlogs = [buildBlog(1, { title: 'blog-1' }), buildBlog(2, { title: 'blog-2', userId: seededUsers[0].id })];
+
 export const seededPosts = [
   buildPost(1, { authorId: seededUsers[0].id, blogId: seededBlogs[0].id }),
   buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
@@ -16,9 +17,12 @@ export const seededPosts = [
 
 export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
-  await prisma.blog.createMany({ data: seededBlogs.map(({ id, ...blog }) => blog) });
-
   const savedUsers = await prisma.user.findMany();
+
+  const blogsToSave = [seededBlogs[0], { ...seededBlogs[1], userId: savedUsers[0].id }];
+
+  await prisma.blog.createMany({ data: blogsToSave.map(({ id, ...blog }) => blog) });
+
   const savedBlogs = await prisma.blog.findMany();
 
   const postsToSave = [
@@ -67,13 +71,16 @@ export function buildPost(id: number, post: Partial<Omit<Post, 'authorId'>> & { 
   };
 }
 
-export function buildBlog(id: number, title: string, imprint = createId(), priority = 1, category = 'normal') {
+export function buildBlog(id: number, blog: Partial<Blog>) {
+  const { title = '', imprint = createId(), priority = 1, category = 'normal', userId } = blog;
+
   return {
     id: new ObjectId(id).toString(),
     title,
     imprint,
     priority,
     category,
+    userId,
   };
 }
 

@@ -93,6 +93,11 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
           return res.length > 0;
         }
 
+        const compositeIndex = current.model.uniqueIndexes.map((index) => index.name).includes(child);
+        if (compositeIndex) {
+          return matchMultiple(item, where[child] as FindWhereArgs, current, delegates);
+        }
+
         const idFields = current.model.fields.map((field) => field.isId);
 
         if (idFields?.length > 1) {
