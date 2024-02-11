@@ -8,7 +8,7 @@ import { createId } from '@paralleldrive/cuid2';
 dotenv.config();
 
 export const seededUsers = [buildUser(1, { warnings: 0 }), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
-export const seededBlogs = [buildBlog(1, { title: 'blog-1' }), buildBlog(2, { title: 'blog-2', userId: seededUsers[1].id })];
+export const seededBlogs = [buildBlog(1, { title: 'blog-1' }), buildBlog(2, { title: 'blog-2', userId: seededUsers[0].id })];
 
 export const seededPosts = [
   buildPost(1, { authorId: seededUsers[0].id, blogId: seededBlogs[0].id }),
@@ -19,10 +19,7 @@ export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
   const savedUsers = await prisma.user.findMany();
 
-  const blogsToSave = [
-    { ...seededBlogs[0], userId: savedUsers[0].id },
-    { ...seededBlogs[1], userId: savedUsers[1].id },
-  ];
+  const blogsToSave = [seededBlogs[0], { ...seededBlogs[1], userId: savedUsers[0].id }];
 
   await prisma.blog.createMany({ data: blogsToSave.map(({ id, ...blog }) => blog) });
 
@@ -75,7 +72,7 @@ export function buildPost(id: number, post: Partial<Omit<Post, 'authorId'>> & { 
 }
 
 export function buildBlog(id: number, blog: Partial<Blog>) {
-  const { title = '', imprint = createId(), priority = 1, category = 'normal', userId = seededUsers[0].id } = blog;
+  const { title = '', imprint = createId(), priority = 1, category = 'normal', userId } = blog;
 
   return {
     id: new ObjectId(id).toString(),
