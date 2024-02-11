@@ -1,13 +1,13 @@
 import { exec } from 'child_process';
 
-import { Post, PrismaClient, Role, User } from '@prisma/client';
+import { Blog, Post, PrismaClient, Role, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
 dotenv.config();
 
 export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUser(3, { warnings: 10 })];
-export const seededBlogs = [buildBlog(1, 'blog-1'), buildBlog(2, 'blog-2', createId(), 1, 'normal', seededUsers[0].id)];
+export const seededBlogs = [buildBlog(1, { title: 'blog-1' }), buildBlog(2, { title: 'blog-2', userId: seededUsers[1].id })];
 export const seededPosts = [buildPost(1, { authorId: 1, blogId: 1 }), buildPost(2, { authorId: 2, blogId: 2 })];
 
 export async function simulateSeed(prisma: PrismaClient) {
@@ -51,14 +51,8 @@ export function buildPost(id: number, post: Partial<Post> & { authorId: number; 
   };
 }
 
-export function buildBlog(
-  id: number,
-  title: string,
-  imprint = createId(),
-  priority = 1,
-  category = 'normal',
-  userId?: number,
-) {
+export function buildBlog(id: number, blog: Partial<Blog>) {
+  const { title = '', imprint = createId(), priority = 1, category = 'normal', userId = seededUsers[0].id } = blog;
   return {
     id,
     title,
