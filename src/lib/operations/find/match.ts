@@ -16,6 +16,9 @@ function formatValueWithMode<T>(baseValue: T, filter: Prisma.Enumerable<FindWher
   if (info?.type === 'DateTime' && typeof baseValue === 'string') {
     return new Date(baseValue);
   }
+  if (info?.type === 'BigInt' && typeof baseValue === 'number') {
+    return BigInt(baseValue);
+  }
   return format(baseValue);
 }
 
@@ -48,6 +51,13 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
     if (filter == null || filter === undefined) {
       if (filter === null) return val === null || val === undefined;
       return true;
+    }
+
+    // Support querying fields with bigint in query.
+    if (typeof filter === 'bigint') {
+      if (filter === BigInt(val)) {
+        return true;
+      }
     }
 
     if (filter instanceof Date) {

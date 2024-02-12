@@ -59,6 +59,19 @@ describe('find', () => {
       expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[1]));
     });
 
+    it('Should support querying with bigint field', async () => {
+      const realUser = (await prisma.user.findFirst({
+        where: { money: BigInt(0) },
+      })) as User;
+
+      const mockUser = (await prismock.user.findFirst({
+        where: { money: BigInt(0) },
+      })) as User;
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(seededUsers[0]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(seededUsers[0]));
+    });
+
     it("Should return null if doesn't exist", async () => {
       const realUser = await prisma.user.findFirst({
         where: { email: 'user0@company.com' },
