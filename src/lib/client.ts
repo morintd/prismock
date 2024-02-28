@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import * as runtime from '@prisma/client/runtime/library';
+import { DMMF } from '@prisma/generator-helper';
 
 import { Delegate } from './delegate';
 import { Data, Delegates, generateDelegates } from './prismock';
@@ -63,7 +64,7 @@ export function createPrismock(instance: PrismaModule) {
     }
 
     private generate() {
-      const { delegates, setData, getData } = generateDelegates({ models: instance.dmmf.datamodel.models });
+      const { delegates, setData, getData } = generateDelegates({ models: instance.dmmf.datamodel.models as DMMF.Model[] });
 
       Object.entries({ ...delegates, setData, getData }).forEach(([key, value]) => {
         if (key in this) Object.assign((this as unknown as Delegates)[key], value);

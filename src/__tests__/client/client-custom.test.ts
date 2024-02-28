@@ -24,7 +24,7 @@ describe('client (custom)', () => {
 
     beforeAll(async () => {
       const schema = await generateDMMF();
-      models = schema.datamodel.models;
+      models = schema.datamodel.models as DMMF.Model[];
     });
 
     it('Should get data', async () => {
