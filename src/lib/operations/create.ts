@@ -151,7 +151,10 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
 
 export function nestedCreate(current: Delegate, delegates: Delegates) {
   return (item: Item) => {
-    const created = { ...createDefaultValues(current.model.fields, current.getProperties()), ...removeUndefined(item) };
+    const created = {
+      ...createDefaultValues(current.model.fields as DMMF.Field[], current.getProperties()),
+      ...removeUndefined(item),
+    };
 
     current.model.fields.forEach((field) => {
       const value = created[field.name];

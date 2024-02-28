@@ -2,7 +2,10 @@ import path from 'path';
 
 import { PrismaClient } from '@prisma/client';
 import { DMMF } from '@prisma/generator-helper';
-import { Generator, getDMMF, getGenerator, getSchema } from '@prisma/internals';
+import { getDMMF } from '@prisma/internals/dist/engine-commands/getDmmf';
+import { Generator } from '@prisma/internals/dist/Generator';
+import { getGenerator } from '@prisma/internals/dist/get-generators/getGenerators';
+import { getSchema } from '@prisma/internals/dist/cli/getSchema';
 
 import { isAutoIncrement } from './operations';
 import { Delegate, DelegateProperties, generateDelegate, Item } from './delegate';
@@ -31,7 +34,6 @@ export async function fetchGenerator(schemaPath?: string) {
   const pathToModule = schemaPath ?? require.resolve(path.resolve(process.cwd(), 'prisma/schema.prisma'));
   return getGenerator({
     schemaPath: pathToModule,
-    dataProxy: false,
   });
 }
 
@@ -41,7 +43,7 @@ export function getProvider(generator: Generator) {
 
 export async function generatePrismock<T = PrismaClient>(options: Options = {}): Promise<PrismockClientType<T>> {
   const schema = await generateDMMF(options.schemaPath);
-  return generatePrismockSync<T>({ models: schema.datamodel.models });
+  return generatePrismockSync<T>({ models: schema.datamodel.models as DMMF.Model[] });
 }
 
 export function generatePrismockSync<T = PrismockClientType>(options: OptionsSync): PrismockClientType<T> {
