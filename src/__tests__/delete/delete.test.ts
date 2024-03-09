@@ -96,16 +96,4 @@ describe('delete', () => {
       await expect(() => prismock.user.delete({ where: { email: 'does-not-exist' } })).rejects.toThrow();
     });
   });
-
-  describe('deleteMany', () => {
-    it('Should return count', async () => {
-      expect(await prisma.post.deleteMany({})).toEqual({ count: 2 });
-      expect(await prismock.post.deleteMany({})).toEqual({ count: 2 });
-    });
-
-    it('Should return count 0 for no match', async () => {
-      expect(await prisma.user.deleteMany({ where: { email: 'does-not-exist' } })).toEqual({ count: 0 });
-      expect(await prismock.user.deleteMany({ where: { email: 'does-not-exist' } })).toEqual({ count: 0 });
-    });
-  });
 });

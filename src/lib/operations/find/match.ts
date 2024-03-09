@@ -47,6 +47,12 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
     if (child === 'OR') return matchOr(item, filter as FindWhereArgs[]);
     if (child === 'AND') return matchAnd(item, filter as FindWhereArgs[]);
     if (child === 'NOT') return !matchOr(item, filter instanceof Array ? filter : [filter]);
+    if (child === 'is') {
+      if (typeof filter === 'object') {
+        return matchFnc(filter as FindWhereArgs)(item);
+      }
+      return false;
+    }
 
     if (filter == null || filter === undefined) {
       if (filter === null) return val === null || val === undefined;
@@ -71,7 +77,6 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
       if (typeof filter === 'object') {
         const info = current.model.fields.find((field) => field.name === child);
         val = formatValueWithMode(val, filter, info);
-
         if (info?.relationName) {
           const childName = camelize(info.type);
           let childWhere: any = {};
@@ -97,6 +102,8 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
             return res.length === all.length;
           } else if (filter.some) {
             return res.length > 0;
+          } else if ((filter as FindWhereArgs).is === null) {
+            return res.length === 0;
           } else if ((filter as FindWhereArgs).none) {
             return res.length === 0;
           }

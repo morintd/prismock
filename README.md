@@ -169,7 +169,7 @@ prismock.reset(); // State of prismock back to its original
 | some    | ✔     |
 | every   | ✔     |
 | none    | ✔     |
-| is      | ⛔    |
+| is      | ✔    |
 
 ## Scalar list methods
 
