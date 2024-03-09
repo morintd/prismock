@@ -1,4 +1,4 @@
-import { Blog, Post, Prisma, PrismaClient, User } from '@prisma/client';
+import { Blog, Post, Prisma, User, PrismaClient } from '@prisma/client';
 
 import {
   buildPost,
@@ -249,6 +249,32 @@ describe('find', () => {
             console.log('[SKIPPED] Insensitive is not supported on the current db');
           }
         });
+      });
+
+      it(`Should match on is (object)`, async () => {
+        const realBlogs = await prisma.blog.findMany({
+          where: { author: { is: { email: seededUsers[0].email } } },
+          select: { title: true },
+        });
+        const mockBlogs = await prismock.blog.findMany({
+          where: { author: { is: { email: seededUsers[0].email } } },
+          select: { title: true },
+        });
+
+        expect(realBlogs).toEqual(mockBlogs);
+      });
+
+      it(`Should match on is (null)`, async () => {
+        const realBlogs = await prisma.blog.findMany({
+          where: { author: { is: null } },
+          select: { title: true },
+        });
+        const mockBlogs = await prismock.blog.findMany({
+          where: { author: { is: null } },
+          select: { title: true },
+        });
+
+        expect(realBlogs).toEqual(mockBlogs);
       });
     });
 
