@@ -16,19 +16,20 @@ enum Role {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
   password   String
-  role       Role     @default(USER)
+  role       Role      @default(USER)
   warnings   Int?
-  banned     Boolean  @default(false)
-  money      BigInt   @default(0)
-  friends    Float    @default(0)
+  banned     Boolean   @default(false)
+  money      BigInt    @default(0)
+  friends    Float     @default(0)
   signal     Bytes?
-  parameters Json     @default("{}")
+  parameters Json      @default("{}")
   posts      Post[]
   Blog       Blog[]
   profile    Profile?
+  service    Service[]
 }
 
 model Profile {
@@ -66,4 +67,12 @@ model Blog {
   userId   Int?
 
   @@unique([userId, category], name: "blogByUserAndCategory")
+}
+
+model Service {
+  name   String
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@id([userId, name], name: "compositeId")
 }
