@@ -1,6 +1,6 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, seededUsers, simulateSeed, seededBlogs } from '../../../testing';
+import { resetDb, seededUsers, simulateSeed, seededBlogs, seededServices } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 import { fetchGenerator } from '../../lib/prismock';
 
@@ -39,6 +39,18 @@ describe('find', () => {
 
       expect(realBlog.title).toEqual(expected);
       expect(mockBlog.title).toEqual(expected);
+    });
+    it('@@id', async () => {
+      const expected = seededServices[0];
+      const realService = (await prisma.service.findUnique({
+        where: { compositeId: { name: expected.name, userId: expected.userId } },
+      }))!;
+      const mockService = (await prismock.service.findUnique({
+        where: { compositeId: { name: expected.name, userId: expected.userId } },
+      }))!;
+
+      expect(realService).toEqual(expected);
+      expect(mockService).toEqual(expected);
     });
   });
 });
