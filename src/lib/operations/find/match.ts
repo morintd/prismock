@@ -110,7 +110,8 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
           return res.length > 0;
         }
 
-        const compositeIndex = current.model.uniqueIndexes.map((index) => index.name).includes(child);
+        const compositeIndex =
+          current.model.uniqueIndexes.map((index) => index.name).includes(child) || current.model.primaryKey?.name === child;
         if (compositeIndex) {
           return matchMultiple(item, where[child] as FindWhereArgs, current, delegates);
         }

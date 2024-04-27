@@ -15,6 +15,8 @@ export const seededPosts = [
   buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
 ];
 
+export const seededServices = [];
+
 export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
   const savedUsers = await prisma.user.findMany();
