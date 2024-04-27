@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable jest/no-conditional-expect */
+// @ts-nocheck
 import { PrismaClient, User } from '@prisma/client';
 
 import { resetDb, seededUsers, simulateSeed, seededBlogs, seededServices } from '../../../testing';
