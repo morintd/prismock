@@ -65,8 +65,9 @@ export function buildBlog(id: number, blog: Partial<Blog>) {
   };
 }
 
-export function buildService(service: Partial<Service>) {
-  const { name = '', userId = 1 } = service;
+export function buildService(service: Partial<Service> & { userId: number }) {
+  const { name = '', userId } = service;
+
   return {
     name,
     userId,
