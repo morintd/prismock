@@ -35,7 +35,7 @@ export async function simulateSeed(prisma: PrismaClient) {
 
   const servicesToSave = [buildService({ userId: savedUsers[0].id, name: 'facebook' })];
 
-  await prisma.service.createMany({ data: servicesToSave.map(({ id, ...service }) => ({ ...service })) });
+  await prisma.service.createMany({ data: servicesToSave.map(({ ...service }) => ({ ...service })) });
 }
 
 export async function resetDb() {
