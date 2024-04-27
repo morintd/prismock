@@ -1,8 +1,9 @@
+/* eslint-disable jest/no-conditional-expect */
 import { PrismaClient, User } from '@prisma/client';
 
 import { resetDb, seededUsers, simulateSeed, seededBlogs, seededServices } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
-import { fetchGenerator } from '../../lib/prismock';
+import { fetchGenerator, getProvider } from '../../lib/prismock';
 
 jest.setTimeout(40000);
 
@@ -13,6 +14,8 @@ describe('find', () => {
   let realUser: User;
   let mockUser: User;
 
+  let provider: string;
+
   beforeAll(async () => {
     await resetDb();
 
@@ -21,6 +24,7 @@ describe('find', () => {
     await simulateSeed(prismock);
 
     const generator = await fetchGenerator();
+    provider = getProvider(generator)!;
     generator.stop();
 
     realUser = (await prisma.user.findUnique({ where: { email: seededUsers[0].email } }))!;
@@ -40,17 +44,20 @@ describe('find', () => {
       expect(realBlog.title).toEqual(expected);
       expect(mockBlog.title).toEqual(expected);
     });
-    it('@@id', async () => {
-      const expected = seededServices[0];
-      const realService = (await prisma.service.findUnique({
-        where: { compositeId: { name: expected.name, userId: expected.userId } },
-      }))!;
-      const mockService = (await prismock.service.findUnique({
-        where: { compositeId: { name: expected.name, userId: expected.userId } },
-      }))!;
 
-      expect(realService).toEqual(expected);
-      expect(mockService).toEqual(expected);
+    it('Should return corresponding item based on @@id', async () => {
+      if (provider !== 'mongodb') {
+        const expected = seededServices[0];
+        const realService = (await prisma.service.findUnique({
+          where: { compositeId: { name: expected.name, userId: expected.userId } },
+        }))!;
+        const mockService = (await prismock.service.findUnique({
+          where: { compositeId: { name: expected.name, userId: expected.userId } },
+        }))!;
+
+        expect(realService).toEqual(expected);
+        expect(mockService).toEqual(expected);
+      }
     });
   });
 });
