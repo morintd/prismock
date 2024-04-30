@@ -176,6 +176,12 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
             }
           }
         }
+      } else if (field.kind === 'scalar') {
+        if (field.isList) {
+          if (fieldData.push) {
+            Object.assign(data, { [field.name]: (item[field.name] as Array<unknown>).concat([fieldData.push]) });
+          }
+        }
       }
       if (fieldData.increment) {
         Object.assign(data, { [field.name]: (item[field.name] as number) + (fieldData.increment as number) });
