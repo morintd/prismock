@@ -133,6 +133,7 @@ jobs:
               sleep 1
             done
             echo Failed waiting for MySQL && exit 1
+      - run: rm ~/repo/prisma/schema.prisma && cp ~/repo/testing/mysql/schema.prisma ~/repo/prisma/
       - run: npx prisma migrate dev --name init
       - run: yarn test
   release:

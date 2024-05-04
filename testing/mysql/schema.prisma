@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -16,7 +16,7 @@ enum Role {
 }
 
 model User {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  id         Int       @id @default(autoincrement())
   email      String    @unique
   password   String
   role       Role      @default(USER)
@@ -29,15 +29,15 @@ model User {
   posts      Post[]
   Blog       Blog[]
   profile    Profile?
-  services   Service[]
+  service    Service[]
 }
 
 model Profile {
-  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  id     Int     @id @default(autoincrement())
   bio    String?
   gender Gender
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String  @unique @db.ObjectId
+  userId Int     @unique
 }
 
 enum Gender {
@@ -46,33 +46,33 @@ enum Gender {
 }
 
 model Post {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String   @unique
+  id        Int      @id @default(autoincrement())
+  title     String   @unique @db.VarChar(255)
   createdAt DateTime @default(now())
   imprint   String   @default(uuid())
   author    User     @relation(fields: [authorId], references: [id])
-  authorId  String   @db.ObjectId
+  authorId  Int
   blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
-  blogId    String   @db.ObjectId
+  blogId    Int
 }
 
 model Blog {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  title    String  @unique
-  imprint  String  @default(cuid())
-  priority Int     @default(1)
-  category String  @default("normal")
-  author   User?   @relation(fields: [userId], references: [id])
+  id       Int    @id @default(autoincrement())
+  title    String @unique @db.VarChar(255)
+  imprint  String @default(cuid())
+  author   User?  @relation(fields: [userId], references: [id])
+  priority Int    @default(1)
+  category String @default("normal")
   posts    Post[]
-  userId   String? @db.ObjectId
+  userId   Int?
 
   @@unique([userId, category], name: "blogByUserAndCategory")
 }
 
 model Service {
-  id     String   @id @default(auto()) @map("_id") @db.ObjectId
   name   String
-  user   User     @relation(fields: [userId], references: [id])
-  userId String   @db.ObjectId
-  tags   String[]
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@id([userId, name], name: "compositeId")
 }
