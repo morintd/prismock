@@ -60,6 +60,7 @@ describe('update', () => {
   });
 
   describe('Update (push)', () => {
+    console.log({ provider });
     if (provider !== 'mysql') {
       let realService: Service;
       let mockService: Service;
