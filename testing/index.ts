@@ -66,11 +66,12 @@ export function buildBlog(id: number, blog: Partial<Blog>) {
 }
 
 export function buildService(service: Partial<Service> & { userId: number }) {
-  const { name = '', userId } = service;
+  const { name = '', userId, tags = [] } = service;
 
   return {
     name,
     userId,
+    tags,
   };
 }
 

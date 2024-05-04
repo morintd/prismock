@@ -71,8 +71,9 @@ model Blog {
 
 model Service {
   name   String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User     @relation(fields: [userId], references: [id])
   userId Int
+  tags   String[]
 
   @@id([userId, name], name: "compositeId")
 }
