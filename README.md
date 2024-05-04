@@ -176,7 +176,7 @@ prismock.reset(); // State of prismock back to its original
 | Feature | State |
 | ------- | ----- |
 | set     | ⛔    |
-| push    | ⛔    |
+| push    | ✔    |
 
 ## Scalar list filters
 

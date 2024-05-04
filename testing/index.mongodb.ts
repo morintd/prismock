@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 
 import { ObjectId } from 'bson';
-import { Blog, Post, PrismaClient, Role, User } from '@prisma/client';
+import { Blog, Post, PrismaClient, Role, Service, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -15,7 +15,7 @@ export const seededPosts = [
   buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
 ];
 
-export const seededServices = [];
+export const seededServices = [buildService({ userId: seededUsers[0].id, name: 'facebook' })];
 
 export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
@@ -33,6 +33,9 @@ export async function simulateSeed(prisma: PrismaClient) {
   ];
 
   await prisma.post.createMany({ data: postsToSave.map(({ id, ...post }) => ({ ...post })) });
+
+  const servicesToSave = [buildService({ userId: savedUsers[0].id, name: 'facebook' })];
+  await prisma.service.createMany({ data: servicesToSave });
 }
 
 export async function resetDb() {
@@ -83,6 +86,16 @@ export function buildBlog(id: number, blog: Partial<Blog>) {
     priority,
     category,
     userId,
+  };
+}
+
+export function buildService(service: Partial<Service> & { userId: string }) {
+  const { name = '', userId, tags = [] } = service;
+
+  return {
+    name,
+    userId,
+    tags,
   };
 }
 

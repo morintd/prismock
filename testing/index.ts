@@ -15,6 +15,8 @@ export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
   await prisma.blog.createMany({ data: seededBlogs.map(({ id, ...blog }) => blog) });
   await prisma.post.createMany({ data: seededPosts.map(({ id, ...post }) => post) });
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore MySQL / Tags
   await prisma.service.createMany({ data: seededServices });
 }
 
@@ -66,11 +68,12 @@ export function buildBlog(id: number, blog: Partial<Blog>) {
 }
 
 export function buildService(service: Partial<Service> & { userId: number }) {
-  const { name = '', userId } = service;
+  const { name = '', userId, tags = [] } = service;
 
   return {
     name,
     userId,
+    tags,
   };
 }
 

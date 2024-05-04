@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -71,9 +71,9 @@ model Blog {
 
 model Service {
   name   String
-  user   User     @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
   userId Int
-  tags   String[]
+  tags   Json
 
   @@id([userId, name], name: "compositeId")
 }

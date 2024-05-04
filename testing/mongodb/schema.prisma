@@ -70,8 +70,9 @@ model Blog {
 }
 
 model Service {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
   name   String
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @db.ObjectId
+  user   User     @relation(fields: [userId], references: [id])
+  userId String   @db.ObjectId
+  tags   String[]
 }

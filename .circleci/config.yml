@@ -122,7 +122,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/repo
-      - run: sed -i 's/postgresql/mysql/g' ~/repo/prisma/schema.prisma
+      - run: rm ~/repo/prisma/schema.prisma && cp ~/repo/testing/mysql/schema.prisma ~/repo/prisma/
+      # - run: sed -i 's/postgresql/mysql/g' ~/repo/prisma/schema.prisma
       - run:
           name: Waiting for MySQL to be ready
           command: |
