@@ -73,6 +73,7 @@ model Service {
   name   String
   user   User   @relation(fields: [userId], references: [id])
   userId Int
+  tags   Json
 
   @@id([userId, name], name: "compositeId")
 }

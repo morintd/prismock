@@ -15,7 +15,7 @@ export const seededPosts = [
   buildPost(2, { authorId: seededUsers[1].id, blogId: seededBlogs[1].id }),
 ];
 
-export const seededServices = [buildService({ userId: 1, name: 'facebook' })];
+export const seededServices = [buildService({ userId: seededUsers[0].id, name: 'facebook' })];
 
 export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
@@ -33,6 +33,9 @@ export async function simulateSeed(prisma: PrismaClient) {
   ];
 
   await prisma.post.createMany({ data: postsToSave.map(({ id, ...post }) => ({ ...post })) });
+
+  const servicesToSave = [buildService({ userId: savedUsers[0].id, name: 'facebook' })];
+  await prisma.service.createMany({ data: servicesToSave });
 }
 
 export async function resetDb() {
@@ -86,7 +89,7 @@ export function buildBlog(id: number, blog: Partial<Blog>) {
   };
 }
 
-export function buildService(service: Partial<Service> & { userId: number }) {
+export function buildService(service: Partial<Service> & { userId: string }) {
   const { name = '', userId, tags = [] } = service;
 
   return {
