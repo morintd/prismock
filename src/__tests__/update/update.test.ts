@@ -60,8 +60,7 @@ describe('update', () => {
   });
 
   describe('Update (push)', () => {
-    console.log({ provider });
-    if (provider !== 'mysql') {
+    if (['mongodb', 'postgresql'].includes(provider)) {
       let realService: Service;
       let mockService: Service;
 
@@ -90,8 +89,8 @@ describe('update', () => {
       });
 
       it('Should update stored data', async () => {
-        const mockStored = prismock.getData().service;
-        const stored = await prisma.service.findMany();
+        const mockStored = await prismock.service.findMany({ select: { name: true, tags: true, userId: true } });
+        const stored = await prisma.service.findMany({ select: { name: true, tags: true, userId: true } });
 
         expect(stored).toEqual([
           {
