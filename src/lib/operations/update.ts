@@ -178,7 +178,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
         }
       } else if (field.kind === 'scalar') {
         if (field.isList) {
-          if (fieldData.push) {
+          if (fieldData.push && typeof fieldData.push !== 'function') {
             if (Array.isArray(fieldData.push))
               Object.assign(data, { [field.name]: (item[field.name] as Array<unknown>).concat(fieldData.push) });
             else Object.assign(data, { [field.name]: (item[field.name] as Array<unknown>).concat([fieldData.push]) });
