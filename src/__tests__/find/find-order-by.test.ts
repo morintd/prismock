@@ -8,6 +8,7 @@ import { PrismockClient, PrismockClientType } from '../../lib/client';
 import { fetchGenerator, getProvider } from '../../lib/prismock';
 
 jest.setTimeout(40000);
+const now = new Date().getTime();
 
 describe('find', () => {
   let provider: string;
@@ -26,11 +27,19 @@ describe('find', () => {
         email: 'user5@company.com',
         warnings: null,
         password: 'password5',
+        birthday: new Date(now - 1000000000200),
       },
       {
         email: 'user4@company.com',
         warnings: 15,
+        password: 'password4',
+        birthday: new Date(now - 1000000000000),
+      },
+      {
+        email: 'user6@company.com',
+        warnings: 15,
         password: 'password3',
+        birthday: new Date(now - 1000000000100),
       },
     ];
 
@@ -120,6 +129,28 @@ describe('find', () => {
     generator.stop();
   });
 
+  it('Should return ordered users based on date', async () => {
+    if (!['mongodb'].includes(provider)) {
+      // @ts-ignore @TODO: separate test for mongodb, as it doesn't support nulls:
+      const mockUsers = await prismock.user.findMany({
+        orderBy: { birthday: { sort: 'desc', nulls: 'last' } },
+        take: 3,
+      });
+
+      // @ts-ignore @TODO: separate test for mongodb, as it doesn't support nulls:
+      const realUsers = await prisma.user.findMany({
+        orderBy: { birthday: { sort: 'desc', nulls: 'last' } },
+        take: 3,
+      });
+
+      expect(mockUsers[0].birthday).toEqual(new Date(now - 1000000000000));
+      expect(realUsers[0].birthday).toEqual(new Date(now - 1000000000000));
+      expect(mockUsers).toEqual(realUsers);
+    } else {
+      console.log('[SKIPPED] ordering with nulls is not supported on MongoDB');
+    }
+  });
+
   it('Should return ordered items based on numbers', async () => {
     if (!['mongodb'].includes(provider)) {
       const mockUsers = await prismock.user.findMany({
@@ -136,7 +167,7 @@ describe('find', () => {
 
       expect(mockUsers).toEqual(realUsers);
     } else {
-      console.log('[SKIPPED] orderin with nulls is not supported on MongoDB');
+      console.log('[SKIPPED] ordering with nulls is not supported on MongoDB');
     }
   });
 
@@ -169,7 +200,7 @@ describe('find', () => {
 
       expect(mockUsers).toEqual(realUsers);
     } else {
-      console.log('[SKIPPED] orderin with nulls is not supported on MongoDB');
+      console.log('[SKIPPED] ordering with nulls is not supported on MongoDB');
     }
   });
 
@@ -189,7 +220,7 @@ describe('find', () => {
 
       expect(mockUsers).toEqual(realUsers);
     } else {
-      console.log('[SKIPPED] orderin with nulls is not supported on MongoDB');
+      console.log('[SKIPPED] ordering with nulls is not supported on MongoDB');
     }
   });
 
@@ -209,7 +240,7 @@ describe('find', () => {
 
       expect(mockUsers).toEqual(realUsers);
     } else {
-      console.log('[SKIPPED] orderin with nulls is not supported on MongoDB');
+      console.log('[SKIPPED] ordering with nulls is not supported on MongoDB');
     }
   });
 
@@ -229,7 +260,7 @@ describe('find', () => {
 
       expect(mockUsers).toEqual(realUsers);
     } else {
-      console.log('[SKIPPED] orderin with nulls is not supported on MongoDB');
+      console.log('[SKIPPED] ordering with nulls is not supported on MongoDB');
     }
   });
 
