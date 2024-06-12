@@ -27,6 +27,7 @@ describe('delete', () => {
       role: Role.USER,
       signal: null,
       warnings: 0,
+      birthday: null,
     },
     {
       banned: false,
@@ -39,6 +40,7 @@ describe('delete', () => {
       role: Role.USER,
       signal: null,
       warnings: 99,
+      birthday: null,
     },
     {
       banned: false,
@@ -51,6 +53,7 @@ describe('delete', () => {
       role: Role.USER,
       signal: null,
       warnings: 99,
+      birthday: null,
     },
   ];
 
