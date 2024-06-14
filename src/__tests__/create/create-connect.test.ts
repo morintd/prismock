@@ -150,6 +150,6 @@ describe('create (connect)', () => {
       },
     });
 
-    expect(realServiceFind?.user).toEqual(mockServiceFind?.user);
+    expect(formatEntry(realServiceFind!.user)).toEqual(formatEntry(mockServiceFind!.user));
   });
 });
