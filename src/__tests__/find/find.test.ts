@@ -173,6 +173,21 @@ describe('find', () => {
       expect(isUUID(expectedMockUserImprint)).toBe(true);
     });
 
+    it('Should not return item with includes false', async () => {
+      const { posts: realUserPost } = (await prisma.user.findFirst({
+        where: { email: 'user1@company.com' },
+        include: { posts: false },
+      })) as User & { posts: Post[] };
+
+      const { posts: mockUserPost } = (await prismock.user.findFirst({
+        where: { email: 'user1@company.com' },
+        include: { posts: false },
+      })) as User & { posts: Post[] };
+
+      expect(realUserPost).toBeUndefined();
+      expect(mockUserPost).toBeUndefined();
+    });
+
     describe('match', () => {
       const user = seededUsers[1];
       const matchers: [string, Prisma.UserFindFirstArgs, User][] = [
