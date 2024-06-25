@@ -24,7 +24,7 @@
     "db:init": "prisma migrate dev --name init",
     "db:reset": "prisma migrate reset -f",
     "test:coverage": "jest --coverage",
-    "prepare": "husky install"
+    "prepare": "husky install && yarn build"
   },
   "devDependencies": {
     "@commitlint/cli": "19.3.0",
