@@ -121,6 +121,11 @@ export function generateDelegate(
     groupBy: (args: GroupByArgs) => {
       return Promise.resolve(groupBy(args, delegate, delegates));
     },
+    createManyAndReturn: (args: CreateManyArgs) => {
+      const { data, ...options } = args;
+      const created = data.map((d) => create(d, options, delegate, delegates, onChange));
+      return Promise.resolve(created);
+    },
     model,
     getItems: () => data[name],
     getProperties: () => properties[name],
