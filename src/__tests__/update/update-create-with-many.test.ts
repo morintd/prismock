@@ -77,7 +77,7 @@ describe('update (create) with many', () => {
           create: [
             {
               title: 'nested',
-              blogId: realBlog1.id,
+              blogId: mockBlog1.id,
             },
           ],
         },
