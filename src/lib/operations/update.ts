@@ -96,7 +96,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
                 .forEach((createSingle: Item) => delegate.create({ data: createSingle }));
             } else {
               if (Array.isArray(fieldData.create)) {
-                fieldData.createMany
+                fieldData.create
                   .map(formatCreatedItem)
                   .forEach((createSingle: Item) => delegate.create({ data: createSingle }));
               } else {
