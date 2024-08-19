@@ -79,6 +79,10 @@ Then, you will be able to write your tests as if your app was using an in-memory
 
 If you are using a custom [client path](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/generating-prisma-client#using-a-custom-output-path), you need the [createPrismock](https://github.com/morintd/prismock/blob/master/docs/using-custom-client-path.md) method.
 
+## Use with decimal.js
+
+See [use with decimal.js](https://github.com/morintd/prismock/blob/master/docs/use-with-decimal-js.md).
+
 ## Internal data
 
 Two additional functions are returned compared to the PrismaClient, `getData`, and `reset`. In some edge-case, we need to directly access, or reset, the data store management by _prismock_.

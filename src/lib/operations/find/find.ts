@@ -164,24 +164,29 @@ export function includes(args: FindArgs, current: Delegate, delegates: Delegates
     const newItem = { ...item };
     const obj = args?.select ?? args.include!;
 
-    Object.keys(obj).forEach((key) => {
-      const schema = current.model.fields.find((field) => field.name === key);
-      if (!schema?.relationName) return;
+    Object.keys(obj)
+      .filter((key) => !!obj[key])
+      .forEach((key) => {
+        const schema = current.model.fields.find((field) => field.name === key);
+        if (!schema?.relationName) return;
 
-      const delegate = getDelegateFromField(schema, delegates);
+        const delegate = getDelegateFromField(schema, delegates);
 
-      let subArgs = obj[key] === true ? {} : obj[key];
+        let subArgs = obj[key] === true ? {} : obj[key];
 
-      subArgs = Object.assign(Object.assign({}, subArgs), {
-        where: Object.assign(Object.assign({}, (subArgs as any).where), getFieldRelationshipWhere(item, schema, delegates)),
+        subArgs = Object.assign(Object.assign({}, subArgs), {
+          where: Object.assign(
+            Object.assign({}, (subArgs as any).where),
+            getFieldRelationshipWhere(item, schema, delegates),
+          ),
+        });
+
+        if (schema.isList) {
+          Object.assign(newItem, { [key]: findMany(subArgs as Record<string, boolean>, delegate, delegates) });
+        } else {
+          Object.assign(newItem, { [key]: findOne(subArgs as any, delegate, delegates) });
+        }
       });
-
-      if (schema.isList) {
-        Object.assign(newItem, { [key]: findMany(subArgs as Record<string, boolean>, delegate, delegates) });
-      } else {
-        Object.assign(newItem, { [key]: findOne(subArgs as any, delegate, delegates) });
-      }
-    });
 
     return newItem;
   };
