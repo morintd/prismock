@@ -62,6 +62,7 @@ export function buildUser(id: number, user: Partial<User> = {}): User & { parame
     friends: 0,
     signal: null,
     parameters: {},
+    birthday: null,
     ...user,
   };
 }

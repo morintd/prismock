@@ -89,6 +89,10 @@ export function calculateOrder(
       weight = values[0].localeCompare(values[1]);
     }
 
+    if (values[0] instanceof Date && values[1] instanceof Date) {
+      weight = values[0].getTime() - values[1].getTime();
+    }
+
     if (weight !== 0) return weight * weightMultiplier;
   }
 

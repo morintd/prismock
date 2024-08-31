@@ -37,8 +37,8 @@ describe('create', () => {
       signal: Buffer.from([1, 2, 3, 4]),
       warnings: 1,
     },
-    user4: { email: 'user-many-1@company.com', password: 'password', warnings: 0 },
-    user5: { email: 'user-many-2@company.com', password: 'password', warnings: 0 },
+    user4: { email: 'user-many-1@company.com', password: 'password', warnings: 0, birthday: new Date('01-01-1971') },
+    user5: { email: 'user-many-2@company.com', password: 'password', warnings: 0, birthday: new Date('12-12-2012') },
   };
 
   beforeAll(async () => {
@@ -196,6 +196,7 @@ describe('create', () => {
           role: 'USER',
           signal: null,
           warnings: 0,
+          birthday: new Date('01-01-1971'),
         },
         {
           banned: false,
@@ -208,6 +209,7 @@ describe('create', () => {
           role: 'USER',
           signal: null,
           warnings: 0,
+          birthday: new Date('12-12-2012'),
         },
       ];
 
