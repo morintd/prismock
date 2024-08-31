@@ -24,6 +24,7 @@ model User {
   banned     Boolean   @default(false)
   money      BigInt    @default(0)
   friends    Float     @default(0)
+  birthday   DateTime?
   signal     Bytes?
   parameters Json      @default("{}")
   posts      Post[]
