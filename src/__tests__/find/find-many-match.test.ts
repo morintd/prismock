@@ -36,7 +36,7 @@ describe('findMany (match)', () => {
               },
             ],
           },
-        },
+        } as Prisma.UserFindManyArgs,
         [seededUsers[0], seededUsers[2]],
       ],
     ];
