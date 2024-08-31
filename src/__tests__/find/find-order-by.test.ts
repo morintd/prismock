@@ -131,14 +131,14 @@ describe('find', () => {
 
   it('Should return ordered users based on date', async () => {
     if (!['mongodb'].includes(provider)) {
-      // @ts-ignore @TODO: separate test for mongodb, as it doesn't support nulls:
       const mockUsers = await prismock.user.findMany({
+        // @ts-ignore @TODO: separate test for mongodb, as it doesn't support nulls:
         orderBy: { birthday: { sort: 'desc', nulls: 'last' } },
         take: 3,
       });
 
-      // @ts-ignore @TODO: separate test for mongodb, as it doesn't support nulls:
       const realUsers = await prisma.user.findMany({
+        // @ts-ignore @TODO: separate test for mongodb, as it doesn't support nulls:
         orderBy: { birthday: { sort: 'desc', nulls: 'last' } },
         take: 3,
       });
