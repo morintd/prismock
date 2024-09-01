@@ -16,21 +16,22 @@ enum Role {
 }
 
 model User {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  email      String    @unique
-  password   String
-  role       Role      @default(USER)
-  warnings   Int?
-  banned     Boolean   @default(false)
-  money      BigInt    @default(0)
-  friends    Float     @default(0)
-  birthday   DateTime?
-  signal     Bytes?
-  parameters Json      @default("{}")
-  posts      Post[]
-  Blog       Blog[]
-  profile    Profile?
-  services   Service[]
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
+  password      String
+  role          Role           @default(USER)
+  warnings      Int?
+  banned        Boolean        @default(false)
+  money         BigInt         @default(0)
+  friends       Float          @default(0)
+  birthday      DateTime?
+  signal        Bytes?
+  parameters    Json           @default("{}")
+  posts         Post[]
+  Blog          Blog[]
+  profile       Profile?
+  services      Service[]
+  subscriptions Subscription[]
 }
 
 model Profile {
@@ -58,14 +59,15 @@ model Post {
 }
 
 model Blog {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  title    String  @unique
-  imprint  String  @default(cuid())
-  priority Int     @default(1)
-  category String  @default("normal")
-  author   User?   @relation(fields: [userId], references: [id])
-  posts    Post[]
-  userId   String? @db.ObjectId
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  title         String         @unique
+  imprint       String         @default(cuid())
+  priority      Int            @default(1)
+  category      String         @default("normal")
+  author        User?          @relation(fields: [userId], references: [id])
+  posts         Post[]
+  userId        String?        @db.ObjectId
+  subscriptions Subscription[]
 
   @@unique([userId, category], name: "blogByUserAndCategory")
 }
@@ -76,4 +78,14 @@ model Service {
   user   User     @relation(fields: [userId], references: [id])
   userId String   @db.ObjectId
   tags   String[]
+}
+
+model Subscription {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+
+  blog   Blog   @relation(fields: [blogId], references: [id])
+  blogId String @db.ObjectId
 }

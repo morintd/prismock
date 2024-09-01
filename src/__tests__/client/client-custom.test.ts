@@ -15,7 +15,14 @@ describe('client (custom)', () => {
       expect({
         ...data,
         user: data.user.map(({ id, ...user }) => user),
-      }).toEqual({ user: seededUsers.map(({ id, ...user }) => user), blog: [], post: [], profile: [], service: [] });
+      }).toEqual({
+        user: seededUsers.map(({ id, ...user }) => user),
+        blog: [],
+        post: [],
+        profile: [],
+        service: [],
+        subscription: [],
+      });
     });
   });
 
@@ -36,7 +43,14 @@ describe('client (custom)', () => {
       expect({
         ...data,
         user: data.user.map(({ id, ...user }) => user),
-      }).toEqual({ user: seededUsers.map(({ id, ...user }) => user), blog: [], post: [], profile: [], service: [] });
+      }).toEqual({
+        user: seededUsers.map(({ id, ...user }) => user),
+        blog: [],
+        post: [],
+        profile: [],
+        service: [],
+        subscription: [],
+      });
     });
   });
 });

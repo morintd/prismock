@@ -16,21 +16,22 @@ enum Role {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  password   String
-  role       Role      @default(USER)
-  warnings   Int?
-  banned     Boolean   @default(false)
-  money      BigInt    @default(0)
-  friends    Float     @default(0)
-  birthday   DateTime?
-  signal     Bytes?
-  parameters Json      @default("{}")
-  posts      Post[]
-  Blog       Blog[]
-  profile    Profile?
-  service    Service[]
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  password      String
+  role          Role           @default(USER)
+  warnings      Int?
+  banned        Boolean        @default(false)
+  money         BigInt         @default(0)
+  friends       Float          @default(0)
+  birthday      DateTime?
+  signal        Bytes?
+  parameters    Json           @default("{}")
+  posts         Post[]
+  Blog          Blog[]
+  profile       Profile?
+  service       Service[]
+  subscriptions Subscription[]
 }
 
 model Profile {
@@ -58,14 +59,15 @@ model Post {
 }
 
 model Blog {
-  id       Int    @id @default(autoincrement())
-  title    String @unique @db.VarChar(255)
-  imprint  String @default(cuid())
-  author   User?  @relation(fields: [userId], references: [id])
-  priority Int    @default(1)
-  category String @default("normal")
-  posts    Post[]
-  userId   Int?
+  id            Int            @id @default(autoincrement())
+  title         String         @unique @db.VarChar(255)
+  imprint       String         @default(cuid())
+  author        User?          @relation(fields: [userId], references: [id])
+  priority      Int            @default(1)
+  category      String         @default("normal")
+  posts         Post[]
+  userId        Int?
+  subscriptions Subscription[]
 
   @@unique([userId, category], name: "blogByUserAndCategory")
 }
@@ -77,4 +79,14 @@ model Service {
   tags   String[]
 
   @@id([userId, name], name: "compositeId")
+}
+
+model Subscription {
+  id Int @id @default(autoincrement())
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  blog   Blog @relation(fields: [blogId], references: [id])
+  blogId Int
 }
