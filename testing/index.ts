@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 
-import { Blog, Post, PrismaClient, Role, Service, User } from '@prisma/client';
+import { Blog, Post, PrismaClient, Role, Service, Subscription, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -75,6 +75,13 @@ export function buildService(service: Partial<Service> & { userId: number }) {
     name,
     userId,
     tags,
+  };
+}
+
+export function buildSubscription(id: number, subscription: Partial<Subscription> & { userId: number; blogId: number }) {
+  return {
+    id,
+    ...subscription,
   };
 }
 

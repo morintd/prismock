@@ -25,7 +25,8 @@ export function findOne(args: FindArgs, current: Delegate, delegates: Delegates)
   )(current.getItems()).at(0);
 
   if (!found) return null;
-  return structuredClone(pipe(includes(args, current, delegates), select(args.select))(found));
+
+  return structuredClone(select(args.select)(found));
 }
 
 export function where(whereArgs: FindArgs['where'] = {}, current: Delegate, delegates: Delegates) {
