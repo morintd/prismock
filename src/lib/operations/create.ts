@@ -39,7 +39,7 @@ const defaultFieldhandlers: [
     },
   ],
   [
-    (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name === 'uuid',
+    (field: DMMF.Field) => ['uuid', 'uuid(4)'].includes((field.default as DMMF.FieldDefault)?.name),
     () => {
       return uuid();
     },
