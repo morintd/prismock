@@ -43,7 +43,9 @@ export function uuid() {
   return uuid;
 }
 
-export function removeUndefined(o: Record<string, unknown>) {
+export function removeUndefined(o?: Record<string, unknown>) {
+  if (!o) return o;
+
   return Object.keys(o).reduce((accumulator, currentValue) => {
     if (typeof o[currentValue] !== 'undefined') {
       return {
