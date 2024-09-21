@@ -291,6 +291,19 @@ describe('find', () => {
 
         expect(realBlogs).toEqual(mockBlogs);
       });
+
+      it(`Should match on null`, async () => {
+        const realBlogs = await prisma.blog.findMany({
+          where: { author: null },
+          select: { title: true },
+        });
+        const mockBlogs = await prismock.blog.findMany({
+          where: { author: null },
+          select: { title: true },
+        });
+
+        expect(realBlogs).toEqual(mockBlogs);
+      });
     });
 
     it('should correctly query on Datetime type field', async () => {
