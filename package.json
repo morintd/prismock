@@ -93,6 +93,7 @@
     "bson": "6.8.0"
   },
   "peerDependencies": {
-    "@prisma/client": "*"
+    "@prisma/client": "*",
+    "prisma": "*"
   }
 }
