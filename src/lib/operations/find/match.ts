@@ -54,9 +54,17 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
       return false;
     }
 
-    if (filter == null || filter === undefined) {
-      if (filter === null) return val === null || val === undefined;
+    if (filter === undefined) {
       return true;
+    }
+
+    if (filter === null) {
+      const field = current.model.fields.find((field) => field.name === child);
+
+      if (field?.relationFromFields && field.relationFromFields.length > 0) {
+        return item[field.relationFromFields[0]] === null || item[field.relationFromFields[0]] === undefined;
+      }
+      return val === null || val === undefined;
     }
 
     // Support querying fields with bigint in query.
