@@ -2,7 +2,16 @@
 // @ts-nocheck
 import { PrismaClient, Service } from '@prisma/client';
 
-import { buildUser, formatEntries, formatEntry, resetDb, seededServices, seededUsers, simulateSeed } from '../../../testing';
+import {
+  buildUser,
+  formatEntries,
+  formatEntry,
+  resetDb,
+  seededReactions,
+  seededServices,
+  seededUsers,
+  simulateSeed,
+} from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 import { Item } from '../../lib/delegate';
 import { fetchGenerator, getProvider } from '../../lib/prismock';
@@ -107,6 +116,83 @@ describe('update', () => {
             userId: mockService.userId,
           },
         ]);
+      });
+    }
+  });
+
+  describe('Update using compound id with default name', () => {
+    if (provider !== 'mongodb') {
+      const updatedReaction = seededReactions[0];
+      const untouchedReaction = seededReactions[1];
+      const expectedNewValue = 100;
+
+      beforeAll(async () => {
+        await prisma.reaction.update({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+          data: {
+            value: expectedNewValue,
+          },
+        });
+        await prismock.reaction.update({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+          data: {
+            value: expectedNewValue,
+          },
+        });
+      });
+
+      it('Should update expected entry', async () => {
+        const realResult = await prisma.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+        });
+        const mockResult = await prismock.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+        });
+
+        expect(realResult.value).toEqual(expectedNewValue);
+        expect(mockResult.value).toEqual(expectedNewValue);
+      });
+
+      it('Should not update other data', async () => {
+        const realResult = await prisma.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: untouchedReaction.userId,
+              emoji: untouchedReaction.emoji,
+            },
+          },
+        });
+        const mockResult = await prismock.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: untouchedReaction.userId,
+              emoji: untouchedReaction.emoji,
+            },
+          },
+        });
+
+        expect(realResult.value).toEqual(untouchedReaction.value);
+        expect(mockResult.value).toEqual(untouchedReaction.value);
       });
     }
   });
