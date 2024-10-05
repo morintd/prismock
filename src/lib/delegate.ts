@@ -64,7 +64,20 @@ export function generateDelegate(
     },
     update: (args: UpdateArgs) => {
       const updated = updateMany(args, delegate, delegates, onChange);
-      return Promise.resolve(updated[0] ?? null);
+      const [update] = updated;
+
+      return update
+        ? Promise.resolve(update)
+        : Promise.reject(
+            new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+              code: 'P2025',
+              clientVersion,
+              meta: {
+                cause: 'Record to update not found.',
+                modelName: delegate.model.name,
+              },
+            }),
+          );
     },
     updateMany: (args: UpdateArgs) => {
       const updated = updateMany(args, delegate, delegates, onChange);
