@@ -1,3 +1,5 @@
+import { version as clientVersion } from '@prisma/client/package.json';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { DMMF } from '@prisma/generator-helper';
 
 import { AggregateArgs, CreateArgs, CreateManyArgs, FindArgs, GroupByArgs, UpsertArgs } from './types';
@@ -100,12 +102,24 @@ export function generateDelegate(
     },
     findUniqueOrThrow: (args: FindArgs = {}) => {
       const found = findOne(args, delegate, delegates);
-      if (!found) return Promise.reject(new Error());
+      if (!found)
+        return Promise.reject(
+          new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+            code: 'P2025',
+            clientVersion,
+          }),
+        );
       return Promise.resolve(found);
     },
     findFirstOrThrow: (args: FindArgs = {}) => {
       const found = findOne(args, delegate, delegates);
-      if (!found) return Promise.reject(new Error());
+      if (!found)
+        return Promise.reject(
+          new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+            code: 'P2025',
+            clientVersion,
+          }),
+        );
       return Promise.resolve(found);
     },
     count: (args: FindArgs = {}) => {
