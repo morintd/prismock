@@ -55,7 +55,17 @@ export function generateDelegate(
     delete: (args: DeleteArgs = {}) => {
       const deleted = deleteMany(args, delegate, delegates, onChange);
 
-      if (deleted.length === 0) return Promise.reject(new Error());
+      if (deleted.length === 0)
+        return Promise.reject(
+          new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+            code: 'P2025',
+            clientVersion,
+            meta: {
+              cause: 'Record to delete does not exist.',
+              modelName: delegate.model.name,
+            },
+          }),
+        );
       return Promise.resolve(deleted[0]);
     },
     deleteMany: (args: DeleteArgs = {}) => {
