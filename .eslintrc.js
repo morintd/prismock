@@ -26,6 +26,8 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     'import/order': ['error', { 'newlines-between': 'always' }],
     '@typescript-eslint/unbound-method': 'off',
+    '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    '@typescript-eslint/no-redundant-type-constituents': 'off',
     'comma-dangle': [
       'error',
       {
