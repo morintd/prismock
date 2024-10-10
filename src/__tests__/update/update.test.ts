@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { PrismaClient, Service } from '@prisma/client';
+import { version as clientVersion } from '@prisma/client/package.json';
+
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { buildUser, formatEntries, formatEntry, resetDb, seededServices, seededUsers, simulateSeed } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
@@ -56,6 +59,22 @@ describe('update', () => {
 
       expect(formatEntries(stored)).toEqual(formatEntries(expectedStore));
       expect(formatEntries(mockStored)).toEqual(formatEntries(expectedStore));
+    });
+  });
+
+  describe('Update (not found)', () => {
+    it("Should raise Error if doesn't exist", async () => {
+      await expect(() => prisma.user.update({ where: { email: 'foo@bar.com' }, data: { warnings: 0 } })).rejects.toThrow();
+      await expect(() => prismock.user.update({ where: { email: 'foo@bar.com' }, data: { warnings: 0 } })).rejects.toEqual(
+        new PrismaClientKnownRequestError('No User found', {
+          code: 'P2025',
+          clientVersion,
+          meta: {
+            cause: 'Record to update not found.',
+            modelName: 'User',
+          },
+        }),
+      );
     });
   });
 
