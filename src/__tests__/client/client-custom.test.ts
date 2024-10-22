@@ -20,6 +20,7 @@ describe('client (custom)', () => {
         blog: [],
         post: [],
         profile: [],
+        reaction: [],
         service: [],
         subscription: [],
       });
@@ -48,6 +49,7 @@ describe('client (custom)', () => {
         blog: [],
         post: [],
         profile: [],
+        reaction: [],
         service: [],
         subscription: [],
       });
