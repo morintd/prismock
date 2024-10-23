@@ -1,3 +1,5 @@
+import { version as clientVersion } from '@prisma/client/package.json';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { DMMF } from '@prisma/generator-helper';
 
 import { AggregateArgs, CreateArgs, CreateManyArgs, FindArgs, GroupByArgs, UpsertArgs } from './types';
@@ -53,7 +55,17 @@ export function generateDelegate(
     delete: (args: DeleteArgs = {}) => {
       const deleted = deleteMany(args, delegate, delegates, onChange);
 
-      if (deleted.length === 0) return Promise.reject(new Error());
+      if (deleted.length === 0)
+        return Promise.reject(
+          new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+            code: 'P2025',
+            clientVersion,
+            meta: {
+              cause: 'Record to delete does not exist.',
+              modelName: delegate.model.name,
+            },
+          }),
+        );
       return Promise.resolve(deleted[0]);
     },
     deleteMany: (args: DeleteArgs = {}) => {
@@ -62,7 +74,20 @@ export function generateDelegate(
     },
     update: (args: UpdateArgs) => {
       const updated = updateMany(args, delegate, delegates, onChange);
-      return Promise.resolve(updated[0] ?? null);
+      const [update] = updated;
+
+      return update
+        ? Promise.resolve(update)
+        : Promise.reject(
+            new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+              code: 'P2025',
+              clientVersion,
+              meta: {
+                cause: 'Record to update not found.',
+                modelName: delegate.model.name,
+              },
+            }),
+          );
     },
     updateMany: (args: UpdateArgs) => {
       const updated = updateMany(args, delegate, delegates, onChange);
@@ -100,12 +125,24 @@ export function generateDelegate(
     },
     findUniqueOrThrow: (args: FindArgs = {}) => {
       const found = findOne(args, delegate, delegates);
-      if (!found) return Promise.reject(new Error());
+      if (!found)
+        return Promise.reject(
+          new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+            code: 'P2025',
+            clientVersion,
+          }),
+        );
       return Promise.resolve(found);
     },
     findFirstOrThrow: (args: FindArgs = {}) => {
       const found = findOne(args, delegate, delegates);
-      if (!found) return Promise.reject(new Error());
+      if (!found)
+        return Promise.reject(
+          new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
+            code: 'P2025',
+            clientVersion,
+          }),
+        );
       return Promise.resolve(found);
     },
     count: (args: FindArgs = {}) => {

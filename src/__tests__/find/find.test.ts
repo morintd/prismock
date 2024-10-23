@@ -1,5 +1,7 @@
 import { Blog, Post, Prisma, User, PrismaClient } from '@prisma/client';
+import { version as clientVersion } from '@prisma/client/package.json';
 
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import {
   buildPost,
   formatEntries,
@@ -636,7 +638,12 @@ describe('find', () => {
 
     it("Should throw if doesn't exist", async () => {
       await expect(() => prisma.user.findFirstOrThrow({ where: { warnings: -1 } })).rejects.toThrow();
-      await expect(() => prismock.user.findFirstOrThrow({ where: { warnings: -1 } })).rejects.toThrow();
+      await expect(() => prismock.user.findFirstOrThrow({ where: { warnings: -1 } })).rejects.toEqual(
+        new PrismaClientKnownRequestError('No User found', {
+          code: 'P2025',
+          clientVersion,
+        }),
+      );
     });
   });
 
@@ -656,7 +663,12 @@ describe('find', () => {
 
     it("Should throw if doesn't exist", async () => {
       await expect(() => prisma.user.findUniqueOrThrow({ where: { email: 'does-not-exist' } })).rejects.toThrow();
-      await expect(() => prismock.user.findUniqueOrThrow({ where: { email: 'does-not-exist' } })).rejects.toThrow();
+      await expect(() => prismock.user.findUniqueOrThrow({ where: { email: 'does-not-exist' } })).rejects.toEqual(
+        new PrismaClientKnownRequestError('No User found', {
+          code: 'P2025',
+          clientVersion,
+        }),
+      );
     });
   });
 });

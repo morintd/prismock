@@ -1,5 +1,7 @@
 import { PrismaClient, Role, User } from '@prisma/client';
+import { version as clientVersion } from '@prisma/client/package.json';
 
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { formatEntries, formatEntry, generateId, resetDb, simulateSeed } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 
@@ -96,7 +98,16 @@ describe('delete', () => {
 
     it('Should throw if no element is found', async () => {
       await expect(() => prisma.user.delete({ where: { email: 'does-not-exist' } })).rejects.toThrow();
-      await expect(() => prismock.user.delete({ where: { email: 'does-not-exist' } })).rejects.toThrow();
+      await expect(() => prismock.user.delete({ where: { email: 'does-not-exist' } })).rejects.toEqual(
+        new PrismaClientKnownRequestError(`No User found`, {
+          code: 'P2025',
+          clientVersion,
+          meta: {
+            cause: 'Record to delete does not exist.',
+            modelName: 'User',
+          },
+        }),
+      );
     });
   });
 });
