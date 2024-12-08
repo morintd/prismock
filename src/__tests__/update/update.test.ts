@@ -185,10 +185,10 @@ describe('update', () => {
     });
 
     it('Should not update other data', async () => {
-      const updatedReaction = seededReactions[0];
-      const untouchedReaction = seededReactions[1];
-
       if (provider !== 'mongodb') {
+        const updatedReaction = seededReactions[0];
+        const untouchedReaction = seededReactions[1];
+
         const realResult = await prisma.reaction.findUnique({
           where: {
             userId_emoji: {

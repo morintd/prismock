@@ -25,7 +25,6 @@ describe('client (custom)', () => {
         blog: [],
         post: [],
         profile: [],
-        reaction: [],
         service: [],
         subscription: [],
       };
