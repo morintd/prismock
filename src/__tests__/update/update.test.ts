@@ -126,10 +126,10 @@ describe('update', () => {
     const expectedNewValue = 100;
 
     beforeAll(async () => {
-      const updatedReaction = seededReactions[0];
-      const untouchedReaction = seededReactions[1];
-
       if (provider !== 'mongodb') {
+        const updatedReaction = seededReactions[0];
+        const untouchedReaction = seededReactions[1];
+
         await prisma.reaction.update({
           where: {
             userId_emoji: {

@@ -20,10 +20,7 @@ describe('client (custom)', () => {
 
       const data = prismock.getData();
 
-      expect({
-        ...data,
-        user: data.user.map(({ id, ...user }) => user),
-      }).toEqual({
+      const expected = {
         user: seededUsers.map(({ id, ...user }) => user),
         blog: [],
         post: [],
@@ -31,7 +28,18 @@ describe('client (custom)', () => {
         reaction: [],
         service: [],
         subscription: [],
-      });
+      };
+
+      if (provider !== 'mongodb') {
+        Object.assign(expected, {
+          reaction: [],
+        });
+      }
+
+      expect({
+        ...data,
+        user: data.user.map(({ id, ...user }) => user),
+      }).toEqual(expected);
     });
   });
 
