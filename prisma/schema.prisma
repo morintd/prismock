@@ -32,7 +32,7 @@ model User {
   profile       Profile?
   service       Service[]
   subscriptions Subscription[]
-  Reaction      Reaction[]
+  reactions     Reaction[]
 }
 
 model Profile {

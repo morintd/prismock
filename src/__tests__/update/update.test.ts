@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { PrismaClient, Service } from '@prisma/client';
@@ -121,12 +122,12 @@ describe('update', () => {
   });
 
   describe('Update using compound id with default name', () => {
-    if (provider !== 'mongodb') {
-      const updatedReaction = seededReactions[0];
-      const untouchedReaction = seededReactions[1];
-      const expectedNewValue = 100;
+    const updatedReaction = seededReactions[0];
+    const untouchedReaction = seededReactions[1];
+    const expectedNewValue = 100;
 
-      beforeAll(async () => {
+    beforeAll(async () => {
+      if (provider !== 'mongodb') {
         await prisma.reaction.update({
           where: {
             userId_emoji: {
@@ -149,9 +150,11 @@ describe('update', () => {
             value: expectedNewValue,
           },
         });
-      });
+      }
+    });
 
-      it('Should update expected entry', async () => {
+    it('Should update expected entry', async () => {
+      if (provider !== 'mongodb') {
         const realResult = await prisma.reaction.findUnique({
           where: {
             userId_emoji: {
@@ -171,9 +174,11 @@ describe('update', () => {
 
         expect(realResult.value).toEqual(expectedNewValue);
         expect(mockResult.value).toEqual(expectedNewValue);
-      });
+      }
+    });
 
-      it('Should not update other data', async () => {
+    it('Should not update other data', async () => {
+      if (provider !== 'mongodb') {
         const realResult = await prisma.reaction.findUnique({
           where: {
             userId_emoji: {
@@ -193,7 +198,7 @@ describe('update', () => {
 
         expect(realResult.value).toEqual(untouchedReaction.value);
         expect(mockResult.value).toEqual(untouchedReaction.value);
-      });
-    }
+      }
+    });
   });
 });
