@@ -56,6 +56,12 @@ const defaultFieldhandlers: [
       return createCuid();
     },
   ],
+  [
+    (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name === 'dbgenerated',
+    () => {
+      return uuid();
+    },
+  ],
 ];
 
 export function calculateDefaultFieldValue(field: DMMF.Field, properties: DelegateProperties) {
