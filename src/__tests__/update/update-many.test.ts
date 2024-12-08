@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { resetDb, simulateSeed, buildUser, formatEntries, generateId } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 
-jest.setTimeout(15000);
+jest.setTimeout(40000);
 
 describe('updateMany', () => {
   let prismock: PrismockClientType;

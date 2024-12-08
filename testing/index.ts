@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 
-import { Blog, Post, PrismaClient, Role, Service, Subscription, User } from '@prisma/client';
+import { Blog, Post, PrismaClient, Reaction, Role, Service, Subscription, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -10,6 +10,10 @@ export const seededUsers = [buildUser(1), buildUser(2, { warnings: 5 }), buildUs
 export const seededBlogs = [buildBlog(1, { title: 'blog-1' }), buildBlog(2, { title: 'blog-2', userId: seededUsers[0].id })];
 export const seededPosts = [buildPost(1, { authorId: 1, blogId: 1 }), buildPost(2, { authorId: 2, blogId: 2 })];
 export const seededServices = [buildService({ userId: 1, name: 'facebook' })];
+export const seededReactions = [
+  buildReaction({ userId: 1, emoji: 'thumbsup' }),
+  buildReaction({ userId: 1, emoji: 'rocket' }),
+];
 
 export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
@@ -18,6 +22,7 @@ export async function simulateSeed(prisma: PrismaClient) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore MySQL / Tags
   await prisma.service.createMany({ data: seededServices });
+  await prisma.reaction.createMany({ data: seededReactions });
 }
 
 export async function resetDb() {
@@ -82,6 +87,15 @@ export function buildSubscription(id: number, subscription: Partial<Subscription
   return {
     id,
     ...subscription,
+  };
+}
+
+export function buildReaction(reaction: Pick<Reaction, 'userId' | 'emoji'>) {
+  const { userId, emoji } = reaction;
+  return {
+    userId,
+    emoji,
+    value: 0,
   };
 }
 
