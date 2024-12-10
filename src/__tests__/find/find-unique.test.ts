@@ -3,7 +3,7 @@
 // @ts-nocheck
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, seededUsers, simulateSeed, seededBlogs, seededServices } from '../../../testing';
+import { resetDb, seededUsers, simulateSeed, seededBlogs, seededServices, seededReactions } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 import { fetchGenerator, getProvider } from '../../lib/prismock';
 
@@ -56,6 +56,21 @@ describe('find', () => {
         const mockService = (await prismock.service.findUnique({
           where: { compositeId: { name: expected.name, userId: expected.userId } },
         }))!;
+
+        expect(realService).toEqual(expected);
+        expect(mockService).toEqual(expected);
+      }
+    });
+
+    it('Should return corresponding item based on @@id with default name', async () => {
+      if (provider !== 'mongodb') {
+        const expected = seededReactions[0];
+        const realService = await prisma.reaction.findUnique({
+          where: { userId_emoji: { userId: expected.userId, emoji: expected.emoji } },
+        });
+        const mockService = await prismock.reaction.findUnique({
+          where: { userId_emoji: { userId: expected.userId, emoji: expected.emoji } },
+        });
 
         expect(realService).toEqual(expected);
         expect(mockService).toEqual(expected);

@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable jest/no-conditional-expect */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { PrismaClient, Service } from '@prisma/client';
@@ -5,7 +7,16 @@ import { version as clientVersion } from '@prisma/client/package.json';
 
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-import { buildUser, formatEntries, formatEntry, resetDb, seededServices, seededUsers, simulateSeed } from '../../../testing';
+import {
+  buildUser,
+  formatEntries,
+  formatEntry,
+  resetDb,
+  seededReactions,
+  seededServices,
+  seededUsers,
+  simulateSeed,
+} from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
 import { Item } from '../../lib/delegate';
 import { fetchGenerator, getProvider } from '../../lib/prismock';
@@ -128,5 +139,97 @@ describe('update', () => {
         ]);
       });
     }
+  });
+
+  describe('Update using compound id with default name', () => {
+    const expectedNewValue = 100;
+
+    beforeAll(async () => {
+      if (provider !== 'mongodb') {
+        const updatedReaction = seededReactions[0];
+        const untouchedReaction = seededReactions[1];
+
+        await prisma.reaction.update({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+          data: {
+            value: expectedNewValue,
+          },
+        });
+        await prismock.reaction.update({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+          data: {
+            value: expectedNewValue,
+          },
+        });
+      }
+    });
+
+    it('Should update expected entry', async () => {
+      if (provider !== 'mongodb') {
+        const updatedReaction = seededReactions[0];
+        const untouchedReaction = seededReactions[1];
+
+        const realResult = await prisma.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+        });
+        const mockResult = await prismock.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: updatedReaction.userId,
+              emoji: updatedReaction.emoji,
+            },
+          },
+        });
+
+        expect(realResult.value).toEqual(expectedNewValue);
+        expect(mockResult.value).toEqual(expectedNewValue);
+      } else {
+        console.log('[SKIPPED] compound ID not supported on MongoDB');
+      }
+    });
+
+    it('Should not update other data', async () => {
+      if (provider !== 'mongodb') {
+        const updatedReaction = seededReactions[0];
+        const untouchedReaction = seededReactions[1];
+
+        const realResult = await prisma.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: untouchedReaction.userId,
+              emoji: untouchedReaction.emoji,
+            },
+          },
+        });
+        const mockResult = await prismock.reaction.findUnique({
+          where: {
+            userId_emoji: {
+              userId: untouchedReaction.userId,
+              emoji: untouchedReaction.emoji,
+            },
+          },
+        });
+
+        expect(realResult.value).toEqual(untouchedReaction.value);
+        expect(mockResult.value).toEqual(untouchedReaction.value);
+      } else {
+        console.log('[SKIPPED] compound ID not supported on MongoDB');
+      }
+    });
   });
 });

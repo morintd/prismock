@@ -32,6 +32,7 @@ model User {
   profile       Profile?
   service       Service[]
   subscriptions Subscription[]
+  reactions     Reaction[]
 }
 
 model Profile {
@@ -89,4 +90,14 @@ model Subscription {
 
   blog   Blog @relation(fields: [blogId], references: [id])
   blogId Int
+}
+
+model Reaction {
+  userId Int
+  emoji  String
+  value  Int
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@id([userId, emoji])
 }
