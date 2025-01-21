@@ -30,5 +30,8 @@ describe('client (reset)', () => {
 
     const usersAfterReset = await userService.findMany();
     expect(usersAfterReset.length > 0).not.toBeTruthy();
+
+    const getDataUsers = prismock.getData().user;
+    expect(getDataUsers.length > 0).not.toBeTruthy();
   });
 });
