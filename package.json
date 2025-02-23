@@ -62,7 +62,7 @@
     "prettier": "2.8.8",
     "prisma": "5.22.0",
     "semantic-release": "24.2.3",
-    "ts-jest": "29.2.5",
+    "ts-jest": "29.2.6",
     "ts-node": "10.9.2",
     "ts-toolbelt": "9.6.0",
     "typescript": "5.7.3"
