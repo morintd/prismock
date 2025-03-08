@@ -29,7 +29,7 @@
   "devDependencies": {
     "@commitlint/cli": "19.8.0",
     "@commitlint/config-conventional": "19.8.0",
-    "@prisma/client": "5.22.0",
+    "@prisma/client": "6.4.1",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@semantic-release/git": "10.0.1",
@@ -60,7 +60,7 @@
     "jest-mock-extended": "3.0.7",
     "lint-staged": "15.4.3",
     "prettier": "2.8.8",
-    "prisma": "5.22.0",
+    "prisma": "6.4.1",
     "semantic-release": "24.2.3",
     "ts-jest": "29.2.6",
     "ts-node": "10.9.2",
@@ -88,8 +88,8 @@
   },
   "dependencies": {
     "@paralleldrive/cuid2": "2.2.2",
-    "@prisma/generator-helper": "5.22.0",
-    "@prisma/internals": "5.22.0",
+    "@prisma/generator-helper": "6.4.1",
+    "@prisma/internals": "6.4.1",
     "bson": "6.10.3"
   },
   "peerDependencies": {
