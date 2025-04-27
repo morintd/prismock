@@ -40,7 +40,7 @@
     "@types/node": "22.15.2",
     "@typescript-eslint/eslint-plugin": "8.31.0",
     "@typescript-eslint/parser": "8.31.0",
-    "cspell": "8.19.2",
+    "cspell": "8.19.3",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.5.0",
     "eslint": "8.57.1",
