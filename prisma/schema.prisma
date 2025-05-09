@@ -36,7 +36,7 @@ model User {
 }
 
 model Profile {
-  id     Int     @id @default(autoincrement())
+  id     String  @id @default(nanoid())
   bio    String?
   gender Gender
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
