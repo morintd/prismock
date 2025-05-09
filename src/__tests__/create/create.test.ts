@@ -1,4 +1,4 @@
-import { PrismaClient, Role, User } from '@prisma/client';
+import { Gender, PrismaClient, Profile, Role, User } from '@prisma/client';
 
 import {
   buildUser,
@@ -22,6 +22,8 @@ describe('create', () => {
 
   const mockUsers: User[] = [];
   const realUsers: User[] = [];
+  const mockProfiles: Profile[] = [];
+  const realProfiles: Profile[] = [];
 
   const data = {
     user1: { email: 'user4@company.com', password: 'password', warnings: 0 },
@@ -39,6 +41,7 @@ describe('create', () => {
     },
     user4: { email: 'user-many-1@company.com', password: 'password', warnings: 0, birthday: new Date('01-01-1971') },
     user5: { email: 'user-many-2@company.com', password: 'password', warnings: 0, birthday: new Date('12-12-2012') },
+    profile1: { bio: 'User 1 profile', gender: Gender.FEMALE, userId: 1 },
   };
 
   beforeAll(async () => {
@@ -51,10 +54,12 @@ describe('create', () => {
     mockUsers.push(await prismock.user.create({ data: data.user1 }));
     mockUsers.push(await prismock.user.create({ data: data.user2 }));
     mockUsers.push(await prismock.user.create({ data: data.user3 }));
+    mockProfiles.push(await prismock.profile.create({ data: data.profile1 }));
 
     realUsers.push(await prisma.user.create({ data: data.user1 }));
     realUsers.push(await prisma.user.create({ data: data.user2 }));
     realUsers.push(await prisma.user.create({ data: data.user3 }));
+    realProfiles.push(await prisma.profile.create({ data: data.profile1 }));
   });
 
   describe('create', () => {
@@ -91,6 +96,13 @@ describe('create', () => {
 
       expect(formatEntry(realUsers[1])).toEqual(formatEntry(expected));
       expect(formatEntry(mockUsers[1])).toEqual(formatEntry(expected));
+    });
+
+    it('Should create with nanoid', () => {
+      const nanoidRegex = /^[a-zA-Z0-9_-]{21}$/;
+
+      expect(realProfiles[0].id).toMatch(nanoidRegex);
+      expect(mockProfiles[0].id).toMatch(nanoidRegex);
     });
 
     it('Should creat with default cuid value', async () => {
