@@ -61,7 +61,7 @@
     "lint-staged": "16.0.0",
     "prettier": "2.8.8",
     "prisma": "5.22.0",
-    "semantic-release": "24.2.3",
+    "semantic-release": "24.2.4",
     "ts-jest": "29.3.4",
     "ts-node": "10.9.2",
     "ts-toolbelt": "9.6.0",
