@@ -2,6 +2,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { DMMF } from '@prisma/generator-helper';
 import { ObjectId } from 'bson';
 import { createId as createCuid } from '@paralleldrive/cuid2';
+import { nanoid } from 'nanoid';
 
 import { Delegate, DelegateProperties, Item } from '../delegate';
 import { pipe, removeUndefined, uuid } from '../helpers';
@@ -42,6 +43,12 @@ const defaultFieldhandlers: [
     (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name?.includes('uuid'),
     () => {
       return uuid();
+    },
+  ],
+  [
+    (field: DMMF.Field) => (field.default as DMMF.FieldDefault)?.name?.startsWith('nanoid'),
+    (_properties: DelegateProperties, _field: DMMF.Field) => {
+      return nanoid();
     },
   ],
   [
