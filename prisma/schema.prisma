@@ -58,8 +58,8 @@ model Post {
   blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
 
-  nextPosts Post[] @relation("PrevNextPosts")
-  prevPosts Post[] @relation("PrevNextPosts")
+  similarPosts Post[] @relation("SimilarPosts")
+  similarTo    Post[] @relation("SimilarPosts")
 }
 
 model Blog {

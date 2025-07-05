@@ -5,7 +5,7 @@ import { createId as createCuid } from '@paralleldrive/cuid2';
 
 import { Delegate, DelegateProperties, Item } from '../delegate';
 import { pipe, removeUndefined, uuid } from '../helpers';
-import { Delegates } from '../prismock';
+import { Delegates, RelationshipStore } from '../prismock';
 import { ConnectOrCreate, CreateArgs, FindWhereArgs } from '../types';
 
 import {
@@ -102,7 +102,7 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
         const subDelegate = getDelegateFromField(field!, delegates);
 
         let connected = findOne({ where: connectOrCreate.where }, subDelegate, delegates);
-        if (!connected) connected = create(connectOrCreate.create, {}, subDelegate, delegates, subDelegate.onChange);
+        if (!connected) connected = create(connectOrCreate.create, {}, subDelegate, delegates, subDelegate.onChange, {});
 
         return {
           ...accumulator,
@@ -162,6 +162,13 @@ export function nestedCreate(current: Delegate, delegates: Delegates) {
       ...removeUndefined(item),
     };
 
+    for (const key in created) {
+      const value = created[key];
+      if (Buffer.isBuffer(value)) {
+        created[key] = Buffer.from(value);
+      }
+    }
+
     current.model.fields.forEach((field) => {
       const value = created[field.name];
 
@@ -179,10 +186,10 @@ export function nestedCreate(current: Delegate, delegates: Delegates) {
 
             if (Array.isArray(data)) {
               data.forEach((item) => {
-                create({ ...item, ...connect }, {}, delegate, delegates, delegate.onChange);
+                create({ ...item, ...connect }, {}, delegate, delegates, delegate.onChange, {});
               });
             } else {
-              const nestedCreated = create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange);
+              const nestedCreated = create({ ...data, ...connect }, {}, delegate, delegates, delegate.onChange, {});
               Object.assign(created, getFieldFromRelationshipWhere(nestedCreated, field));
             }
           }
@@ -193,7 +200,7 @@ export function nestedCreate(current: Delegate, delegates: Delegates) {
             const { data } = (value as { createMany: { data: Item[] } }).createMany;
 
             data.forEach((d) => {
-              create({ ...d, ...connect }, {}, delegate, delegates, delegate.onChange);
+              create({ ...d, ...connect }, {}, delegate, delegates, delegate.onChange, {});
             });
           }
         }
@@ -210,9 +217,10 @@ export function create(
   delegate: Delegate,
   delegates: Delegates,
   onChange: (items: Item[]) => void,
+  relationshipStore: RelationshipStore,
 ) {
   const formated = pipe(nestedCreate(delegate, delegates), connectOrCreate(delegate, delegates))(item);
-  const created = pipe(includes(options, delegate, delegates), select(options.select))(formated);
+  const created = pipe(includes(options, delegate, delegates, relationshipStore), select(options.select))(formated);
 
   onChange([...delegate.getItems(), formated]);
 

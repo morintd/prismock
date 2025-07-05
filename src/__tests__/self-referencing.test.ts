@@ -1,3 +1,5 @@
+
+import { PrismaClient } from '@prisma/client';
 import { resetDb, simulateSeed } from '../../testing';
 import { PrismockClient, PrismockClientType } from '../lib/client';
 
@@ -5,54 +7,62 @@ jest.setTimeout(40000);
 
 describe('Self-referencing many-to-many', () => {
   let prismock: PrismockClientType;
+  let prisma: PrismaClient;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     await resetDb();
     prismock = new PrismockClient() as PrismockClientType;
+    prisma = new PrismaClient();
     await simulateSeed(prismock);
   });
 
   it('Should create a self-referencing relationship between posts', async () => {
-    const initialPost = await prismock.post.create({
-      data: {
-        title: 'Initial Post',
-        authorId: 1,
-        blogId: 1,
-      },
-    });
+    const [mockPost1, mockPost2] = await prismock.post.findMany();
+    const [realPost1, realPost2] = await prisma.post.findMany();
 
-    const nextPost = await prismock.post.create({
+    const updatedMockPost = await prismock.post.update({
+      where: { id: mockPost1.id },
       data: {
-        title: 'Next Post',
-        authorId: 1,
-        blogId: 1,
-      },
-    });
-
-    await prismock.post.update({
-      where: { id: initialPost.id },
-      data: {
-        nextPosts: {
-          connect: [{ id: nextPost.id }],
+        similarTo: {
+          connect: [{ id: mockPost2.id }],
         },
       },
+      include: {
+        similarTo: true,
+      },
     });
 
-    const updatedInitialPost = await prismock.post.findUnique({
-      where: { id: initialPost.id },
-      include: { nextPosts: true },
+    const updatedRealPost = await prisma.post.update({
+      where: { id: realPost1.id },
+      data: {
+        similarTo: {
+          connect: [{ id: realPost2.id }],
+        },
+      },
+      include: {
+        similarTo: true,
+      },
     });
 
-    const updatedNextPost = await prismock.post.findUnique({
-      where: { id: nextPost.id },
-      include: { prevPosts: true },
+    expect(updatedMockPost).toEqual({
+      ...mockPost1,
+      createdAt: expect.anything(),
+      imprint: expect.any(String),
+      similarTo: [{ 
+        ...mockPost2, 
+        createdAt: expect.anything(),
+        imprint: expect.any(String)
+      }],
     });
-
-    expect(updatedInitialPost?.nextPosts).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: nextPost.id })]),
-    );
-    expect(updatedNextPost?.prevPosts).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: initialPost.id })]),
-    );
+    expect(updatedRealPost).toEqual({
+      ...realPost1,
+      createdAt: expect.anything(),
+      imprint: expect.any(String),
+      similarTo: [{ 
+        ...realPost2, 
+        createdAt: expect.anything(),
+        imprint: expect.any(String)
+      }],
+    });
   });
 });
