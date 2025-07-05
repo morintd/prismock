@@ -239,8 +239,13 @@ export const getFieldRelationshipWhere = (
 };
 
 export const getFieldFromRelationshipWhere = (item: Item, field: DMMF.Field) => {
+  if (!field.relationFromFields || !field.relationToFields ||
+      field.relationFromFields.length === 0 || field.relationToFields.length === 0) {
+    return {};
+  }
+  
   return {
-    [field.relationFromFields![0]]: item[field.relationToFields![0]] as GroupByFieldArg,
+    [field.relationFromFields[0]]: item[field.relationToFields[0]] as GroupByFieldArg,
   };
 };
 
