@@ -56,7 +56,7 @@
     "fp-ts": "2.16.10",
     "fs-jetpack": "5.1.0",
     "husky": "9.1.7",
-    "jest": "30.0.4",
+    "jest": "30.0.5",
     "jest-mock-extended": "4.0.0",
     "lint-staged": "16.1.2",
     "prettier": "2.8.8",
