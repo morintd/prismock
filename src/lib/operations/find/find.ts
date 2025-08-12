@@ -86,6 +86,10 @@ export function calculateOrder(
       weight = values[0] - values[1];
     }
 
+    if (typeof values[0] === 'bigint' && typeof values[1] === 'bigint') {
+      weight = Number(values[0]) - Number(values[1]);
+    }
+
     if (typeof values[0] === 'string' && typeof values[1] === 'string') {
       weight = values[0].localeCompare(values[1]);
     }
