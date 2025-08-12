@@ -4944,10 +4944,10 @@ eslint-plugin-react@7.37.5:
     string.prototype.matchall "^4.0.12"
     string.prototype.repeat "^1.0.0"
 
-eslint-plugin-testing-library@7.6.4:
-  version "7.6.4"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-testing-library/-/eslint-plugin-testing-library-7.6.4.tgz#3623465bb7e1958ff33e996a9fe5eb437f29c976"
-  integrity sha512-Ord5D9vksSVEdqVT1yUoJrh8rs5LU1P1nThERqEQV0TzoRaPBqoi4mIj3poqKetLgyrfHmGBOrigh3H8qxRGTQ==
+eslint-plugin-testing-library@7.6.6:
+  version "7.6.6"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-testing-library/-/eslint-plugin-testing-library-7.6.6.tgz#b0a1f42b32670ede4967f546410a0b0b0dedba8f"
+  integrity sha512-eSexC+OPhDLuCpLbFEC7Qrk0x4IE4Mn+UW0db8YAhUatVB6CzGHdeHv4pyoInglbhhQc0Z9auY/2HKyMZW5s7Q==
   dependencies:
     "@typescript-eslint/scope-manager" "^8.15.0"
     "@typescript-eslint/utils" "^8.15.0"
