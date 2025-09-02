@@ -58,7 +58,7 @@
     "husky": "9.1.7",
     "jest": "30.1.2",
     "jest-mock-extended": "4.0.0",
-    "lint-staged": "16.1.5",
+    "lint-staged": "16.1.6",
     "prettier": "2.8.8",
     "prisma": "5.22.0",
     "semantic-release": "24.2.7",
