@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { PrismaClient, User } from '@prisma/client';
 
 import { resetDb, simulateSeed, seededPosts, seededUsers, formatEntries, formatEntry } from '../../../testing';
-import { PrismockClient, PrismockClientType } from '../../lib/client';
+import { PrismockClient, PrismockClientType, relationsStore } from '../../lib/client';
 
 jest.setTimeout(40000);
 
@@ -14,6 +16,8 @@ describe('update (connect)', () => {
 
   let realAuthor: User;
   let mockAuthor: User;
+
+  beforeEach(() => relationsStore.resetValues());
 
   beforeAll(async () => {
     await resetDb();
@@ -52,5 +56,85 @@ describe('update (connect)', () => {
     expect(formatEntries(mockStored.map(({ createdAt, imprint, blogId, ...post }) => post))).toEqual(
       formatEntries(seededPosts.map(({ createdAt, imprint, blogId, ...post }) => ({ ...post, authorId: mockAuthor.id }))),
     );
+  });
+
+  it('Should connect many to many relationships', async () => {
+    const updatePayload = {
+      where: { id: 1 },
+      data: {
+        tags: {
+          connect: [{ id: 1 }, { id: 2 }],
+        },
+      },
+    };
+
+    const findTagsPayload = {
+      where: {
+        posts: {
+          some: {
+            id: 1,
+          },
+        },
+      },
+      include: { posts: true },
+    };
+    await prisma.post.update(updatePayload);
+    await prismock.post.update(updatePayload);
+
+    const findPostPayload = { where: { id: 1 }, include: { tags: true } };
+
+    const updatedPost = await prisma.post.findFirst(findPostPayload);
+    const updatedMockedPost = await prismock.post.findFirst(findPostPayload);
+
+    const updatedTags = await prisma.tag.findMany(findTagsPayload);
+    const updatedMockedTags = await prismock.tag.findMany(findTagsPayload);
+
+    expect(updatedPost).toMatchObject(updatedMockedPost);
+    expect(updatedTags).toMatchObject(updatedMockedTags);
+  });
+
+  it('Should disconnect many to many relationships', async () => {
+    const connectPayload = {
+      where: { id: 1 },
+      data: {
+        tags: {
+          connect: [{ id: 1 }, { id: 2 }],
+        },
+      },
+    };
+    const disconnectPayload = {
+      where: { id: 1 },
+      data: {
+        tags: {
+          disconnect: [{ id: 2 }],
+        },
+      },
+    };
+    const findPostPayload = { where: { id: 1 }, include: { tags: true } };
+    const findTagsPayload = {
+      where: {
+        posts: {
+          some: {
+            id: 1,
+          },
+        },
+      },
+      include: { posts: true },
+    };
+
+    await prisma.post.update(connectPayload);
+    await prismock.post.update(connectPayload);
+
+    await prisma.post.update(disconnectPayload);
+    await prismock.post.update(disconnectPayload);
+
+    const updatedPost = await prisma.post.findFirst(findPostPayload);
+    const updatedMockedPost = await prismock.post.findFirst(findPostPayload);
+
+    const updatedTags = await prisma.tag.findMany(findTagsPayload);
+    const updatedMockedTags = await prismock.tag.findMany(findTagsPayload);
+
+    expect(updatedPost).toMatchObject(updatedMockedPost);
+    expect(updatedTags).toMatchObject(updatedMockedTags);
   });
 });

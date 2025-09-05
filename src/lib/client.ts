@@ -53,6 +53,8 @@ type PrismaModule = {
   dmmf: runtime.BaseDMMF;
 };
 
+export let relationsStore: RelationshipStore;
+
 export function createPrismock(instance: PrismaModule) {
   return class Prismock {
     constructor() {
@@ -64,8 +66,8 @@ export function createPrismock(instance: PrismaModule) {
     }
 
     private generate() {
+      relationsStore = new RelationshipStore(instance.dmmf.datamodel.models as DMMF.Model[]);
       const { delegates, setData, getData } = generateDelegates({ models: instance.dmmf.datamodel.models as DMMF.Model[] });
-
       Object.entries({ ...delegates, setData, getData }).forEach(([key, value]) => {
         if (key in this) Object.assign((this as unknown as Delegates)[key], value);
         else Object.assign(this, { [key]: value });
@@ -117,3 +119,147 @@ export function createPrismock(instance: PrismaModule) {
 }
 
 export const PrismockClient = createPrismock(Prisma);
+
+type Relationship = {
+  name: string;
+  a: { name: string; type: string };
+  b: { name: string; type: string };
+  values: { a: number; b: number }[];
+};
+
+type RelationActionParams = {
+  relationshipName: string;
+  fieldName: string;
+  id: number;
+  values: { id: number }[];
+};
+
+type MatchParams = {
+  type: string;
+  name: string;
+  itemId: number;
+  targetId: number;
+};
+
+class RelationshipStore {
+  private relationships: Record<string, Relationship>;
+  constructor(models: DMMF.Model[]) {
+    this.relationships = {};
+    this.populateRelationships(models);
+  }
+
+  findRelationship(name: string) {
+    return this.relationships[name];
+  }
+
+  findRelationshipBy(type: string, name: string) {
+    return Object.values(this.relationships).find(
+      ({ a, b }) => (a.type === type && b.name === name) || (b.type === type && a.name === name),
+    );
+  }
+
+  match({ type, name, itemId, targetId }: MatchParams) {
+    const relationship = this.findRelationshipBy(type, name);
+    if (!relationship) {
+      return 0;
+    }
+    const [valueField, targetField] = this.getRelationshipFieldNames(relationship, type);
+    const found = relationship.values.find((x) => x[valueField] === itemId && x[targetField] === targetId);
+    if (!found) {
+      return -1;
+    }
+    return 1;
+  }
+
+  getRelationshipIds(name: string, type: string) {
+    const relationship = this.findRelationship(name);
+    if (!relationship) {
+      return false;
+    }
+    const [valueField] = this.getRelationshipFieldNames(relationship, type);
+    return relationship.values.map((x) => x[valueField]);
+  }
+
+  connectToRelationship({ relationshipName, fieldName, id, values }: RelationActionParams) {
+    const relationship = this.findRelationship(relationshipName);
+    if (!relationship) {
+      return;
+    }
+    relationship.values = values
+      .map((x) => this.getActionValue({ relationship, fieldName, id, value: x }))
+      .map((x) => (relationship.values.find((y) => x.a === y.a && x.b === y.b) ? null : x))
+      .filter((x) => !!x);
+  }
+
+  disconnectFromRelation({ relationshipName, fieldName, id, values }: RelationActionParams) {
+    const relationship = this.findRelationship(relationshipName);
+    if (!relationship) {
+      return;
+    }
+    relationship.values = relationship.values.filter(
+      (x) =>
+        !values
+          .map((x) => this.getActionValue({ relationship, fieldName, id, value: x }))
+          .find((y) => x.a === y.a && x.b === y.b),
+    );
+  }
+
+  resetValues() {
+    Object.values(this.relationships).forEach((x) => (x.values = []));
+  }
+
+  private getRelationshipFieldNames({ a }: Relationship, type: string): ['a', 'b'] | ['b', 'a'] {
+    return a.type === type ? ['a', 'b'] : ['b', 'a'];
+  }
+
+  private getActionValue({
+    relationship,
+    fieldName,
+    id,
+    value,
+  }: {
+    relationship: Relationship;
+    fieldName: string;
+    id: number;
+    value: { id: number };
+  }) {
+    if (relationship.a.name === fieldName) {
+      return { a: value.id, b: id };
+    }
+    return { a: id, b: value.id };
+  }
+
+  private populateRelationships(models: DMMF.Model[]) {
+    this.relationships = models
+      .flatMap(({ fields }) =>
+        fields.filter(
+          ({ kind, isList, relationFromFields, relationToFields }) =>
+            isList && kind === 'object' && !relationFromFields?.length && !relationToFields?.length,
+        ),
+      )
+      .map((x, i, fields) =>
+        [x, fields.find((y, j) => i !== j && y.relationName === x.relationName)].sort((a, b) =>
+          (a?.name as string) > (b?.name as string) ? 1 : -1,
+        ),
+      )
+      .filter(([_, x]) => !!x)
+      .reduce(
+        (memo, [a, b]) => ({
+          ...memo,
+          [a?.relationName as string]: {
+            name: a?.relationName as string,
+            values: [],
+            a: {
+              name: a?.name as string,
+              type: a?.type as string,
+            },
+            b: {
+              name: b?.name as string,
+              type: b?.type as string,
+            },
+          },
+        }),
+        {},
+      );
+  }
+}

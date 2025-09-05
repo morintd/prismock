@@ -57,6 +57,13 @@ model Post {
   authorId  Int
   blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
+  tags      Tag[]
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  title String @unique @db.VarChar(255)
+  posts Post[]
 }
 
 model Blog {

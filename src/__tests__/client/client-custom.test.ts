@@ -27,6 +27,7 @@ describe('client (custom)', () => {
         profile: [],
         service: [],
         subscription: [],
+        tag: [],
       };
 
       if (provider !== 'mongodb') {
@@ -63,6 +64,7 @@ describe('client (custom)', () => {
         profile: [],
         service: [],
         subscription: [],
+        tag: [],
       };
 
       if (provider !== 'mongodb') {

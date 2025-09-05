@@ -2,6 +2,7 @@ import { Delegate, Item } from '../delegate';
 import { camelize, pipe, removeUndefined } from '../helpers';
 import { Delegates } from '../prismock';
 import { FindWhereArgs, SelectArgs, UpsertArgs } from '../types';
+import { relationsStore } from '../client';
 
 import { calculateDefaultFieldValue, connectOrCreate, create } from './create';
 import {
@@ -29,12 +30,25 @@ export type UpdateMap = {
 
 const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Delegate, delegates: Delegates) => {
   const { data }: any = args;
-
   current.model.fields.forEach((field) => {
     if (data[field.name]) {
       const fieldData = data[field.name];
 
       if (field.kind === 'object') {
+        if (fieldData.disconnect) {
+          const disconnected = data[field.name];
+          delete data[field.name];
+          const relationshipName = field?.relationName as string;
+          const relationship = relationsStore.findRelationship(relationshipName);
+          if (relationship) {
+            relationsStore.disconnectFromRelation({
+              relationshipName,
+              fieldName: field.name,
+              id: args.where.id as number,
+              values: disconnected.disconnect,
+            });
+          }
+        }
         if (fieldData.connect) {
           const connected = data[field.name];
           delete data[field.name];
@@ -42,9 +56,17 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           const delegate = delegates[camelize(field.type)];
           const joinfield = getJoinField(field, delegates)!;
           const joinValue = connected.connect[joinfield.relationToFields![0]];
-
-          // @TODO: what's happening if we try to udate on an Item that doesn't exist?
-          if (!joinfield.isList) {
+          const relationshipName = field?.relationName as string;
+          const relationship = relationsStore.findRelationship(relationshipName);
+          if (relationship) {
+            relationsStore.connectToRelationship({
+              relationshipName,
+              fieldName: field.name,
+              id: args.where.id as number,
+              values: connected.connect,
+            });
+          } else if (!joinfield.isList) {
+            // @TODO: what's happening if we try to update on an Item that doesn't exist?
             const joined = findOne({ where: args.where }, getDelegateFromField(joinfield, delegates), delegates) as Item;
 
             delegate.updateMany({
