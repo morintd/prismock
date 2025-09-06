@@ -120,18 +120,20 @@ export function createPrismock(instance: PrismaModule) {
 
 export const PrismockClient = createPrismock(Prisma);
 
+type RelationshipEntry = { a: number; b: number };
+
 type Relationship = {
   name: string;
   a: { name: string; type: string };
   b: { name: string; type: string };
-  values: { a: number; b: number }[];
+  values: RelationshipEntry[];
 };
 
 type RelationActionParams = {
   relationshipName: string;
   fieldName: string;
   id: number;
-  values: { id: number }[];
+  values: { id: number } | { id: number }[];
 };
 
 type MatchParams = {
@@ -146,6 +148,10 @@ class RelationshipStore {
   constructor(models: DMMF.Model[]) {
     this.relationships = {};
     this.populateRelationships(models);
+  }
+
+  getRelationships() {
+    return this.relationships;
   }
 
   findRelationship(name: string) {
@@ -185,9 +191,16 @@ class RelationshipStore {
     if (!relationship) {
       return;
     }
+    if (!Array.isArray(values)) {
+      const value = this.getActionValue({ relationship, fieldName, id, value: values });
+      relationship.values = relationship.values.find((x) => this.matchEntry(x, value))
+        ? relationship.values
+        : [...relationship.values, value];
+      return;
+    }
     relationship.values = values
       .map((x) => this.getActionValue({ relationship, fieldName, id, value: x }))
-      .map((x) => (relationship.values.find((y) => x.a === y.a && x.b === y.b) ? null : x))
+      .map((x) => (relationship.values.find((y) => this.matchEntry(x, y)) ? null : x))
       .filter((x) => !!x);
   }
 
@@ -196,11 +209,16 @@ class RelationshipStore {
     if (!relationship) {
       return;
     }
+    if (!Array.isArray(values)) {
+      const value = this.getActionValue({ relationship, fieldName, id, value: values });
+      relationship.values = relationship.values.filter((x) => this.matchEntry(x, value));
+      return;
+    }
     relationship.values = relationship.values.filter(
       (x) =>
         !values
           .map((x) => this.getActionValue({ relationship, fieldName, id, value: x }))
-          .find((y) => x.a === y.a && x.b === y.b),
+          .find((y) => this.matchEntry(x, y)),
     );
   }
 
@@ -210,6 +228,10 @@ class RelationshipStore {
 
   private getRelationshipFieldNames({ a }: Relationship, type: string): ['a', 'b'] | ['b', 'a'] {
     return a.type === type ? ['a', 'b'] : ['b', 'a'];
+  }
+
+  private matchEntry(x: RelationshipEntry, y: RelationshipEntry) {
+    return x.a === y.a && x.b === y.b;
   }
 
   private getActionValue({
@@ -230,19 +252,18 @@ class RelationshipStore {
   }
 
   private populateRelationships(models: DMMF.Model[]) {
-    this.relationships = models
-      .flatMap(({ fields }) =>
-        fields.filter(
-          ({ kind, isList, relationFromFields, relationToFields }) =>
-            isList && kind === 'object' && !relationFromFields?.length && !relationToFields?.length,
-        ),
+    this.relationships = Object.entries(
+      this.groupBy(
+        models.flatMap((x) => x.fields),
+        (x) => x.relationName as string,
+      ),
+    )
+      .filter(
+        ([key, fields]) =>
+          key !== 'undefined' &&
+          fields.every(({ relationFromFields: from, relationToFields: to }) => !from?.length && !to?.length),
       )
-      .map((x, i, fields) =>
-        [x, fields.find((y, j) => i !== j && y.relationName === x.relationName)].sort((a, b) =>
-          (a?.name as string) > (b?.name as string) ? 1 : -1,
-        ),
-      )
-      .filter(([_, x]) => !!x)
+      .map(([_, fields]) => fields.sort((a, b) => ((a?.name as string) > (b?.name as string) ? 1 : -1)))
       .reduce(
         (memo, [a, b]) => ({
           ...memo,
@@ -261,5 +282,15 @@ class RelationshipStore {
         }),
         {},
       );
+  }
+
+  private groupBy<T>(array: T[], aggregator: (item: T) => string): Record<string, T[]> {
+    return array.reduce((memo, item) => {
+      const key = aggregator(item);
+      return {
+        ...memo,
+        [key]: memo[key] ? [...memo[key], item] : [item],
+      };
+    }, {} as Record<string, T[]>);
   }
 }

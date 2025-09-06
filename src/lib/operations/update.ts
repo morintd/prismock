@@ -54,10 +54,14 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           delete data[field.name];
 
           const delegate = delegates[camelize(field.type)];
-          const joinfield = getJoinField(field, delegates)!;
-          const joinValue = connected.connect[joinfield.relationToFields![0]];
+          const joinField = getJoinField(field, delegates)!;
+          const relationToField = joinField.relationToFields![0];
+          const joinValue = Array.isArray(connected.connect)
+            ? { in: connected.connect.map((x: any) => x[relationToField]) }
+            : connected.connect[relationToField];
           const relationshipName = field?.relationName as string;
           const relationship = relationsStore.findRelationship(relationshipName);
+
           if (relationship) {
             relationsStore.connectToRelationship({
               relationshipName,
@@ -65,13 +69,12 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
               id: args.where.id as number,
               values: connected.connect,
             });
-          } else if (!joinfield.isList) {
+          } else if (!joinField.isList) {
             // @TODO: what's happening if we try to update on an Item that doesn't exist?
-            const joined = findOne({ where: args.where }, getDelegateFromField(joinfield, delegates), delegates) as Item;
-
+            const joined = findOne({ where: args.where }, getDelegateFromField(joinField, delegates), delegates) as Item;
             delegate.updateMany({
-              where: { [joinfield.relationToFields![0]]: joinValue },
-              data: getFieldFromRelationshipWhere(joined, joinfield),
+              where: { [relationToField]: joinValue },
+              data: getFieldFromRelationshipWhere(joined, joinField),
             });
           } else {
             const joined = findOne({ where: connected.connect }, getDelegateFromField(field, delegates), delegates) as Item;
@@ -92,7 +95,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           delete data[field.name];
 
           const delegate = getDelegateFromField(field, delegates);
-          const joinfield = getJoinField(field, delegates)!;
+          const joinField = getJoinField(field, delegates)!;
 
           if (field.relationFromFields?.[0]) {
             delegate.create(data[field.name].create);
@@ -101,11 +104,11 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
             const formatCreatedItem = (val: Item) => {
               return {
                 ...val,
-                [joinfield.name]: {
-                  connect: joinfield.relationToFields!.reduce((prev, cur) => {
+                [joinField.name]: {
+                  connect: joinField.relationToFields!.reduce((prev, cur) => {
                     let val = data[cur];
                     if (!isCreating && !val) {
-                      val = findOne(args, delegates[camelize(joinfield.type)], delegates)?.[cur];
+                      val = findOne(args, delegates[camelize(joinField.type)], delegates)?.[cur];
                     }
                     return { ...prev, [cur]: val };
                   }, {}),
@@ -123,10 +126,10 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
                   .forEach((createSingle: Item) => delegate.create({ data: createSingle }));
               } else {
                 const createData = { ...toCreate.create };
-                const mapped = formatCreatedItem(toCreate.create)[joinfield.name].connect as Item;
+                const mapped = formatCreatedItem(toCreate.create)[joinField.name].connect as Item;
 
-                if (joinfield) {
-                  Object.assign(createData, getFieldFromRelationshipWhere(mapped, joinfield));
+                if (joinField) {
+                  Object.assign(createData, getFieldFromRelationshipWhere(mapped, joinField));
                 }
 
                 delegate.create({ data: createData });
@@ -135,11 +138,11 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           }
         }
         if (fieldData.update || fieldData.updateMany) {
-          const joinfield = getJoinField(field, delegates);
+          const joinField = getJoinField(field, delegates);
           const where = {};
 
-          if (joinfield) {
-            Object.assign(where, getFieldFromRelationshipWhere(args.where, joinfield));
+          if (joinField) {
+            Object.assign(where, getFieldFromRelationshipWhere(args.where, joinField));
           }
 
           delete data[field.name];
@@ -156,7 +159,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
               delegate.updateMany({ where, data: fieldData.updateMany.data ?? fieldData.updateMany });
             }
           } else {
-            const joinfield = getJoinField(field, delegates)!;
+            const joinField = getJoinField(field, delegates)!;
             Object.assign(where, fieldData.update.where);
 
             if (Array.isArray(fieldData.update)) {
@@ -164,7 +167,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
                 delegate.updateMany({ where, data: toUpdate.data ?? toUpdate });
               });
             } else {
-              const item = findOne(args, delegates[camelize(joinfield.type)], delegates)!;
+              const item = findOne(args, delegates[camelize(joinField.type)], delegates)!;
 
               delegate.updateMany({
                 where: getFieldRelationshipWhere(item, field, delegates),
