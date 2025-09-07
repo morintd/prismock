@@ -1,11 +1,11 @@
-import { PrismaClient, type Post, Tag } from '@prisma/client';
+import { PrismaClient, type Post, Comment } from '@prisma/client';
 
 import { resetDb, seededPosts, simulateSeed } from '../../../testing';
 import { PrismockClient, PrismockClientType, relationshipStore } from '../../lib/client';
 
 jest.setTimeout(40000);
 
-type PostWithTags = Post & { tags: Tag[] };
+type PostWithComments = Post & { comments: Comment[] };
 
 describe('create (connect)', () => {
   let prismock: PrismockClientType;
@@ -104,7 +104,7 @@ describe('create (connect)', () => {
         title: 'Title',
         authorId: 1,
         blogId: 1,
-        tags: {
+        comments: {
           connect: [{ id: 1 }, { id: 2 }],
         },
       },
@@ -112,9 +112,9 @@ describe('create (connect)', () => {
     await prisma.post.create(payload);
     await prismock.post.create(payload);
 
-    const realPost = await prisma.post.findFirst({ where: { id: 99 }, include: { tags: true } });
-    const mockPost = await prismock.post.findFirst({ where: { id: 99 }, include: { tags: true } });
+    const realPost = await prisma.post.findFirst({ where: { id: 99 }, include: { comments: true } });
+    const mockPost = await prismock.post.findFirst({ where: { id: 99 }, include: { comments: true } });
 
-    expect((mockPost as PostWithTags).tags).toMatchObject((realPost as PostWithTags).tags);
+    expect((mockPost as PostWithComments).comments).toMatchObject((realPost as PostWithComments).comments);
   });
 });

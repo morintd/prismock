@@ -62,13 +62,13 @@ describe('update (connect)', () => {
     const updatePayload = {
       where: { id: 1 },
       data: {
-        tags: {
+        comments: {
           connect: [{ id: 1 }, { id: 2 }],
         },
       },
     };
 
-    const findTagsPayload = {
+    const findCommentsPayload = {
       where: {
         posts: {
           some: {
@@ -81,23 +81,23 @@ describe('update (connect)', () => {
     await prisma.post.update(updatePayload);
     await prismock.post.update(updatePayload);
 
-    const findPostPayload = { where: { id: 1 }, include: { tags: true } };
+    const findPostPayload = { where: { id: 1 }, include: { comments: true } };
 
     const updatedPost = await prisma.post.findFirst(findPostPayload);
     const updatedMockedPost = await prismock.post.findFirst(findPostPayload);
 
-    const updatedTags = await prisma.tag.findMany(findTagsPayload);
-    const updatedMockedTags = await prismock.tag.findMany(findTagsPayload);
+    const updatedComments = await prisma.comment.findMany(findCommentsPayload);
+    const updatedMockedComments = await prismock.comment.findMany(findCommentsPayload);
 
     expect(updatedPost).toMatchObject(updatedMockedPost);
-    expect(updatedTags).toMatchObject(updatedMockedTags);
+    expect(updatedComments).toMatchObject(updatedMockedComments);
   });
 
   it('Should disconnect many to many relationships', async () => {
     const connectPayload = {
       where: { id: 1 },
       data: {
-        tags: {
+        comments: {
           connect: [{ id: 1 }, { id: 2 }],
         },
       },
@@ -105,13 +105,13 @@ describe('update (connect)', () => {
     const disconnectPayload = {
       where: { id: 1 },
       data: {
-        tags: {
+        comments: {
           disconnect: [{ id: 2 }],
         },
       },
     };
-    const findPostPayload = { where: { id: 1 }, include: { tags: true } };
-    const findTagsPayload = {
+    const findPostPayload = { where: { id: 1 }, include: { comments: true } };
+    const findCommentsPayload = {
       where: {
         posts: {
           some: {
@@ -131,10 +131,10 @@ describe('update (connect)', () => {
     const updatedPost = await prisma.post.findFirst(findPostPayload);
     const updatedMockedPost = await prismock.post.findFirst(findPostPayload);
 
-    const updatedTags = await prisma.tag.findMany(findTagsPayload);
-    const updatedMockedTags = await prismock.tag.findMany(findTagsPayload);
+    const updatedComments = await prisma.comment.findMany(findCommentsPayload);
+    const updatedMockedComments = await prismock.comment.findMany(findCommentsPayload);
 
     expect(updatedPost).toMatchObject(updatedMockedPost);
-    expect(updatedTags).toMatchObject(updatedMockedTags);
+    expect(updatedComments).toMatchObject(updatedMockedComments);
   });
 });

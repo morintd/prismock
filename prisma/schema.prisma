@@ -51,20 +51,20 @@ enum Gender {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  title     String   @unique @db.VarChar(255)
-  createdAt DateTime @default(now())
-  imprint   String   @default(uuid())
-  author    User     @relation(fields: [authorId], references: [id])
+  id        Int       @id @default(autoincrement())
+  title     String    @unique @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  imprint   String    @default(uuid())
+  author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
-  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blog      Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
-  tags      Tag[]
+  comments  Comment[]
 }
 
-model Tag {
+model Comment {
   id    Int    @id @default(autoincrement())
-  title String @unique @db.VarChar(255)
+  body  String @db.VarChar(255)
   posts Post[]
 }
 
