@@ -1,11 +1,9 @@
-import { PrismaClient, type Post, Comment } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
-import { resetDb, seededPosts, simulateSeed } from '../../../testing';
+import { resetDb, seededPosts, simulateSeed, type PostWithComments } from '../../../testing';
 import { PrismockClient, PrismockClientType, relationshipStore } from '../../lib/client';
 
 jest.setTimeout(40000);
-
-type PostWithComments = Post & { comments: Comment[] };
 
 describe('create (connect)', () => {
   let prismock: PrismockClientType;

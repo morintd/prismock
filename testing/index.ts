@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { Blog, Comment, Post, PrismaClient, Reaction, Role, Service, Subscription, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
+export type PostWithComments = Post & { comments: Comment[] };
 
 dotenv.config();
 

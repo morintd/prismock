@@ -1,11 +1,11 @@
 import { PrismaClient, User } from '@prisma/client';
 
-import { resetDb, simulateSeed } from '../../testing';
+import { resetDb, simulateSeed, seededUsers } from '../../testing';
 import { PrismockClient, PrismockClientType, relationshipStore } from '../lib/client';
 
 jest.setTimeout(40000);
 
-describe('create (connect)', () => {
+describe('Symmetrical relationships', () => {
   let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
@@ -57,12 +57,12 @@ describe('create (connect)', () => {
     });
   }
 
-  it('Should connect many to many relationship', async () => {
+  it('Should connect entities', async () => {
     await addConnection(prisma, 1, 2);
     await addConnection(prismock, 1, 2);
 
     await Promise.all(
-      [1, 2, 3].map(async (id) => {
+      seededUsers.map(async ({ id }) => {
         const realUser = await prisma.user.findFirst({ where: { id }, include: { connections: true } });
         const fakeUser = await prismock.user.findFirst({ where: { id }, include: { connections: true } });
         expect(realUser).toMatchObject(fakeUser as User);
@@ -77,7 +77,7 @@ describe('create (connect)', () => {
     await addConnection(prismock, 1, 3);
 
     await Promise.all(
-      [1, 2, 3].map(async (id) => {
+      seededUsers.map(async ({ id }) => {
         const realUser = await prisma.user.findFirst({ where: { id }, include: { connections: true } });
         const fakeUser = await prismock.user.findFirst({ where: { id }, include: { connections: true } });
         expect(realUser).toMatchObject(fakeUser as User);
@@ -88,7 +88,28 @@ describe('create (connect)', () => {
     await removeConnection(prismock, 1, 3);
 
     await Promise.all(
-      [1, 2, 3].map(async (id) => {
+      seededUsers.map(async ({ id }) => {
+        const realUser = await prisma.user.findFirst({ where: { id }, include: { connections: true } });
+        const fakeUser = await prismock.user.findFirst({ where: { id }, include: { connections: true } });
+        expect(realUser).toMatchObject(fakeUser as User);
+      }),
+    );
+  });
+
+  it('Should reset symmetrical many to many relationships', async () => {
+    await addConnection(prisma, 1, 2);
+    await addConnection(prismock, 1, 2);
+
+    await prisma.post.deleteMany();
+
+    await prisma.user.delete({ where: { id: 2 } });
+    await prismock.user.delete({ where: { id: 2 } });
+
+    await prisma.user.create({ data: seededUsers[1] });
+    await prismock.user.create({ data: seededUsers[1] });
+
+    await Promise.all(
+      seededUsers.map(async ({ id }) => {
         const realUser = await prisma.user.findFirst({ where: { id }, include: { connections: true } });
         const fakeUser = await prismock.user.findFirst({ where: { id }, include: { connections: true } });
         expect(realUser).toMatchObject(fakeUser as User);
