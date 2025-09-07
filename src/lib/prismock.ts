@@ -23,6 +23,7 @@ type OptionsSync = {
 export type Data = Record<string, Item[]>;
 export type Properties = Record<string, DelegateProperties>;
 export type Delegates = Record<string, Delegate>;
+export type RelationshipStore = Record<string, Array<{ fromId: string | number; toId: string | number }>>;
 
 export async function generateDMMF(schemaPath?: string) {
   const pathToModule = schemaPath ?? require.resolve(path.resolve(process.cwd(), 'prisma/schema.prisma'));
@@ -56,6 +57,7 @@ export function generateDelegates(options: OptionsSync) {
   const data: Data = {};
   const properties: Properties = {};
   const delegates: Delegates = {};
+  const relationshipStore: RelationshipStore = {};
 
   function getData() {
     return data;
@@ -95,7 +97,7 @@ export function generateDelegates(options: OptionsSync) {
     };
 
     Object.assign(delegates, {
-      [name]: generateDelegate(model, data, name, properties, delegates, (items) => {
+      [name]: generateDelegate(model, data, name, properties, delegates, relationshipStore, (items) => {
         Object.assign(data, { [name]: items });
       }),
     });

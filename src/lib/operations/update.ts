@@ -1,6 +1,6 @@
 import { Delegate, Item } from '../delegate';
 import { camelize, pipe, removeUndefined } from '../helpers';
-import { Delegates } from '../prismock';
+import { Delegates, RelationshipStore } from '../prismock';
 import { FindWhereArgs, SelectArgs, UpsertArgs } from '../types';
 
 import { calculateDefaultFieldValue, connectOrCreate, create } from './create';
@@ -27,7 +27,7 @@ export type UpdateMap = {
   updated: Item[];
 };
 
-const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Delegate, delegates: Delegates) => {
+const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Delegate, delegates: Delegates, relationshipStore: RelationshipStore) => {
   const { data }: any = args;
 
   current.model.fields.forEach((field) => {
@@ -41,19 +41,56 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
 
           const delegate = delegates[camelize(field.type)];
           const joinfield = getJoinField(field, delegates)!;
-          const joinValue = connected.connect[joinfield.relationToFields![0]];
 
-          // @TODO: what's happening if we try to udate on an Item that doesn't exist?
-          if (!joinfield.isList) {
-            const joined = findOne({ where: args.where }, getDelegateFromField(joinfield, delegates), delegates) as Item;
+          const isTrueSelfReferencing = field.type === current.model.name &&
+            field.relationToFields?.length === 0 &&
+            field.relationFromFields?.length === 0 &&
+            field.isList;
 
-            delegate.updateMany({
-              where: { [joinfield.relationToFields![0]]: joinValue },
-              data: getFieldFromRelationshipWhere(joined, joinfield),
+          if (isTrueSelfReferencing) {
+            const relationKey = `${field.type}:${field.relationName}`;
+            
+            if (!relationshipStore[relationKey]) {
+              relationshipStore[relationKey] = [];
+            }
+            
+            const currentItem = findOne({ where: args.where }, current, delegates);
+            if (!currentItem) return;
+
+            const currentId = currentItem.id as string | number;
+            
+            const connectItems = Array.isArray(connected.connect) ? connected.connect : [connected.connect];
+            
+            connectItems.forEach((connectItem: { id: string | number }) => {
+              const targetId = connectItem.id;
+              
+              const existingRelationship = relationshipStore[relationKey].find(
+                (rel) => (rel.fromId === currentId && rel.toId === targetId) || (rel.fromId === targetId && rel.toId === currentId)
+              );
+
+              if (!existingRelationship) {
+                relationshipStore[relationKey].push({ fromId: currentId, toId: targetId });
+                relationshipStore[relationKey].push({ fromId: targetId, toId: currentId });
+              }
             });
+            return;
           } else {
-            const joined = findOne({ where: connected.connect }, getDelegateFromField(field, delegates), delegates) as Item;
-            Object.assign(data, getFieldFromRelationshipWhere(joined, field));
+            const joinValue = connected.connect[joinfield.relationToFields![0]];
+
+            if (!joinfield.isList) {
+              const joined = findOne({ where: args.where }, getDelegateFromField(joinfield, delegates), delegates);
+              if (joined) {
+                delegate.updateMany({
+                  where: { [joinfield.relationToFields![0]]: joinValue },
+                  data: getFieldFromRelationshipWhere(joined, joinfield),
+                });
+              }
+            } else {
+              const joined = findOne({ where: connected.connect }, getDelegateFromField(field, delegates), delegates);
+              if (joined) {
+                Object.assign(data, getFieldFromRelationshipWhere(joined, field));
+              }
+            }
           }
         }
         if (fieldData.connectOrCreate) {
@@ -61,9 +98,10 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
 
           const delegate = getDelegateFromField(field, delegates);
           connectOrCreate(current, delegates)({ [camelize(field.name)]: fieldData });
-          const joined = findOne({ where: fieldData.connectOrCreate.where }, delegate, delegates) as Item;
-
-          Object.assign(data, getFieldFromRelationshipWhere(joined, field));
+          const joined = findOne({ where: fieldData.connectOrCreate.where }, delegate, delegates);
+          if (joined) {
+            Object.assign(data, getFieldFromRelationshipWhere(joined, field));
+          }
         }
         if (fieldData.create || fieldData.createMany) {
           const toCreate = data[field.name];
@@ -142,12 +180,13 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
                 delegate.updateMany({ where, data: toUpdate.data ?? toUpdate });
               });
             } else {
-              const item = findOne(args, delegates[camelize(joinfield.type)], delegates)!;
-
-              delegate.updateMany({
-                where: getFieldRelationshipWhere(item, field, delegates),
-                data: fieldData.update.data ?? fieldData.update,
-              });
+              const item = findOne(args, delegates[camelize(joinfield.type)], delegates);
+              if (item) {
+                delegate.updateMany({
+                  where: getFieldRelationshipWhere(item, field, delegates, relationshipStore),
+                  data: fieldData.update.data ?? fieldData.update,
+                });
+              }
             }
           }
         }
@@ -159,7 +198,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           const item = findOne({ where: args.where }, current, delegates);
 
           if (item) {
-            const joinWhere = getFieldRelationshipWhere(item, field, delegates);
+            const joinWhere = getFieldRelationshipWhere(item, field, delegates, relationshipStore);
             const joined = Object.values(joinWhere)[0] ? findOne({ where: joinWhere }, subDelegate, delegates) : null;
 
             if (joined) {
@@ -167,10 +206,11 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
                 { where: joinWhere, data: upsert.update } as UpdateArgs,
                 subDelegate,
                 delegates,
+                relationshipStore,
                 subDelegate.onChange,
               );
             } else {
-              const created = create(upsert.create, {}, subDelegate, delegates, subDelegate.onChange);
+              const created = create(upsert.create, {}, subDelegate, delegates, subDelegate.onChange, relationshipStore);
 
               Object.assign(data, getFieldFromRelationshipWhere(created, field));
             }
@@ -214,7 +254,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
   return data as Item;
 };
 
-export function updateMany(args: UpdateArgs, current: Delegate, delegates: Delegates, onChange: (items: Item[]) => void) {
+export function updateMany(args: UpdateArgs, current: Delegate, delegates: Delegates, relationshipStore: RelationshipStore, onChange: (items: Item[]) => void) {
   const { toUpdate, updated } = current.getItems().reduce(
     (accumulator: UpdateMap, currentValue: Item) => {
       const shouldUpdate = where(args.where, current, delegates)(currentValue);
@@ -222,10 +262,10 @@ export function updateMany(args: UpdateArgs, current: Delegate, delegates: Deleg
       if (shouldUpdate) {
         const baseValue = {
           ...currentValue,
-          ...removeUndefined(update(args, false, currentValue, current, delegates)),
+          ...removeUndefined(update(args, false, currentValue, current, delegates, relationshipStore)),
         };
 
-        const updated = pipe(includes(args, current, delegates), select(args.select))(baseValue);
+        const updated = pipe(includes(args, current, delegates, relationshipStore), select(args.select))(baseValue);
 
         return {
           toUpdate: [...accumulator.toUpdate, updated],

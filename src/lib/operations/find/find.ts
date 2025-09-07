@@ -3,7 +3,7 @@ import { DMMF } from '@prisma/generator-helper';
 import { FindArgs, GroupByFieldArg, Order, OrderedValue } from '../../types';
 import { Delegate, DelegateProperties, Item } from '../../delegate';
 import { camelize, pipe } from '../../helpers';
-import { Delegates } from '../../prismock';
+import { Delegates, RelationshipStore } from '../../prismock';
 
 import { matchMultiple } from './match';
 
@@ -16,11 +16,11 @@ export function findNextIncrement(properties: DelegateProperties, fieldName: str
   return increment;
 }
 
-export function findOne(args: FindArgs, current: Delegate, delegates: Delegates) {
+export function findOne(args: FindArgs, current: Delegate, delegates: Delegates, relationshipStore?: RelationshipStore) {
   const found = pipe(
     (items: Item[]) => items.filter((item) => where(args.where, current, delegates)(item)),
     order(args, current, delegates),
-    connect(args, current, delegates),
+    connect(args, current, delegates, relationshipStore),
     paginate(args.skip, args.take),
   )(current.getItems()).at(0);
 
@@ -159,7 +159,7 @@ export function paginate(skip?: number, take?: number) {
   };
 }
 
-export function includes(args: FindArgs, current: Delegate, delegates: Delegates) {
+export function includes(args: FindArgs, current: Delegate, delegates: Delegates, relationshipStore?: RelationshipStore) {
   return (item: Item) => {
     if ((!args?.include && !args?.select) || !item) return item;
     const newItem = { ...item };
@@ -175,17 +175,37 @@ export function includes(args: FindArgs, current: Delegate, delegates: Delegates
 
         let subArgs = obj[key] === true ? {} : obj[key];
 
-        subArgs = Object.assign(Object.assign({}, subArgs), {
-          where: Object.assign(
-            Object.assign({}, (subArgs as any).where),
-            getFieldRelationshipWhere(item, schema, delegates),
-          ),
-        });
+        const isTrueSelfReferencing = schema.type === current.model.name &&
+          schema.relationToFields?.length === 0 &&
+          schema.relationFromFields?.length === 0 &&
+          schema.isList;
 
-        if (schema.isList) {
-          Object.assign(newItem, { [key]: findMany(subArgs as Record<string, boolean>, delegate, delegates) });
+        if (isTrueSelfReferencing && relationshipStore) {
+          const relationKey = `${schema.type}:${schema.relationName}`;
+          const relationships = relationshipStore[relationKey] || [];
+          
+          const connectedIds = relationships
+            .filter((rel: { fromId: string | number; toId: string | number }) => rel.fromId === item.id)
+            .map((rel: { fromId: string | number; toId: string | number }) => rel.toId);
+          
+          const connectedItems = delegate.getItems().filter((delegateItem: Item) =>
+            connectedIds.includes(delegateItem.id as string | number)
+          );
+          
+          Object.assign(newItem, { [key]: connectedItems });
         } else {
-          Object.assign(newItem, { [key]: findOne(subArgs as any, delegate, delegates) });
+          subArgs = Object.assign(Object.assign({}, subArgs), {
+            where: Object.assign(
+              Object.assign({}, (subArgs as any).where),
+              getFieldRelationshipWhere(item, schema, delegates, relationshipStore),
+            ),
+          });
+
+          if (schema.isList) {
+            Object.assign(newItem, { [key]: findMany(subArgs as Record<string, boolean>, delegate, delegates, relationshipStore) });
+          } else {
+            Object.assign(newItem, { [key]: findOne(subArgs as any, delegate, delegates, relationshipStore) });
+          }
         }
       });
 
@@ -226,7 +246,29 @@ export const getFieldRelationshipWhere = (
   item: Item,
   field: DMMF.Field,
   delegates: Delegates,
+  relationshipStore?: RelationshipStore,
 ): Record<string, GroupByFieldArg> => {
+  const currentModelName = Object.values(delegates).find(d =>
+    d.model.fields.some(f => f.name === field.name && f.relationName === field.relationName)
+  )?.model.name;
+  
+  const isTrueSelfReferencing = field.type === currentModelName &&
+    field.relationToFields?.length === 0 &&
+    field.relationFromFields?.length === 0 &&
+    field.isList;
+
+  if (isTrueSelfReferencing) {
+    if (!relationshipStore) return {};
+
+    const relationKey = `${field.type}:${field.relationName}`;
+    const relationships = relationshipStore[relationKey] || [];
+    const connectedIds = relationships
+      .filter((rel) => rel.fromId === item.id)
+      .map((rel) => rel.toId);
+
+    return { id: { in: connectedIds } };
+  }
+  
   if (field.relationToFields?.length === 0) {
     field = getJoinField(field, delegates)!;
     return {
@@ -239,8 +281,13 @@ export const getFieldRelationshipWhere = (
 };
 
 export const getFieldFromRelationshipWhere = (item: Item, field: DMMF.Field) => {
+  if (!field.relationFromFields || !field.relationToFields ||
+      field.relationFromFields.length === 0 || field.relationToFields.length === 0) {
+    return {};
+  }
+  
   return {
-    [field.relationFromFields![0]]: item[field.relationToFields![0]] as GroupByFieldArg,
+    [field.relationFromFields[0]]: item[field.relationToFields[0]] as GroupByFieldArg,
   };
 };
 
@@ -250,20 +297,20 @@ export const getFieldToRelationshipWhere = (item: Item, field: DMMF.Field) => {
   };
 };
 
-function connect(args: FindArgs, current: Delegate, delegates: Delegates) {
+function connect(args: FindArgs, current: Delegate, delegates: Delegates, relationshipStore?: RelationshipStore) {
   return (items: Item[]) => {
     return items.reduce((accumulator: Item[], currentValue) => {
-      const item = pipe(includes(args, current, delegates), select(args.select))(currentValue);
+      const item = pipe(includes(args, current, delegates, relationshipStore), select(args.select))(currentValue);
       return [...accumulator, item];
     }, []);
   };
 }
 
-export function findMany(args: FindArgs, current: Delegate, delegates: Delegates) {
+export function findMany(args: FindArgs, current: Delegate, delegates: Delegates, relationshipStore?: RelationshipStore) {
   const found = pipe(
     (items: Item[]) => items.filter((item) => where(args.where, current, delegates)(item)),
     order(args, current, delegates),
-    connect(args, current, delegates),
+    connect(args, current, delegates, relationshipStore),
     paginate(args.skip, args.take),
   )(current.getItems());
 
