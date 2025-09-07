@@ -3,7 +3,7 @@
 import { PrismaClient, User } from '@prisma/client';
 
 import { resetDb, simulateSeed, seededPosts, seededUsers, formatEntries, formatEntry } from '../../../testing';
-import { PrismockClient, PrismockClientType, relationsStore } from '../../lib/client';
+import { PrismockClient, PrismockClientType, relationshipStore } from '../../lib/client';
 
 jest.setTimeout(40000);
 
@@ -17,7 +17,7 @@ describe('update (connect)', () => {
   let realAuthor: User;
   let mockAuthor: User;
 
-  beforeEach(() => relationsStore.resetValues());
+  beforeEach(() => relationshipStore.resetValues());
 
   beforeAll(async () => {
     await resetDb();

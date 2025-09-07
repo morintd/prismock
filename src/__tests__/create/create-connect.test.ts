@@ -1,7 +1,7 @@
 import { PrismaClient, type Post, Tag } from '@prisma/client';
 
 import { resetDb, seededPosts, simulateSeed } from '../../../testing';
-import { PrismockClient, PrismockClientType, relationsStore } from '../../lib/client';
+import { PrismockClient, PrismockClientType, relationshipStore } from '../../lib/client';
 
 jest.setTimeout(40000);
 
@@ -11,7 +11,7 @@ describe('create (connect)', () => {
   let prismock: PrismockClientType;
   let prisma: PrismaClient;
 
-  beforeEach(() => relationsStore.resetValues());
+  beforeEach(() => relationshipStore.resetValues());
 
   beforeAll(async () => {
     await resetDb();

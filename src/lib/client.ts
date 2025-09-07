@@ -4,6 +4,7 @@ import { DMMF } from '@prisma/generator-helper';
 
 import { Delegate } from './delegate';
 import { Data, Delegates, generateDelegates } from './prismock';
+import { FindWhereArgs } from './types';
 
 type GetData = () => Data;
 type SetData = (data: Data) => void;
@@ -53,7 +54,7 @@ type PrismaModule = {
   dmmf: runtime.BaseDMMF;
 };
 
-export let relationsStore: RelationshipStore;
+export let relationshipStore: RelationshipStore;
 
 export function createPrismock(instance: PrismaModule) {
   return class Prismock {
@@ -66,7 +67,7 @@ export function createPrismock(instance: PrismaModule) {
     }
 
     private generate() {
-      relationsStore = new RelationshipStore(instance.dmmf.datamodel.models as DMMF.Model[]);
+      relationshipStore = new RelationshipStore(instance.dmmf.datamodel.models as DMMF.Model[]);
       const { delegates, setData, getData } = generateDelegates({ models: instance.dmmf.datamodel.models as DMMF.Model[] });
       Object.entries({ ...delegates, setData, getData }).forEach(([key, value]) => {
         if (key in this) Object.assign((this as unknown as Delegates)[key], value);
@@ -140,7 +141,7 @@ type MatchParams = {
   type: string;
   name: string;
   itemId: number;
-  targetId: number;
+  where: FindWhereArgs;
 };
 
 class RelationshipStore {
@@ -164,23 +165,38 @@ class RelationshipStore {
     );
   }
 
-  match({ type, name, itemId, targetId }: MatchParams) {
+  match({ type, name, itemId, where }: MatchParams) {
     const relationship = this.findRelationshipBy(type, name);
     if (!relationship) {
       return 0;
     }
+    if (where.none && !relationship.values.length) {
+      return 1;
+    }
+
     const [valueField, targetField] = this.getRelationshipFieldNames(relationship, type);
-    const found = relationship.values.find((x) => x[valueField] === itemId && x[targetField] === targetId);
+    const found = relationship.values.find((x) => {
+      if (where.some) {
+        return x[valueField] === itemId && x[targetField] === (where.some as { id: number }).id;
+      }
+      if (where.none) {
+        return x[valueField] !== itemId || x[targetField] !== (where.none as { id: number }).id;
+      }
+      return false;
+    });
     if (!found) {
       return -1;
     }
     return 1;
   }
 
-  getRelationshipIds(name: string, type: string) {
+  getRelationshipIds(name: string, type: string, id: FindWhereArgs | number) {
     const relationship = this.findRelationship(name);
     if (!relationship) {
       return false;
+    }
+    if (this.isSymmetrical(relationship)) {
+      return this.extractSymmetricalValues(relationship, id);
     }
     const [valueField] = this.getRelationshipFieldNames(relationship, type);
     return relationship.values.map((x) => x[valueField]);
@@ -198,10 +214,13 @@ class RelationshipStore {
         : [...relationship.values, value];
       return;
     }
-    relationship.values = values
-      .map((x) => this.getActionValue({ relationship, fieldName, id, value: x }))
-      .map((x) => (relationship.values.find((y) => this.matchEntry(x, y)) ? null : x))
-      .filter((x) => !!x);
+    relationship.values = [
+      ...relationship.values,
+      ...values
+        .map((x) => this.getActionValue({ relationship, fieldName, id, value: x }))
+        .map((x) => (relationship.values.find((y) => this.matchEntry(x, y)) ? null : x))
+        .filter((x) => !!x),
+    ];
   }
 
   disconnectFromRelation({ relationshipName, fieldName, id, values }: RelationActionParams) {
@@ -232,6 +251,19 @@ class RelationshipStore {
 
   private matchEntry(x: RelationshipEntry, y: RelationshipEntry) {
     return x.a === y.a && x.b === y.b;
+  }
+
+  private isSymmetrical({ a, b }: Relationship) {
+    return a.type === b.type;
+  }
+
+  private extractSymmetricalValues({ values }: Relationship, id: FindWhereArgs | number) {
+    if (typeof id === 'number') {
+      return values.filter(({ a, b }) => a === id || b === id).map(({ a, b }) => (a === id ? b : a));
+    }
+    return (id.in as number[]).some((id) =>
+      values.filter(({ a, b }) => a === id || b === id).map(({ a, b }) => (a === id ? b : a)),
+    );
   }
 
   private getActionValue({

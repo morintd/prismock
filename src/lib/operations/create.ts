@@ -7,7 +7,7 @@ import { Delegate, DelegateProperties, Item } from '../delegate';
 import { pipe, removeUndefined, uuid } from '../helpers';
 import { Delegates } from '../prismock';
 import { ConnectOrCreate, CreateArgs, FindWhereArgs } from '../types';
-import { relationsStore } from '../client';
+import { relationshipStore } from '../client';
 
 import {
   findNextIncrement,
@@ -117,10 +117,10 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
         const joinField = getJoinField(field!, delegates);
         const subDelegate = getDelegateFromField(field!, delegates);
         const relationshipName = field?.relationName as string;
-        const relationship = relationsStore.findRelationship(relationshipName);
+        const relationship = relationshipStore.findRelationship(relationshipName);
 
         if (relationship) {
-          relationsStore.connectToRelationship({
+          relationshipStore.connectToRelationship({
             relationshipName,
             fieldName: field?.name as string,
             id: item.id as number,

@@ -1,10 +1,10 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { FindArgs, GroupByFieldArg, Order, OrderedValue } from '../../types';
+import { FindArgs, FindWhereArgs, GroupByFieldArg, Order, OrderedValue } from '../../types';
 import { Delegate, DelegateProperties, Item } from '../../delegate';
 import { camelize, pipe } from '../../helpers';
 import { Delegates } from '../../prismock';
-import { relationsStore } from '../../client';
+import { relationshipStore } from '../../client';
 
 import { matchMultiple } from './match';
 
@@ -179,11 +179,13 @@ export function includes(args: FindArgs, current: Delegate, delegates: Delegates
 
         let subArgs = obj[key] === true ? {} : obj[key];
 
-        const relation = relationsStore.findRelationship(schema.relationName);
+        const relation = relationshipStore.findRelationship(schema.relationName);
         if (relation) {
           subArgs = Object.assign(Object.assign({}, subArgs), {
             where: Object.assign(Object.assign({}, (subArgs as any).where), {
-              id: { in: relationsStore.getRelationshipIds(schema.relationName, schema.type) },
+              id: {
+                in: relationshipStore.getRelationshipIds(schema.relationName, schema.type, args.where?.id as FindWhereArgs),
+              },
             }),
           });
         } else {

@@ -2,7 +2,7 @@ import { Delegate, Item } from '../delegate';
 import { camelize, pipe, removeUndefined } from '../helpers';
 import { Delegates } from '../prismock';
 import { FindWhereArgs, SelectArgs, UpsertArgs } from '../types';
-import { relationsStore } from '../client';
+import { relationshipStore } from '../client';
 
 import { calculateDefaultFieldValue, connectOrCreate, create } from './create';
 import {
@@ -39,9 +39,9 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           const disconnected = data[field.name];
           delete data[field.name];
           const relationshipName = field?.relationName as string;
-          const relationship = relationsStore.findRelationship(relationshipName);
+          const relationship = relationshipStore.findRelationship(relationshipName);
           if (relationship) {
-            relationsStore.disconnectFromRelation({
+            relationshipStore.disconnectFromRelation({
               relationshipName,
               fieldName: field.name,
               id: args.where.id as number,
@@ -60,10 +60,10 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
             ? { in: connected.connect.map((x: any) => x[relationToField]) }
             : connected.connect[relationToField];
           const relationshipName = field?.relationName as string;
-          const relationship = relationsStore.findRelationship(relationshipName);
+          const relationship = relationshipStore.findRelationship(relationshipName);
 
           if (relationship) {
-            relationsStore.connectToRelationship({
+            relationshipStore.connectToRelationship({
               relationshipName,
               fieldName: field.name,
               id: args.where.id as number,
