@@ -54,9 +54,11 @@ export class RelationshipStore {
 
   match({ type, name, itemId, where }: MatchParams) {
     const relationship = this.findRelationshipBy(type, name);
+
     if (!relationship) {
       return 0;
     }
+
     if (where.none && !relationship.values.length) {
       return 1;
     }
@@ -71,6 +73,7 @@ export class RelationshipStore {
       }
       return false;
     });
+
     if (!found) {
       return -1;
     }
@@ -79,12 +82,15 @@ export class RelationshipStore {
 
   getRelationshipIds(name: string, type: string, id: FindWhereArgs | number) {
     const relationship = this.findRelationship(name);
+
     if (!relationship) {
       return false;
     }
+
     if (this.isSymmetrical(relationship)) {
       return this.extractSymmetricalValues(relationship, id);
     }
+
     const [valueField] = this.getRelationshipFieldNames(relationship, type);
     const values = relationship.values.map((x) => x[valueField]);
     return values;
@@ -92,9 +98,11 @@ export class RelationshipStore {
 
   connectToRelationship({ relationshipName, fieldName, id, values }: RelationActionParams) {
     const relationship = this.findRelationship(relationshipName);
+
     if (!relationship) {
       return;
     }
+
     if (!Array.isArray(values)) {
       const value = this.getActionValue({ relationship, fieldName, id, value: values });
       relationship.values = relationship.values.find((x) => this.matchEntry(x, value))
@@ -102,6 +110,7 @@ export class RelationshipStore {
         : [...relationship.values, value];
       return;
     }
+
     relationship.values = [
       ...relationship.values,
       ...values
@@ -111,16 +120,19 @@ export class RelationshipStore {
     ];
   }
 
-  disconnectFromRelation({ relationshipName, fieldName, id, values }: RelationActionParams) {
+  disconnectFromRelationship({ relationshipName, fieldName, id, values }: RelationActionParams) {
     const relationship = this.findRelationship(relationshipName);
+
     if (!relationship) {
       return;
     }
+
     if (!Array.isArray(values)) {
       const value = this.getActionValue({ relationship, fieldName, id, value: values });
       relationship.values = relationship.values.filter((x) => !this.matchEntry(x, value));
       return;
     }
+
     relationship.values = relationship.values.filter(
       (x) =>
         !values
@@ -162,6 +174,7 @@ export class RelationshipStore {
     if (typeof id === 'number') {
       return values.filter(({ a, b }) => a === id || b === id).map(({ a, b }) => (a === id ? b : a));
     }
+
     return (id.in as number[]).some((id) =>
       values.filter(({ a, b }) => a === id || b === id).map(({ a, b }) => (a === id ? b : a)),
     );
@@ -181,6 +194,7 @@ export class RelationshipStore {
     if (relationship.a.name === fieldName) {
       return { a: value.id, b: id };
     }
+
     return { a: id, b: value.id };
   }
 

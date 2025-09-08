@@ -41,7 +41,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           const relationshipName = field?.relationName as string;
           const relationship = relationshipStore.findRelationship(relationshipName);
           if (relationship) {
-            relationshipStore.disconnectFromRelation({
+            relationshipStore.disconnectFromRelationship({
               relationshipName,
               fieldName: field.name,
               id: args.where.id as number,
