@@ -56,9 +56,11 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
           const delegate = delegates[camelize(field.type)];
           const joinField = getJoinField(field, delegates)!;
           const relationToField = joinField.relationToFields![0];
-          const joinValue = Array.isArray(connected.connect)
-            ? { in: connected.connect.map((x: any) => x[relationToField]) }
-            : connected.connect[relationToField];
+
+          const joinValue = Array.isArray(fieldData.connect)
+            ? { in: fieldData.connect.map((x: any) => x[relationToField]) }
+            : fieldData.connect[relationToField];
+
           const relationshipName = field?.relationName as string;
           const relationship = relationshipStore.findRelationship(relationshipName);
 
@@ -67,7 +69,7 @@ const update = (args: UpdateArgs, isCreating: boolean, item: Item, current: Dele
               relationshipName,
               fieldName: field.name,
               id: args.where.id as number,
-              values: connected.connect,
+              values: fieldData.connect,
             });
           } else if (!joinField.isList) {
             // @TODO: what's happening if we try to update on an Item that doesn't exist?
