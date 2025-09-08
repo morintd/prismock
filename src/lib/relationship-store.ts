@@ -118,7 +118,7 @@ export class RelationshipStore {
     }
     if (!Array.isArray(values)) {
       const value = this.getActionValue({ relationship, fieldName, id, value: values });
-      relationship.values = relationship.values.filter((x) => this.matchEntry(x, value));
+      relationship.values = relationship.values.filter((x) => !this.matchEntry(x, value));
       return;
     }
     relationship.values = relationship.values.filter(
