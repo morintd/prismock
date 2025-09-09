@@ -91,8 +91,8 @@ export class RelationshipStore {
       return this.extractSymmetricalValues(relationship, id);
     }
 
-    const [valueField] = this.getRelationshipFieldNames(relationship, type);
-    const values = relationship.values.map((x) => x[valueField]);
+    const [valueField, targetField] = this.getRelationshipFieldNames(relationship, type);
+    const values = relationship.values.filter((x) => x[targetField] === id).map((x) => x[valueField]);
     return values;
   }
 
