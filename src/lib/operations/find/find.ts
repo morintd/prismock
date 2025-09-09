@@ -184,7 +184,11 @@ export function includes(args: FindArgs, current: Delegate, delegates: Delegates
           subArgs = Object.assign(Object.assign({}, subArgs), {
             where: Object.assign(Object.assign({}, (subArgs as any).where), {
               id: {
-                in: relationshipStore.getRelationshipIds(schema.relationName, schema.type, args.where?.id as FindWhereArgs),
+                in: relationshipStore.getRelationshipIds(
+                  schema.relationName,
+                  schema.type,
+                  (args.where?.id as FindWhereArgs) || item.id,
+                ),
               },
             }),
           });
