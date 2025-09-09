@@ -1,6 +1,6 @@
-import { DMMF } from '@prisma/generator-helper';
+import type { DMMF } from '@prisma/generator-helper';
 
-import { FindWhereArgs } from './types';
+import type { FindWhereArgs } from './types';
 
 type RelationshipEntry = { a: number; b: number };
 
@@ -54,7 +54,6 @@ export class RelationshipStore {
 
   match({ type, name, itemId, where }: MatchParams) {
     const relationship = this.findRelationshipBy(type, name);
-
     if (!relationship) {
       return 0;
     }
@@ -73,18 +72,14 @@ export class RelationshipStore {
       }
       return false;
     });
-
-    if (!found) {
-      return -1;
-    }
-    return 1;
+    return !found ? -1 : 1;
   }
 
   getRelationshipIds(name: string, type: string, id: FindWhereArgs | number) {
     const relationship = this.findRelationship(name);
 
     if (!relationship) {
-      return false;
+      return [];
     }
 
     if (this.isSymmetrical(relationship)) {
@@ -175,9 +170,10 @@ export class RelationshipStore {
       return values.filter(({ a, b }) => a === id || b === id).map(({ a, b }) => (a === id ? b : a));
     }
 
-    return (id.in as number[]).some((id) =>
-      values.filter(({ a, b }) => a === id || b === id).map(({ a, b }) => (a === id ? b : a)),
-    );
+    return values
+      .map(({ a, b }) => ((id.in as number[]).some((id) => a === id || b === id) ? [id, { a, b }] : null))
+      .filter((x) => !!x)
+      .map(([id, { a, b }]) => (a === id ? b : a));
   }
 
   private getActionValue({
