@@ -22,27 +22,19 @@ export function applyModelExtensions(
   function proxyModel<ModelName extends Exclude<keyof typeof model, '$allModels'>>(modelName: ModelName): PrismaClient[ModelName] {
     const originalModel = proxiedModels[modelName] ?? client[modelName];
 
-    console.log("PROXY MODEL!", modelName)
-
     const extension = model[modelName];
 
     const proxiedModel = new Proxy(originalModel, {
       get(target, prop, receiver) {
-        console.log("PROXY MODEL GET FUNC!", prop)
-
         if (!extension || !(prop in extension)) {
           return target[prop as keyof typeof target];
         }
-
-        console.log("PROXY MODEL EXTENSION!", extension)
 
         const extensionMethod = extension[prop as any];
 
         if (typeof extensionMethod !== 'function') {
           return target[prop as keyof typeof target];
         }
-
-        console.log("PROXY MODEL RETURN EXTENDED METHOD!", extensionMethod)
 
         return (extensionMethod as Function).bind(receiver);
       },
