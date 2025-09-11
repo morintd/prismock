@@ -1,8 +1,9 @@
 import { exec } from 'child_process';
 
-import { Blog, Post, PrismaClient, Reaction, Role, Service, Subscription, User } from '@prisma/client';
+import { Blog, Comment, Post, PrismaClient, Reaction, Role, Service, Subscription, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
+export type PostWithComments = Post & { comments: Comment[] };
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ export const seededReactions = [
   buildReaction({ userId: 1, emoji: 'rocket' }),
 ];
 
+export const seededComments = [buildComment(1), buildComment(2), buildComment(3)];
+
 export async function simulateSeed(prisma: PrismaClient) {
   await prisma.user.createMany({ data: seededUsers.map(({ id, ...user }) => user) });
   await prisma.blog.createMany({ data: seededBlogs.map(({ id, ...blog }) => blog) });
@@ -23,6 +26,7 @@ export async function simulateSeed(prisma: PrismaClient) {
   // @ts-ignore MySQL / Tags
   await prisma.service.createMany({ data: seededServices });
   await prisma.reaction.createMany({ data: seededReactions });
+  await prisma.comment.createMany({ data: seededComments });
 }
 
 export async function resetDb() {
@@ -58,6 +62,14 @@ export function buildPost(id: number, post: Partial<Post> & { authorId: number; 
     createdAt: new Date(),
     imprint: '3e937a1f-cd50-422f-bd0d-624d9ccd441d',
     ...post,
+  };
+}
+
+export function buildComment(id: number, comment: Partial<Comment> = {}) {
+  return {
+    id,
+    body: `comment${id}`,
+    ...comment,
   };
 }
 

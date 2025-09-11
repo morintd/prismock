@@ -16,23 +16,25 @@ enum Role {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  password      String
-  role          Role           @default(USER)
-  warnings      Int?
-  banned        Boolean        @default(false)
-  money         BigInt         @default(0)
-  friends       Float          @default(0)
-  birthday      DateTime?
-  signal        Bytes?
-  parameters    Json           @default("{}")
-  posts         Post[]
-  Blog          Blog[]
-  profile       Profile?
-  service       Service[]
-  subscriptions Subscription[]
-  reactions     Reaction[]
+  id                     Int            @id @default(autoincrement())
+  email                  String         @unique
+  password               String
+  role                   Role           @default(USER)
+  warnings               Int?
+  banned                 Boolean        @default(false)
+  money                  BigInt         @default(0)
+  friends                Float          @default(0)
+  birthday               DateTime?
+  signal                 Bytes?
+  parameters             Json           @default("{}")
+  posts                  Post[]
+  Blog                   Blog[]
+  profile                Profile?
+  service                Service[]
+  subscriptions          Subscription[]
+  reactions              Reaction[]
+  connections            User[]         @relation("Connections")
+  symmetricalConnections User[]         @relation("Connections")
 }
 
 model Profile {
@@ -49,14 +51,21 @@ enum Gender {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  title     String   @unique @db.VarChar(255)
-  createdAt DateTime @default(now())
-  imprint   String   @default(uuid())
-  author    User     @relation(fields: [authorId], references: [id])
+  id        Int       @id @default(autoincrement())
+  title     String    @unique @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  imprint   String    @default(uuid())
+  author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
-  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blog      Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
+  comments  Comment[]
+}
+
+model Comment {
+  id    Int    @id @default(autoincrement())
+  body  String @db.VarChar(255)
+  posts Post[]
 }
 
 model Blog {

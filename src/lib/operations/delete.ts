@@ -2,6 +2,7 @@ import { Delegates } from '../prismock';
 import { Item, Delegate } from '../delegate';
 import { FindWhereArgs, SelectArgs } from '../types';
 import { pipe } from '../helpers';
+import { relationshipStore } from '../client';
 
 import { getDelegateFromField, getFieldFromRelationshipWhere, getJoinField, includes, select, where } from './find';
 
@@ -41,21 +42,23 @@ export function deleteMany(args: DeleteArgs, current: Delegate, delegates: Deleg
 
   toDelete.forEach((item: Item) => {
     current.model.fields.forEach((field) => {
-      const joinfield = getJoinField(field, delegates);
-      if (!joinfield) return;
+      relationshipStore.cleanupRelationships({ type: field.type, id: (args?.where as { id: number })?.id });
+
+      const joinField = getJoinField(field, delegates);
+      if (!joinField) return;
 
       const delegate = getDelegateFromField(field, delegates);
 
-      if (joinfield.relationOnDelete === 'SetNull') {
+      if (joinField.relationOnDelete === 'SetNull') {
         delegate.updateMany({
-          where: getFieldFromRelationshipWhere(item, joinfield),
+          where: getFieldFromRelationshipWhere(item, joinField),
           data: {
-            [joinfield.relationFromFields![0]]: null,
+            [joinField.relationFromFields![0]]: null,
           },
         });
-      } else if (joinfield.relationOnDelete === 'Cascade') {
+      } else if (joinField.relationOnDelete === 'Cascade') {
         delegate.deleteMany({
-          where: getFieldFromRelationshipWhere(item, joinfield),
+          where: getFieldFromRelationshipWhere(item, joinField),
         });
       }
     });

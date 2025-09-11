@@ -5,6 +5,7 @@ import { Delegate, Item } from '../../delegate';
 import { camelize, shallowCompare } from '../../helpers';
 import { Delegates } from '../../prismock';
 import { FindWhereArgs } from '../../types';
+import { relationshipStore } from '../../client';
 
 import { getFieldRelationshipWhere } from './find';
 
@@ -43,7 +44,16 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
   function match(child: string, item: Item, where: FindWhereArgs) {
     let val: any = item[child];
     const filter = where[child] as Prisma.Enumerable<FindWhereArgs>;
+    const relationMatch = relationshipStore.match({
+      type: current.model.name,
+      name: child,
+      itemId: item.id as number,
+      where: where[child] as FindWhereArgs,
+    });
 
+    if (relationMatch) {
+      return relationMatch > 0;
+    }
     if (child === 'OR') return matchOr(item, filter as FindWhereArgs[]);
     if (child === 'AND') return matchAnd(item, filter as FindWhereArgs[]);
     if (child === 'NOT') return !matchOr(item, filter instanceof Array ? filter : [filter]);
