@@ -1,9 +1,10 @@
 import { DMMF } from '@prisma/generator-helper';
 
-import { FindArgs, GroupByFieldArg, Order, OrderedValue } from '../../types';
+import { FindArgs, FindWhereArgs, GroupByFieldArg, Order, OrderedValue } from '../../types';
 import { Delegate, DelegateProperties, Item } from '../../delegate';
 import { camelize, pipe } from '../../helpers';
 import { Delegates } from '../../prismock';
+import { relationshipStore } from '../../client';
 
 import { matchMultiple } from './match';
 
@@ -30,7 +31,10 @@ export function findOne(args: FindArgs, current: Delegate, delegates: Delegates)
 }
 
 export function where(whereArgs: FindArgs['where'] = {}, current: Delegate, delegates: Delegates) {
-  return (item: Record<string, unknown>) => matchMultiple(item, whereArgs, current, delegates);
+  return (item: Record<string, unknown>) => {
+    const res = matchMultiple(item, whereArgs, current, delegates);
+    return res;
+  };
 }
 
 function getOrderedValue(orderedValue: OrderedValue) {
@@ -175,13 +179,25 @@ export function includes(args: FindArgs, current: Delegate, delegates: Delegates
 
         let subArgs = obj[key] === true ? {} : obj[key];
 
-        subArgs = Object.assign(Object.assign({}, subArgs), {
-          where: Object.assign(
-            Object.assign({}, (subArgs as any).where),
-            getFieldRelationshipWhere(item, schema, delegates),
-          ),
-        });
-
+        const relation = relationshipStore.findRelationship(schema.relationName);
+        if (relation) {
+          subArgs = Object.assign(Object.assign({}, subArgs), {
+            where: Object.assign(Object.assign({}, (subArgs as any).where), {
+              id: {
+                in: relationshipStore.getRelationshipIds(
+                  schema.relationName,
+                  schema.type,
+                  (args.where?.id as FindWhereArgs) || item.id,
+                ),
+              },
+            }),
+          });
+        } else {
+          const fieldRelationshipWhere = getFieldRelationshipWhere(item, schema, delegates);
+          subArgs = Object.assign(Object.assign({}, subArgs), {
+            where: Object.assign(Object.assign({}, (subArgs as any).where), fieldRelationshipWhere),
+          });
+        }
         if (schema.isList) {
           Object.assign(newItem, { [key]: findMany(subArgs as Record<string, boolean>, delegate, delegates) });
         } else {
@@ -209,11 +225,9 @@ export const getJoinField = (field: DMMF.Field, delegates: Delegates) => {
   const joinDelegate = Object.values(delegates).find((delegate) => {
     return delegate.model.name === field.type;
   });
-
   const joinfield = joinDelegate?.model.fields.find((f) => {
     return f.relationName === field.relationName;
   });
-
   return joinfield;
 };
 
@@ -228,9 +242,9 @@ export const getFieldRelationshipWhere = (
   delegates: Delegates,
 ): Record<string, GroupByFieldArg> => {
   if (field.relationToFields?.length === 0) {
-    field = getJoinField(field, delegates)!;
+    const joinField = getJoinField(field, delegates)!;
     return {
-      [field.relationFromFields![0]]: item[field.relationToFields![0]] as GroupByFieldArg,
+      [joinField.relationFromFields![0]]: item[joinField.relationToFields![0]] as GroupByFieldArg,
     };
   }
   return {
