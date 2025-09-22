@@ -9,7 +9,7 @@ services:
     ports:
       - '5432:5432'
   mysql:
-    image: cimg/mysql:8.0
+    image: cimg/mysql:8.4
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: prismock
