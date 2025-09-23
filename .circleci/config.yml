@@ -111,7 +111,7 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: cimg/node:lts
-      - image: cimg/mysql:8.4
+      - image: cimg/mysql:9.4
         environment:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: prisma-mock
