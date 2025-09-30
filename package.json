@@ -65,7 +65,7 @@
     "ts-jest": "29.4.4",
     "ts-node": "10.9.2",
     "ts-toolbelt": "9.6.0",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   },
   "files": [
     "build/main",
