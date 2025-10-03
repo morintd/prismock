@@ -229,25 +229,45 @@ export const getFieldRelationshipWhere = (
 ): Record<string, GroupByFieldArg> => {
   if (field.relationToFields?.length === 0) {
     field = getJoinField(field, delegates)!;
-    return {
-      [field.relationFromFields![0]]: item[field.relationToFields![0]] as GroupByFieldArg,
-    };
+    if (!field.relationFromFields || !field.relationToFields) return {};
+    const result: Record<string, GroupByFieldArg> = {};
+    for (let i = 0; i < field.relationFromFields.length; i++) {
+      const from = field.relationFromFields[i];
+      const to = field.relationToFields[i];
+      result[from] = item[to] as GroupByFieldArg;
+    }
+    return result;
   }
-  return {
-    [field.relationToFields![0]]: item[field.relationFromFields![0]] as GroupByFieldArg,
-  };
+  if (!field.relationToFields || !field.relationFromFields) return {};
+  const result: Record<string, GroupByFieldArg> = {};
+  for (let i = 0; i < field.relationToFields.length; i++) {
+    const to = field.relationToFields[i];
+    const from = field.relationFromFields[i];
+    result[to] = item[from] as GroupByFieldArg;
+  }
+  return result;
 };
 
 export const getFieldFromRelationshipWhere = (item: Item, field: DMMF.Field) => {
-  return {
-    [field.relationFromFields![0]]: item[field.relationToFields![0]] as GroupByFieldArg,
-  };
+  if (!field.relationFromFields || !field.relationToFields) return {};
+  const result: Record<string, GroupByFieldArg> = {};
+  for (let i = 0; i < field.relationFromFields.length; i++) {
+    const from = field.relationFromFields[i];
+    const to = field.relationToFields[i];
+    result[from] = item[to] as GroupByFieldArg;
+  }
+  return result;
 };
 
 export const getFieldToRelationshipWhere = (item: Item, field: DMMF.Field) => {
-  return {
-    [field.relationToFields![0]]: item[field.relationFromFields![0]] as GroupByFieldArg,
-  };
+  if (!field.relationToFields || !field.relationFromFields) return {};
+  const result: Record<string, GroupByFieldArg> = {};
+  for (let i = 0; i < field.relationToFields.length; i++) {
+    const to = field.relationToFields[i];
+    const from = field.relationFromFields[i];
+    result[to] = item[from] as GroupByFieldArg;
+  }
+  return result;
 };
 
 function connect(args: FindArgs, current: Delegate, delegates: Delegates) {
