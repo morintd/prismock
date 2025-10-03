@@ -4,6 +4,7 @@ import { DMMF } from '@prisma/generator-helper';
 
 import { Delegate } from './delegate';
 import { Data, Delegates, generateDelegates } from './prismock';
+import { applyExtensions, type ExtensionsDefinition } from './extensions';
 
 type GetData = () => Data;
 type SetData = (data: Data) => void;
@@ -102,8 +103,8 @@ export function createPrismock(instance: PrismaModule) {
       return Promise.resolve([]);
     }
 
-    $extends() {
-      return this;
+    $extends(extensionDefs: ExtensionsDefinition) {
+      return applyExtensions(this as unknown as PrismaClient, extensionDefs);
     }
 
     async $transaction(args: any) {
