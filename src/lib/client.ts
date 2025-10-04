@@ -4,6 +4,7 @@ import { DMMF } from '@prisma/generator-helper';
 
 import { Delegate } from './delegate';
 import { Data, Delegates, generateDelegates } from './prismock';
+import { RelationshipStore } from './relationship-store';
 
 type GetData = () => Data;
 type SetData = (data: Data) => void;
@@ -53,6 +54,8 @@ type PrismaModule = {
   dmmf: runtime.BaseDMMF;
 };
 
+export let relationshipStore: RelationshipStore;
+
 export function createPrismock(instance: PrismaModule) {
   return class Prismock {
     constructor() {
@@ -64,8 +67,8 @@ export function createPrismock(instance: PrismaModule) {
     }
 
     private generate() {
+      relationshipStore = new RelationshipStore(instance.dmmf.datamodel.models as DMMF.Model[]);
       const { delegates, setData, getData } = generateDelegates({ models: instance.dmmf.datamodel.models as DMMF.Model[] });
-
       Object.entries({ ...delegates, setData, getData }).forEach(([key, value]) => {
         if (key in this) Object.assign((this as unknown as Delegates)[key], value);
         else Object.assign(this, { [key]: value });

@@ -7,6 +7,7 @@ import { Delegate, DelegateProperties, Item } from '../delegate';
 import { pipe, removeUndefined, uuid } from '../helpers';
 import { Delegates } from '../prismock';
 import { ConnectOrCreate, CreateArgs, FindWhereArgs } from '../types';
+import { relationshipStore } from '../client';
 
 import {
   findNextIncrement,
@@ -112,12 +113,20 @@ export function connectOrCreate(delegate: Delegate, delegates: Delegates) {
 
       if (typeof value === 'object' && (value as Record<string, unknown>)?.connect) {
         const connect = (value as Record<string, unknown>).connect as FindWhereArgs;
-
         const field = delegate.model.fields.find((field) => field.name === key);
         const joinField = getJoinField(field!, delegates);
         const subDelegate = getDelegateFromField(field!, delegates);
+        const relationshipName = field?.relationName as string;
+        const relationship = relationshipStore.findRelationship(relationshipName);
 
-        if (Array.isArray(connect)) {
+        if (relationship) {
+          relationshipStore.connectToRelationship({
+            relationshipName,
+            fieldName: field?.name as string,
+            id: item.id as number,
+            values: connect as unknown as { id: number }[],
+          });
+        } else if (Array.isArray(connect)) {
           connect.forEach((c) => {
             subDelegate.update({
               where: c,
@@ -170,8 +179,8 @@ export function nestedCreate(current: Delegate, delegates: Delegates) {
 
         if (joinfield) {
           const delegate = getDelegateFromField(field, delegates);
-          const connect = getFieldFromRelationshipWhere(created, joinfield);
 
+          const connect = getFieldFromRelationshipWhere(created, joinfield);
           if ((value as { create: Item }).create) {
             delete created[field.name];
 
@@ -211,10 +220,10 @@ export function create(
   delegates: Delegates,
   onChange: (items: Item[]) => void,
 ) {
-  const formated = pipe(nestedCreate(delegate, delegates), connectOrCreate(delegate, delegates))(item);
-  const created = pipe(includes(options, delegate, delegates), select(options.select))(formated);
+  const formatted = pipe(nestedCreate(delegate, delegates), connectOrCreate(delegate, delegates))(item);
+  const created = pipe(includes(options, delegate, delegates), select(options.select))(formatted);
 
-  onChange([...delegate.getItems(), formated]);
+  onChange([...delegate.getItems(), formatted]);
 
   return created;
 }
