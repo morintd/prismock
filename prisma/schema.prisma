@@ -57,6 +57,9 @@ model Post {
   authorId  Int
   blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
+
+  similarPosts Post[] @relation("SimilarPosts")
+  similarTo    Post[] @relation("SimilarPosts")
 }
 
 model Blog {

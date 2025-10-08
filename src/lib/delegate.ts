@@ -4,7 +4,7 @@ import { DMMF } from '@prisma/generator-helper';
 
 import { AggregateArgs, CreateArgs, CreateManyArgs, FindArgs, GroupByArgs, UpsertArgs } from './types';
 import { DeleteArgs, create, findOne, findMany, deleteMany, UpdateArgs, updateMany, aggregate, groupBy } from './operations';
-import { Data, Delegates, Properties } from './prismock';
+import { Data, Delegates, Properties, RelationshipStore } from './prismock';
 
 export type Item = Record<string, unknown>;
 
@@ -47,6 +47,7 @@ export function generateDelegate(
   name: string,
   properties: Properties,
   delegates: Delegates,
+  relationshipStore: RelationshipStore,
   onChange: (items: Item[]) => void,
 ): Delegate {
   const delegate = {} as Delegate;
@@ -73,7 +74,7 @@ export function generateDelegate(
       return Promise.resolve({ count: deleted.length });
     },
     update: (args: UpdateArgs) => {
-      const updated = updateMany(args, delegate, delegates, onChange);
+      const updated = updateMany(args, delegate, delegates, relationshipStore, onChange);
       const [update] = updated;
 
       return update
@@ -90,41 +91,41 @@ export function generateDelegate(
           );
     },
     updateMany: (args: UpdateArgs) => {
-      const updated = updateMany(args, delegate, delegates, onChange);
+      const updated = updateMany(args, delegate, delegates, relationshipStore, onChange);
       return Promise.resolve({ count: updated.length });
     },
     create: (args: CreateArgs) => {
       const { data, ...options } = args;
-      return Promise.resolve(create(data, options, delegate, delegates, onChange));
+      return Promise.resolve(create(data, options, delegate, delegates, onChange, relationshipStore));
     },
     createMany: (args: CreateManyArgs) => {
       const { data, ...options } = args;
       data.forEach((d) => {
-        create(d, options, delegate, delegates, onChange);
+        create(d, options, delegate, delegates, onChange, relationshipStore);
       });
       return Promise.resolve({ count: args.data.length });
     },
     upsert: (args: UpsertArgs) => {
       const res = findOne(args, delegate, delegates);
       if (res) {
-        const updated = updateMany({ ...args, data: args.update }, delegate, delegates, onChange);
+        const updated = updateMany({ ...args, data: args.update }, delegate, delegates, relationshipStore, onChange);
         return Promise.resolve(updated[0] ?? null);
       } else {
         const { create: data, ...options } = args;
-        return Promise.resolve(create(data, options, delegate, delegates, onChange));
+        return Promise.resolve(create(data, options, delegate, delegates, onChange, relationshipStore));
       }
     },
     findMany: (args: FindArgs = {}) => {
-      return Promise.resolve(findMany(args, delegate, delegates));
+      return Promise.resolve(findMany(args, delegate, delegates, relationshipStore));
     },
     findUnique: (args: FindArgs = {}) => {
-      return Promise.resolve(findOne(args, delegate, delegates) as Item);
+      return Promise.resolve(findOne(args, delegate, delegates, relationshipStore) as Item);
     },
     findFirst: (args: FindArgs = {}) => {
-      return Promise.resolve(findOne(args, delegate, delegates) as Item);
+      return Promise.resolve(findOne(args, delegate, delegates, relationshipStore) as Item);
     },
     findUniqueOrThrow: (args: FindArgs = {}) => {
-      const found = findOne(args, delegate, delegates);
+      const found = findOne(args, delegate, delegates, relationshipStore);
       if (!found)
         return Promise.reject(
           new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
@@ -135,7 +136,7 @@ export function generateDelegate(
       return Promise.resolve(found);
     },
     findFirstOrThrow: (args: FindArgs = {}) => {
-      const found = findOne(args, delegate, delegates);
+      const found = findOne(args, delegate, delegates, relationshipStore);
       if (!found)
         return Promise.reject(
           new PrismaClientKnownRequestError(`No ${delegate.model.name} found`, {
@@ -146,7 +147,7 @@ export function generateDelegate(
       return Promise.resolve(found);
     },
     count: (args: FindArgs = {}) => {
-      const found = findMany(args, delegate, delegates);
+      const found = findMany(args, delegate, delegates, relationshipStore);
       return Promise.resolve(found.length);
     },
     aggregate: (args: AggregateArgs = {}) => {
@@ -160,7 +161,7 @@ export function generateDelegate(
     },
     createManyAndReturn: (args: CreateManyArgs) => {
       const { data, ...options } = args;
-      const created = data.map((d) => create(d, options, delegate, delegates, onChange));
+      const created = data.map((d) => create(d, options, delegate, delegates, onChange, relationshipStore));
       return Promise.resolve(created);
     },
     model,
