@@ -66,10 +66,13 @@ export function createPrismock(instance: PrismaModule) {
     private generate() {
       const { delegates, setData, getData } = generateDelegates({ models: instance.dmmf.datamodel.models as DMMF.Model[] });
 
-      Object.entries({ ...delegates, setData, getData }).forEach(([key, value]) => {
+      Object.entries({ ...delegates }).forEach(([key, value]) => {
         if (key in this) Object.assign((this as unknown as Delegates)[key], value);
         else Object.assign(this, { [key]: value });
       });
+
+      (this as unknown as typeof PrismaClient & PrismockData).getData = getData;
+      (this as unknown as typeof PrismaClient & PrismockData).setData = setData;
     }
 
     async $connect() {
