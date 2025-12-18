@@ -28,18 +28,21 @@ describe('find', () => {
         warnings: null,
         password: 'password5',
         birthday: new Date(now - 1000000000200),
+        money: BigInt(2),
       },
       {
         email: 'user4@company.com',
         warnings: 15,
         password: 'password4',
         birthday: new Date(now - 1000000000000),
+        money: BigInt(1),
       },
       {
         email: 'user6@company.com',
         warnings: 15,
         password: 'password3',
         birthday: new Date(now - 1000000000100),
+        money: BigInt(3),
       },
     ];
 
@@ -169,6 +172,20 @@ describe('find', () => {
     } else {
       console.log('[SKIPPED] ordering with nulls is not supported on MongoDB');
     }
+  });
+
+  it('Should return ordered items based on bitints', async () => {
+    const mockUsers = await prismock.user.findMany({
+      orderBy: { money: 'desc' },
+      select: { money: true, email: true },
+    });
+
+    const realUsers = await prisma.user.findMany({
+      orderBy: { money: 'desc' },
+      select: { money: true, email: true },
+    });
+
+    expect(mockUsers).toEqual(realUsers);
   });
 
   it('Should return ordered items based on string', async () => {
