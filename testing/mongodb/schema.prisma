@@ -32,6 +32,7 @@ model User {
   profile       Profile?
   services      Service[]
   subscriptions Subscription[]
+  element       Element[]
 }
 
 model Profile {
@@ -88,4 +89,16 @@ model Subscription {
 
   blog   Blog   @relation(fields: [blogId], references: [id])
   blogId String @db.ObjectId
+}
+
+model Element {
+  e_id   Int      @id @default(auto()) @map("_id") @db.ObjectId
+
+  user   User     @relation(fields: [userId], references: [id])
+  userId Int
+
+  value  String
+  json   Json?
+
+  @@unique([userId, value])
 }
