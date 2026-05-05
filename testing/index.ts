@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 
-import { Blog, Post, PrismaClient, Reaction, Role, Service, Subscription, User } from '@prisma/client';
+import { Blog, Post, Prisma, PrismaClient, Reaction, Role, Service, Subscription, User } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createId } from '@paralleldrive/cuid2';
 
@@ -114,4 +114,142 @@ export function formatEntries(entries: Array<Record<string, unknown>>) {
 
 export function generateId(baseId: number) {
   return baseId;
+}
+
+export async function setupJsonTests<T extends PrismaClient>(clients: T[]) {
+  const objs: Array<{
+    userId: number;
+    value: string;
+    e_id: number;
+    json: Prisma.JsonValue;
+  }> = [];
+
+  const json = [{ name: 'Bob the dog' }, { name: 'Claudine the cat' }] as Prisma.JsonArray;
+  const usersMap = new WeakMap<PrismaClient, number>();
+
+  for (const client of clients) {
+    const user = await client.user.create({
+      data: {
+        id: 5,
+        email: 'user@json.com',
+        password: 'jsonuser',
+      },
+    });
+    usersMap.set(client, user.id);
+
+    await client.element.create({
+      data: {
+        json: 'A string test',
+        value: '1',
+        userId: user.id,
+      },
+    });
+
+    await client.element.create({
+      data: {
+        json: 123,
+        value: '2',
+        userId: user.id,
+      },
+    });
+
+    await client.element.create({
+      data: {
+        json: {
+          object: 'test',
+        },
+        value: '3',
+        userId: user.id,
+      },
+    });
+
+    await client.element.create({
+      data: {
+        json: {
+          pet1: {
+            petName: 'Claudine',
+            petType: 'House cat',
+          },
+          pet2: {
+            petName: 'Sunny',
+            petType: 'Gerbil',
+            features: {
+              eyeColor: 'Brown',
+              furColor: 'White and black',
+            },
+          },
+        },
+        value: '4',
+        userId: user.id,
+      },
+    });
+
+    const obj = await client.element.create({
+      data: {
+        json,
+        value: '5',
+        userId: user.id,
+      },
+    });
+
+    objs.push(obj);
+
+    await client.element.create({
+      data: {
+        json: {
+          cats: { owned: ['Bob', 'Sunny'], fostering: ['Fido'] },
+          dogs: { owned: ['Ella'], fostering: ['Prince', 'Empress'] },
+        },
+        value: '6',
+        userId: user.id,
+      },
+    });
+
+    await client.element.create({
+      data: {
+        json: {
+          cats: { owned: ['John'], fostering: ['Bob'] },
+        },
+        value: '7',
+        userId: user.id,
+      },
+    });
+
+    await client.element.create({
+      data: {
+        json: {
+          cats: { owned: ['John'], fostering: ['Bob', 'Bill'] },
+        },
+        value: '8',
+        userId: user.id,
+      },
+    });
+
+    await client.element.create({
+      data: {
+        json: Prisma.JsonNull,
+        value: '9',
+        userId: user.id,
+      },
+    });
+
+    await client.element.create({
+      data: {
+        json: Prisma.DbNull,
+        value: '10',
+        userId: user.id,
+      },
+    });
+  }
+
+  return [
+    objs,
+    async () => {
+      for (const client of clients) {
+        await client.element.deleteMany();
+        const userId = usersMap.get(client);
+        await client.user.delete({ where: { id: userId } });
+      }
+    },
+  ] as const;
 }

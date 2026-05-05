@@ -4,6 +4,7 @@ import { version as clientVersion } from '@prisma/client/package.json';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import {
   buildPost,
+  buildUser,
   formatEntries,
   formatEntry,
   generateId,
@@ -11,6 +12,7 @@ import {
   resetDb,
   seededBlogs,
   seededUsers,
+  setupJsonTests,
   simulateSeed,
 } from '../../../testing';
 import { PrismockClient, PrismockClientType } from '../../lib/client';
@@ -45,6 +47,967 @@ describe('find', () => {
 
     realBlog = (await prisma.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
     mockBlog = (await prismock.blog.findUnique({ where: { title: seededBlogs[0].title } }))!;
+  });
+
+  describe('JSON filters', () => {
+    const users: Array<User & { parameters: any }> = [];
+    const cleanUpClients: Array<() => Promise<void>> = [];
+
+    beforeAll(async () => {
+      const userData = buildUser(4);
+      for (const client of [prisma, prismock]) {
+        const newUser = await client.user.create({ data: userData });
+        const allUsers = await client.user.findMany({ orderBy: { id: 'asc' } });
+        const clientUsers: number[] = [];
+
+        for (const user of allUsers) {
+          const id = user.id;
+
+          const parameters = {
+            address: { street: id },
+            alias: [`User${id}.alias1`, `User${id}.alias2`, `User${id}.alias3`],
+            name: `User${id} Lastname`,
+            userNumber: id,
+          };
+
+          const updatedUser = await client.user.update({
+            where: { id: user.id },
+            data: {
+              parameters: id >= 3 ? parameters : [parameters],
+            },
+          });
+
+          users.push(updatedUser);
+          clientUsers.push(user.id);
+        }
+
+        const cleanUp = async () => {
+          await client.user.delete({ where: { id: newUser.id } });
+          await client.user.updateMany({
+            where: {
+              id: {
+                in: clientUsers,
+              },
+            },
+            data: {
+              parameters: {},
+            },
+          });
+        };
+
+        cleanUpClients.push(cleanUp);
+      }
+    });
+
+    afterAll(async () => {
+      for (const cleanUp of cleanUpClients) {
+        await cleanUp();
+      }
+    });
+
+    it('Should query JSON fields (equals)', async () => {
+      const realUser = await prisma.user.findFirst({ where: { parameters: { equals: users[1].parameters } } });
+      const mockUser = await prismock.user.findFirst({ where: { parameters: { equals: users[1].parameters } } });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[1]));
+    });
+
+    it('Should query JSON fields (not)', async () => {
+      const realUser = await prisma.user.findFirst({ where: { parameters: { not: users[0].parameters } } });
+      const mockUser = await prismock.user.findFirst({ where: { parameters: { not: users[0].parameters } } });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[1]));
+    });
+
+    it('Should query JSON fields (path)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['userNumber'], equals: 3 } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['userNumber'], equals: 3 } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should query JSON fields (string_contains)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_contains: 'User3' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_contains: 'User3' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should fail to query JSON fields (string_contains)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_contains: 'FooBar' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_contains: 'FooBar' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    it('Should fail to query JSON fields (string_contains, default mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_contains: 'user3' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_contains: 'user3' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    // The current used version of Prisma does not have the mode option yet.
+    // TODO: Renable this test once Prisma is updated.
+    it.skip('Should fail to query JSON fields (string_contains, explicit default mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_contains: 'user3', mode: 'default' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_contains: 'user3', mode: 'default' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    // The current used version of Prisma does not have the mode option yet.
+    // TODO: Renable this test once Prisma is updated.
+    it.skip('Should query JSON fields (string_contains, insensitive mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_contains: 'user3', mode: 'insensitive' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_contains: 'user3', mode: 'insensitive' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should query JSON fields (string_starts_with)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_starts_with: 'User3' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_starts_with: 'User3' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should fail to query JSON fields (string_starts_with)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_starts_with: 'Lastname' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_starts_with: 'Lastname' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    it('Should fail to query JSON fields (string_starts_with, default mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_starts_with: 'user3' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_starts_with: 'user3' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    // The current used version of Prisma does not have the mode option yet.
+    // TODO: Renable this test once Prisma is updated.
+    it.skip('Should fail to query JSON fields (string_starts_with, explicit default mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_starts_with: 'user3', mode: 'default' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_starts_with: 'user3', mode: 'default' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    // The current used version of Prisma does not have the mode option yet.
+    // TODO: Renable this test once Prisma is updated.
+    it.skip('Should query JSON fields (string_starts_with, insensitive mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_starts_with: 'user3', mode: 'insensitive' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_starts_with: 'user3', mode: 'insensitive' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should query JSON fields (string_ends_with)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_ends_with: '3 Lastname' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_ends_with: '3 Lastname' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should fail to query JSON fields (string_ends_with)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_ends_with: 'FooBar' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_ends_with: 'FooBar' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    it('Should fail to query JSON fields (string_ends_with, default mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['name'], string_ends_with: '3 lastname' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['name'], string_ends_with: '3 lastname' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    // The current used version of Prisma does not have the mode option yet.
+    // TODO: Renable this test once Prisma is updated.
+    it.skip('Should fail to query JSON fields (string_ends_with, explicit default mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_ends_with: '3 lastname', mode: 'default' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_ends_with: '3 lastname', mode: 'default' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    // The current used version of Prisma does not have the mode option yet.
+    // TODO: Renable this test once Prisma is updated.
+    it.skip('Should query JSON fields (string_ends_with, insensitive mode)', async () => {
+      const realUser = await prisma.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_ends_with: '3 lastname', mode: 'insensitive' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        where: { parameters: { path: ['name'], string_ends_with: '3 lastname', mode: 'insensitive' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should query JSON fields (array_contains)', async () => {
+      const realUser = await prisma.user.findFirst({ where: { parameters: { array_contains: [{ userNumber: 2 }] } } });
+      const mockUser = await prismock.user.findFirst({ where: { parameters: { array_contains: [{ userNumber: 2 }] } } });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[1]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[1]));
+    });
+
+    it('Should fail to query JSON fields (array_starts_with object)', async () => {
+      const param = { address: { street: 2 }, name: 'User2 Lastname', userNumber: 2 };
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { array_starts_with: [param] } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { array_starts_with: [param] } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    it('Should fail to query JSON fields (array_starts_with) partial object', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { array_starts_with: [{ userNumber: 2 }] } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { array_starts_with: [{ userNumber: 2 }] } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    it('Should query JSON fields (array_starts_with) primitives', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['alias'], array_starts_with: 'User3.alias1' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['alias'], array_starts_with: 'User3.alias1' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should fail to query JSON fields (array_ends_with object)', async () => {
+      const param = { address: { street: 2 }, name: 'User2 Lastname', userNumber: 2 };
+
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { array_ends_with: [param] } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { array_ends_with: [param] } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    it('Should fail to query JSON fields (array_ends_with) partial object', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { array_ends_with: [{ userNumber: 2 }] } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { array_ends_with: [{ userNumber: 2 }] } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(null);
+      expect(formatEntry(mockUser)).toEqual(null);
+    });
+
+    it('Should query JSON fields (array_ends_with) primitives', async () => {
+      const realUser = await prisma.user.findFirst({
+        where: { parameters: { path: ['alias'], array_ends_with: 'User3.alias3' } },
+      });
+      const mockUser = await prismock.user.findFirst({
+        where: { parameters: { path: ['alias'], array_ends_with: 'User3.alias3' } },
+      });
+
+      expect(formatEntry(realUser)).toEqual(formatEntry(users[2]));
+      expect(formatEntry(mockUser)).toEqual(formatEntry(users[2]));
+    });
+
+    it('Should handle multiple values (array_contains)', async () => {
+      const realUser1 = await prisma.user.findFirst({
+        where: { parameters: { array_contains: [{ userNumber: 3 }, { name: 'User3 Lastname' }] } },
+      });
+      const mockUser1 = await prismock.user.findFirst({
+        where: { parameters: { array_contains: [{ userNumber: 3 }, { name: 'User3 Lastname' }] } },
+      });
+
+      const realUser2 = await prisma.user.findFirst({
+        where: { parameters: { array_contains: [{ userNumber: 3 }, { name: 'User2 Lastname' }] } },
+      });
+      const mockUser2 = await prismock.user.findFirst({
+        where: { parameters: { array_contains: [{ userNumber: 3 }, { name: 'User2 Lastname' }] } },
+      });
+
+      const realUser3 = await prisma.user.findMany({
+        where: { parameters: { array_contains: [{ userNumber: 1 }, { name: 'User2 Lastname' }, { userNumber: 4 }] } },
+      });
+      const mockUser3 = await prismock.user.findMany({
+        where: { parameters: { array_contains: [{ userNumber: 1 }, { name: 'User2 Lastname' }, { userNumber: 4 }] } },
+      });
+
+      const realUser4 = await prisma.user.findMany({
+        where: {
+          parameters: { array_contains: [{ userNumber: 1 }, { name: 'User2 Lastname' }, { address: { street: 4 } }] },
+        },
+      });
+      const mockUser4 = await prismock.user.findMany({
+        where: {
+          parameters: { array_contains: [{ userNumber: 1 }, { name: 'User2 Lastname' }, { address: { street: 4 } }] },
+        },
+      });
+
+      const realUser5 = await prisma.user.findMany({
+        where: { parameters: { array_contains: [{ userNumber: 1 }, { userNumber: 2 }] } },
+      });
+      const mockUser5 = await prismock.user.findMany({
+        where: { parameters: { array_contains: [{ userNumber: 1 }, { userNumber: 2 }] } },
+      });
+
+      expect(realUser1).toEqual(null);
+      expect(realUser2).toEqual(null);
+      expect(realUser3).toEqual([]);
+      expect(realUser4).toEqual([]);
+      expect(realUser5).toEqual([]);
+
+      expect(mockUser1).toEqual(realUser1);
+      expect(mockUser2).toEqual(realUser2);
+      expect(mockUser3).toEqual(realUser3);
+      expect(mockUser4).toEqual(realUser4);
+      expect(mockUser5).toEqual(realUser5);
+    });
+  });
+
+  // Tests adapted from:
+  // https://github.com/demonsters/prisma-mock/blob/2faf33862e4147e4c262d6e37235837a5dc895a9/__tests__/json.test.ts
+  describe('Prisma-mock', () => {
+    let createElements: Array<{
+      userId: number;
+      value: string;
+      e_id: number;
+      json: Prisma.JsonValue;
+    }> = [];
+    let cleanUp: () => Promise<void>;
+
+    beforeAll(async () => {
+      [createElements, cleanUp] = await setupJsonTests([prisma, prismock]);
+    });
+
+    afterAll(async () => {
+      await cleanUp();
+    });
+
+    it('simple use case', () => {
+      expect(createElements[0].json).toEqual([
+        {
+          name: 'Bob the dog',
+        },
+        {
+          name: 'Claudine the cat',
+        },
+      ]);
+      expect(createElements[1].json).toEqual([
+        {
+          name: 'Bob the dog',
+        },
+        {
+          name: 'Claudine the cat',
+        },
+      ]);
+    });
+
+    describe('Filter on exact field value', () => {
+      test('equals', async () => {
+        const json = [{ name: 'Bob the dog' }, { name: 'Claudine the cat' }];
+
+        const realGetUsers = await prisma.element.findMany({
+          where: {
+            json: {
+              equals: json,
+            },
+          },
+        });
+        const mockGetUsers = await prismock.element.findMany({
+          where: {
+            json: {
+              equals: json,
+            },
+          },
+        });
+        expect(realGetUsers).toEqual([
+          {
+            e_id: 5,
+            json: [
+              {
+                name: 'Bob the dog',
+              },
+              {
+                name: 'Claudine the cat',
+              },
+            ],
+            userId: 5,
+            value: '5',
+          },
+        ]);
+        expect(mockGetUsers).toEqual(realGetUsers);
+      });
+
+      test('not', async () => {
+        const json = [{ name: 'Bob the dog' }, { name: 'Claudine the cat' }];
+
+        const realGetUsers = await prisma.element.findMany({
+          where: {
+            json: {
+              not: json,
+            },
+          },
+        });
+        const realAll = await prisma.element.findMany({
+          where: {
+            e_id: {
+              not: createElements[0].e_id,
+            },
+            json: {
+              not: Prisma.DbNull,
+            },
+          },
+        });
+
+        const mockGetUsers = await prismock.element.findMany({
+          where: {
+            json: {
+              not: json,
+            },
+          },
+        });
+        const mockAll = await prismock.element.findMany({
+          where: {
+            e_id: {
+              not: createElements[1].e_id,
+            },
+            json: {
+              not: Prisma.DbNull,
+            },
+          },
+        });
+
+        expect(realGetUsers).toEqual(realAll);
+        expect(mockGetUsers).toEqual(mockAll);
+        expect(mockGetUsers).toEqual(realGetUsers);
+      });
+    });
+
+    describe('Filter on nested object property', () => {
+      test('path', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              path: ['pet2', 'petName'],
+              equals: 'Sunny',
+            },
+          },
+        });
+
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              path: ['pet2', 'petName'],
+              equals: 'Sunny',
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 4,
+            json: {
+              pet1: {
+                petName: 'Claudine',
+                petType: 'House cat',
+              },
+              pet2: {
+                features: {
+                  eyeColor: 'Brown',
+                  furColor: 'White and black',
+                },
+                petName: 'Sunny',
+                petType: 'Gerbil',
+              },
+            },
+            userId: 5,
+            value: '4',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+
+      test('string_contains', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              path: ['pet1', 'petType'],
+              string_contains: 'cat',
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              path: ['pet1', 'petType'],
+              string_contains: 'cat',
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 4,
+            json: {
+              pet1: {
+                petName: 'Claudine',
+                petType: 'House cat',
+              },
+              pet2: {
+                features: {
+                  eyeColor: 'Brown',
+                  furColor: 'White and black',
+                },
+                petName: 'Sunny',
+                petType: 'Gerbil',
+              },
+            },
+            userId: 5,
+            value: '4',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+
+      test('string_starts_with', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              path: ['pet1', 'petType'],
+              string_starts_with: 'House',
+            },
+          },
+        });
+
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              path: ['pet1', 'petType'],
+              string_starts_with: 'House',
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 4,
+            json: {
+              pet1: {
+                petName: 'Claudine',
+                petType: 'House cat',
+              },
+              pet2: {
+                features: {
+                  eyeColor: 'Brown',
+                  furColor: 'White and black',
+                },
+                petName: 'Sunny',
+                petType: 'Gerbil',
+              },
+            },
+            userId: 5,
+            value: '4',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+
+      test('string_ends_with', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              path: ['pet1', 'petType'],
+              string_ends_with: 'cat',
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              path: ['pet1', 'petType'],
+              string_ends_with: 'cat',
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 4,
+            json: {
+              pet1: {
+                petName: 'Claudine',
+                petType: 'House cat',
+              },
+              pet2: {
+                features: {
+                  eyeColor: 'Brown',
+                  furColor: 'White and black',
+                },
+                petName: 'Sunny',
+                petType: 'Gerbil',
+              },
+            },
+            userId: 5,
+            value: '4',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+    });
+
+    describe('Filtering on an array value', () => {
+      test('array_contains', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              array_contains: [
+                {
+                  name: 'Bob the dog',
+                },
+              ],
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              array_contains: [
+                {
+                  name: 'Bob the dog',
+                },
+              ],
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 5,
+            json: [
+              {
+                name: 'Bob the dog',
+              },
+              {
+                name: 'Claudine the cat',
+              },
+            ],
+            userId: 5,
+            value: '5',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+    });
+
+    describe('Filtering on nested array value', () => {
+      test(')ne', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              path: ['cats', 'fostering'],
+              array_contains: ['Fido'],
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              path: ['cats', 'fostering'],
+              array_contains: ['Fido'],
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 6,
+            json: {
+              cats: {
+                fostering: ['Fido'],
+                owned: ['Bob', 'Sunny'],
+              },
+              dogs: {
+                fostering: ['Prince', 'Empress'],
+                owned: ['Ella'],
+              },
+            },
+            userId: 5,
+            value: '6',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+
+      test('Two with no match', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              path: ['cats', 'fostering'],
+              array_contains: ['Fido', 'Bob'],
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              path: ['cats', 'fostering'],
+              array_contains: ['Fido', 'Bob'],
+            },
+          },
+        });
+        expect(realElement).toEqual([]);
+        expect(mockElement).toEqual(realElement);
+      });
+
+      test('Two with match', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              path: ['cats', 'fostering'],
+              array_contains: ['Bill', 'Bob'],
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              path: ['cats', 'fostering'],
+              array_contains: ['Bill', 'Bob'],
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 8,
+            json: {
+              cats: {
+                fostering: ['Bob', 'Bill'],
+                owned: ['John'],
+              },
+            },
+            userId: 5,
+            value: '8',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+    });
+
+    describe('Filtering on object key value inside array (MySQL only)', () => {
+      // test.skip('array_contains', async () => {
+      //   const element = await prisma.element.findMany({
+      //     where: {
+      //       json: {
+      //         path: '$[*].name',
+      //         array_contains: 'Bob the dog',
+      //       },
+      //     },
+      //   });
+      //   expect(element).toEqual([]);
+      // });
+    });
+
+    describe('Using null Values', () => {
+      test('JsonNull', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              equals: Prisma.JsonNull,
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              equals: Prisma.JsonNull,
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 9,
+            json: null,
+            userId: 5,
+            value: '9',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+
+      test('DbNull', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              equals: Prisma.DbNull,
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              equals: Prisma.DbNull,
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 10,
+            json: null,
+            userId: 5,
+            value: '10',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+
+      test('AnyNull', async () => {
+        const realElement = await prisma.element.findMany({
+          where: {
+            json: {
+              equals: Prisma.AnyNull,
+            },
+          },
+        });
+        const mockElement = await prismock.element.findMany({
+          where: {
+            json: {
+              equals: Prisma.AnyNull,
+            },
+          },
+        });
+        expect(realElement).toEqual([
+          {
+            e_id: 9,
+            json: null,
+            userId: 5,
+            value: '9',
+          },
+          {
+            e_id: 10,
+            json: null,
+            userId: 5,
+            value: '10',
+          },
+        ]);
+        expect(mockElement).toEqual(realElement);
+      });
+    });
   });
 
   describe('findFirst', () => {

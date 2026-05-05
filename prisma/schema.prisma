@@ -33,6 +33,7 @@ model User {
   service       Service[]
   subscriptions Subscription[]
   reactions     Reaction[]
+  element       Element[]
 }
 
 model Profile {
@@ -100,4 +101,16 @@ model Reaction {
   user User @relation(fields: [userId], references: [id])
 
   @@id([userId, emoji])
+}
+
+model Element {
+  e_id   Int      @id @default(autoincrement())
+
+  user   User     @relation(fields: [userId], references: [id])
+  userId Int
+
+  value  String
+  json   Json?
+
+  @@unique([userId, value])
 }

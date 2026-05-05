@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { DMMF } from '@prisma/client/runtime/library';
 
 import { Delegate, Item } from '../../delegate';
-import { camelize, shallowCompare } from '../../helpers';
+import { camelize, shallowCompare, deepEqual, getJsonPath, isJsonFilter, objectContains } from '../../helpers';
 import { Delegates } from '../../prismock';
 import { FindWhereArgs } from '../../types';
 
@@ -118,6 +118,112 @@ export const matchMultiple = (item: Item, where: FindWhereArgs, current: Delegat
             return res.length === 0;
           }
           return res.length > 0;
+        }
+
+        if (info?.type === 'Json' && isJsonFilter(filter)) {
+          let match = true;
+          const value = 'path' in filter ? getJsonPath(val, filter.path) : val;
+
+          // equals
+          if ('equals' in filter && match) {
+            if (filter.equals === Prisma.DbNull) {
+              match = value === Prisma.DbNull;
+            } else if (filter.equals === Prisma.AnyNull) {
+              match = value === Prisma.DbNull || value === Prisma.JsonNull;
+            } else {
+              if (value === Prisma.DbNull) {
+                match = false;
+              } else {
+                match = deepEqual(value, filter.equals);
+              }
+            }
+          }
+
+          // not
+          if ('not' in filter && match) {
+            if (filter.not === Prisma.DbNull) {
+              match = value !== Prisma.DbNull;
+            } else {
+              if (value === Prisma.DbNull) {
+                match = false;
+              } else {
+                match = !deepEqual(value, filter.not);
+              }
+            }
+          }
+
+          const mode = 'mode' in filter ? filter.mode : 'default';
+
+          // string_contains
+          if ('string_contains' in filter && typeof filter.string_contains === 'string' && 'path' in filter && match) {
+            if (mode === 'insentive') {
+              match = value?.toLowerCase().includes(filter.string_contains.toLowerCase()) ?? false;
+            } else {
+              match = value?.includes(filter.string_contains) ?? false;
+            }
+          }
+
+          // string_starts_with
+          if ('string_starts_with' in filter && typeof filter.string_starts_with === 'string' && 'path' in filter && match) {
+            if (mode === 'insentive') {
+              match = value?.toLowerCase().startsWith(filter.string_starts_with.toLowerCase()) ?? false;
+            } else {
+              match = value?.startsWith(filter.string_starts_with) ?? false;
+            }
+          }
+
+          // string_ends_with
+          if ('string_ends_with' in filter && typeof filter.string_ends_with === 'string' && 'path' in filter && match) {
+            if (mode === 'insentive') {
+              match = value?.toLowerCase().endsWith(filter.string_ends_with.toLowerCase()) ?? false;
+            } else {
+              match = value?.endsWith(filter.string_ends_with) ?? false;
+            }
+          }
+
+          // array_contains
+          if ('array_contains' in filter && match) {
+            const contains = Array.isArray(filter.array_contains) ? filter.array_contains : [filter.array_contains];
+
+            match =
+              Array.isArray(value) && contains.every((entry: any) => value.some((item: any) => objectContains(item, entry)));
+          }
+
+          // array_starts_with
+          if ('array_starts_with' in filter && match) {
+            const startsWith = Array.isArray(filter.array_starts_with)
+              ? filter.array_starts_with
+              : [filter.array_starts_with];
+
+            match =
+              Array.isArray(value) &&
+              // We do a check by reference here, which seems to match the behaviour from Prisma
+              startsWith.every((entry: any, idx: number) => value[idx] === entry);
+          }
+
+          // array_ends_with
+          if ('array_ends_with' in filter && match) {
+            if (Array.isArray(value)) {
+              value.reverse();
+            }
+            const endsWith = Array.isArray(filter.array_ends_with) ? filter.array_ends_with : [filter.array_ends_with];
+            endsWith.reverse();
+
+            match =
+              Array.isArray(value) &&
+              endsWith.every(
+                // We do a check by reference here, which seems to match the behaviour from Prisma
+                (entry: any, idx: number) => value[idx] === entry,
+              );
+
+            // TODO: use Array.toReversed() after we update TS lib
+            if (Array.isArray(value)) {
+              value.reverse();
+            }
+            endsWith.reverse();
+          }
+
+          return match;
         }
 
         const compositeIndex =
