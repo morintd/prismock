@@ -1,4 +1,5 @@
 import { DMMF } from '@prisma/generator-helper';
+import { Prisma } from '@prisma/client';
 
 import { FindArgs, GroupByFieldArg, Order, OrderedValue } from '../../types';
 import { Delegate, DelegateProperties, Item } from '../../delegate';
@@ -19,6 +20,7 @@ export function findNextIncrement(properties: DelegateProperties, fieldName: str
 export function findOne(args: FindArgs, current: Delegate, delegates: Delegates) {
   const found = pipe(
     (items: Item[]) => items.filter((item) => where(args.where, current, delegates)(item)),
+    map(),
     order(args, current, delegates),
     connect(args, current, delegates),
     paginate(args.skip, args.take),
@@ -259,9 +261,25 @@ function connect(args: FindArgs, current: Delegate, delegates: Delegates) {
   };
 }
 
+// Replace Prisma null types with JavaScript null
+function map() {
+  return (items: Item[]) =>
+    items.map((item) => {
+      return Object.fromEntries(
+        Object.entries(item).map(([key, value]) => {
+          if (value === Prisma.JsonNull || value === Prisma.DbNull) {
+            return [key, null];
+          }
+          return [key, value];
+        }),
+      );
+    });
+}
+
 export function findMany(args: FindArgs, current: Delegate, delegates: Delegates) {
   const found = pipe(
     (items: Item[]) => items.filter((item) => where(args.where, current, delegates)(item)),
+    map(),
     order(args, current, delegates),
     connect(args, current, delegates),
     paginate(args.skip, args.take),
