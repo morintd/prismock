@@ -206,13 +206,13 @@ prismock.reset(); // State of prismock back to its original
 
 | Feature             | State |
 | ------------------- | ----- |
-| path                | ⛔    |
-| string_contains     | ⛔    |
-| string_starts_withn | ⛔    |
-| string_ends_with    | ⛔    |
-| array_contains      | ⛔    |
-| array_starts_with   | ⛔    |
-| array_ends_with     | ⛔    |
+| path                | ✔    |
+| string_contains     | ✔    |
+| string_starts_withn | ✔    |
+| string_ends_with    | ✔    |
+| array_contains      | ✔    |
+| array_starts_with   | ✔    |
+| array_ends_with     | ✔    |
 
 ## Attributes
 
