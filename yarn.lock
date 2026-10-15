@@ -2250,19 +2250,17 @@
     semver "^7.1.2"
     tempy "^3.0.0"
 
-"@semantic-release/release-notes-generator@14.1.0":
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/@semantic-release/release-notes-generator/-/release-notes-generator-14.1.0.tgz#ac47bd214b48130e71578d9acefb1b1272854070"
-  integrity sha512-CcyDRk7xq+ON/20YNR+1I/jP7BYKICr1uKd1HHpROSnnTdGqOTburi4jcRiTYz0cpfhxSloQO3cGhnoot7IEkA==
+"@semantic-release/release-notes-generator@14.1.1":
+  version "14.1.1"
+  resolved "https://registry.yarnpkg.com/@semantic-release/release-notes-generator/-/release-notes-generator-14.1.1.tgz#8d8b8d99227429142e54204a6ba7f2bae11b497d"
+  integrity sha512-Pbd2e2XRMUD0OxehHpgd5/YghsE76cddkRHSoDvKLK+OCy4Ewxn49rWR631MEUU01lgwF/uyVXvbnVuu6+Z6VA==
   dependencies:
     conventional-changelog-angular "^8.0.0"
     conventional-changelog-writer "^8.0.0"
     conventional-commits-filter "^5.0.0"
     conventional-commits-parser "^6.0.0"
     debug "^4.0.0"
-    get-stream "^7.0.0"
     import-from-esm "^2.0.0"
-    into-stream "^7.0.0"
     lodash-es "^4.17.21"
     read-package-up "^11.0.0"
 
